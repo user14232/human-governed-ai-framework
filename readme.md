@@ -5,6 +5,12 @@ This repository uses `readme.md` as the primary documentation file.
 
 # human-governed-ai-framework (Minimal v1)
 
+⚠️ Status: Experimental / Conceptual Framework
+
+This repository represents a framework-level exploration.
+APIs, roles, and artifacts MAY change.
+Not production-ready. Not stable.
+
 Primary documentation: `readme.md`
 
 This repository contains the **framework layer only**:
