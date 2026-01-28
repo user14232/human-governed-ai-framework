@@ -1,0 +1,17 @@
+schema_version: "v1"
+decisions:
+  # Example entry (keep append-only):
+  - decision_id: "DEC-0001"
+    timestamp: "2026-01-01T00:00:00Z"
+    human_identity: "alice@example.com"
+    decision: "approve"
+    scope: "Approve implementation plan and trade-offs for change_intent CI-0001"
+    references:
+      - artifact: "implementation_plan.yaml"
+        artifact_id: "IP-0001"
+        artifact_hash: null
+      - artifact: "design_tradeoffs.md"
+        artifact_id: null
+        artifact_hash: null
+    rationale: "Plan matches scope; trade-offs accepted."
+    supersedes_decision_id: null

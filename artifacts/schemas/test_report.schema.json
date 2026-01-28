@@ -1,0 +1,52 @@
+{
+  "schema_id": "test_report",
+  "version": "v1",
+  "artifact_name": "test_report.json",
+  "responsibility": "Record deterministic test execution results and environment metadata.",
+  "owner_roles": ["agent_test_runner"],
+  "allowed_readers": [
+    "human",
+    "agent_orchestrator",
+    "agent_reviewer",
+    "agent_test_designer",
+    "agent_test_author",
+    "agent_implementer"
+  ],
+  "write_policy": {
+    "mutability": "append_only_preferred",
+    "overwrite_allowed": false
+  },
+  "required_fields": {
+    "run_id": "<stable-string-id>",
+    "created_at": "<iso-8601>",
+    "inputs": {
+      "test_design_id": "<string>"
+    },
+    "environment": {
+      "os": "<string>",
+      "tool_versions": {
+        "<tool>": "<version>"
+      }
+    },
+    "selection": {
+      "mode": "<all|subset>",
+      "definition": "<string>"
+    },
+    "results": {
+      "passed": "<int>",
+      "failed": "<int>",
+      "skipped": "<int>",
+      "failures": [
+        {
+          "test_id": "<string>",
+          "message": "<string>",
+          "details": "<string>"
+        }
+      ]
+    }
+  },
+  "determinism_requirements": {
+    "run_id_stable": true,
+    "no_filtered_failures": true
+  }
+}

@@ -1,0 +1,140 @@
+version: v1
+id: default_workflow
+
+responsibility: >
+  Deterministic, auditable primary delivery workflow as an explicit state machine.
+  This file defines sequencing and required artifacts only. It does not contain domain logic.
+
+inputs:
+  project_mandatory:
+    - domain_scope.md
+    - domain_rules.md
+    - source_policy.md
+    - glossary.md
+    - architecture_contract.md
+  project_optional:
+    - data_model.md
+    - evaluation_criteria.md
+    - goldstandard_knowledge.md
+
+invariants_reference:
+  - system_invariants.md
+
+approval_record:
+  artifact: decision_log.yaml
+  schema: ../artifacts/schemas/decision_log.schema.yaml
+  notes: >
+    Any transition that lists `human_approval` requires corresponding explicit entries
+    in `decision_log.yaml` referencing the approved artifacts (no implicit approvals).
+
+states:
+  - INIT
+  - PLANNING
+  - ARCH_CHECK
+  - TEST_DESIGN
+  - BRANCH_READY
+  - IMPLEMENTING
+  - TESTING
+  - REVIEWING
+  - ACCEPTED
+  - ACCEPTED_WITH_DEBT
+  - FAILED
+
+transitions:
+  - from: INIT
+    to: PLANNING
+    requires:
+      inputs_present: true
+
+  - from: INIT
+    to: FAILED
+    requires:
+      inputs_present: false
+
+  - from: PLANNING
+    to: ARCH_CHECK
+    requires:
+      artifacts:
+        - change_intent.yaml
+        - implementation_plan.yaml
+        - design_tradeoffs.md
+        - decision_log.yaml
+      human_approval:
+        - implementation_plan.yaml
+        - design_tradeoffs.md
+
+  - from: ARCH_CHECK
+    to: TEST_DESIGN
+    notes: >
+      ARCH_CHECK is a governance gate. If an architecture change is required, it must be captured
+      explicitly via `architecture_change_proposal.md` (see artifacts/schemas/).
+
+  - from: TEST_DESIGN
+    to: BRANCH_READY
+    requires:
+      artifacts:
+        - test_design.yaml
+        - decision_log.yaml
+      human_approval:
+        - test_design.yaml
+
+  - from: BRANCH_READY
+    to: IMPLEMENTING
+    notes: >
+      Repository/branch mechanics are tool-agnostic; the framework only captures intent and results.
+
+  - from: IMPLEMENTING
+    to: TESTING
+    notes: >
+      Implementation occurs in the codebase; the framework records outcomes through existing artifacts
+      (tests and review), not via additional implicit artifacts.
+
+  - from: TESTING
+    to: REVIEWING
+    requires:
+      artifacts:
+        - test_report.json
+
+  - from: REVIEWING
+    to: ACCEPTED
+    requires:
+      artifacts:
+        - review_result.md
+      conditions:
+        review_outcome: ACCEPTED
+
+  - from: REVIEWING
+    to: ACCEPTED_WITH_DEBT
+    requires:
+      artifacts:
+        - review_result.md
+        - decision_log.yaml
+      conditions:
+        review_outcome: ACCEPTED_WITH_DEBT
+      human_approval:
+        - review_result.md
+
+  - from: REVIEWING
+    to: FAILED
+    requires:
+      artifacts:
+        - review_result.md
+      conditions:
+        review_outcome: FAILED
+
+artifacts_used:
+  # Delivery-cycle contracts (schemas live under artifacts/schemas/)
+  - change_intent.yaml
+  - implementation_plan.yaml
+  - design_tradeoffs.md
+  - test_design.yaml
+  - test_report.json
+  - review_result.md
+  - run_metrics.json
+  - decision_log.yaml
+  # Governance / auxiliary
+  - architecture_change_proposal.md
+
+assumptions_and_tradeoffs:
+  - Determinism is achieved by explicit artifacts and approvals, not by autonomous loops.
+  - This file describes ordering and gate conditions only; execution is performed by humans/agents externally.

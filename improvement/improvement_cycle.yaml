@@ -1,0 +1,54 @@
+version: v1
+id: improvement_cycle
+
+responsibility: >
+  Define the secondary improvement cycle as an explicit, asynchronous state machine.
+  The cycle produces proposals only; it never applies changes automatically.
+
+states:
+  - OBSERVE
+  - REFLECT
+  - PROPOSE
+  - HUMAN_DECISION
+
+transitions:
+  - from: OBSERVE
+    to: REFLECT
+    requires:
+      artifacts:
+        - run_metrics.json
+        - test_report.json
+        - review_result.md
+
+  - from: REFLECT
+    to: PROPOSE
+    requires:
+      artifacts:
+        - reflection_notes.md
+
+  - from: PROPOSE
+    to: HUMAN_DECISION
+    requires:
+      artifacts:
+        - improvement_proposal.md
+        - decision_log.yaml
+      human_approval:
+        - improvement_proposal.md
+
+outputs:
+  - improvement_proposal.md
+  - optional_new_change_intent.yaml
+
+non_negotiables_reference:
+  - system_invariants.md
+
+approval_record:
+  artifact: decision_log.yaml
+  schema: ../artifacts/schemas/decision_log.schema.yaml
+  notes: >
+    HUMAN_DECISION is recorded as explicit entries in `decision_log.yaml` referencing
+    the decided artifact(s) (approve / reject / defer).
+
+assumptions_and_tradeoffs:
+  - The improvement cycle is optional and can be run out-of-band.
+  - Proposals may lead to a new `change_intent.yaml`, but only via explicit human decision.

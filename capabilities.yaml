@@ -1,0 +1,49 @@
+version: v1
+
+responsibility: >
+  Define project-provided capability interfaces that domain sub-agents may implement.
+  This is a contract surface only. It does not define workflows and does not allow planning/implementation.
+
+non_negotiables:
+  - no_planning: true
+  - no_decision_making: true
+  - no_implementation_writing: true
+  - no_workflow_changes: true
+  - artifact_only_io: true
+
+capabilities:
+  domain_validation:
+    purpose: >
+      Validate artifacts against domain rules and scope without introducing new requirements.
+      Validation must be deterministic and explainable.
+    inputs:
+      - domain_scope.md
+      - domain_rules.md
+      - glossary.md
+      - source_policy.md
+      - target_artifact_path: "<string>"
+    outputs:
+      - validation_result.md
+    constraints:
+      - must_not_infer_missing_rules: true
+      - must_not_add_new_scope: true
+      - must_cite_rule_ids_or_sections: true
+
+  domain_explanation:
+    purpose: >
+      Explain domain rules, glossary terms, and source policy in a human-readable manner.
+      Explanations must be traceable to the provided domain inputs.
+    inputs:
+      - domain_rules.md
+      - glossary.md
+      - source_policy.md
+      - question: "<string>"
+    outputs:
+      - explanation.md
+    constraints:
+      - must_quote_or_reference_inputs: true
+      - must_not_create_new_domain_facts: true
+
+assumptions_and_tradeoffs:
+  - Capability agents are optional and project-owned.
+  - Framework agents may consume capability outputs only via artifacts.

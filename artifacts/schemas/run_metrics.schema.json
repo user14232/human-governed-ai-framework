@@ -1,0 +1,43 @@
+{
+  "schema_id": "run_metrics",
+  "version": "v1",
+  "artifact_name": "run_metrics.json",
+  "responsibility": "Append-only run metadata and metrics for auditability and improvement observation.",
+  "owner_roles": [
+    "agent_orchestrator",
+    "agent_test_runner",
+    "agent_implementer"
+  ],
+  "allowed_readers": [
+    "human",
+    "agent_reflector",
+    "agent_improvement_designer",
+    "agent_reviewer",
+    "agent_release_manager"
+  ],
+  "write_policy": {
+    "mutability": "append_only",
+    "overwrite_allowed": false
+  },
+  "required_fields": {
+    "run_id": "<stable-string-id>",
+    "created_at": "<iso-8601>",
+    "events": [
+      {
+        "event_id": "<stable-event-id>",
+        "timestamp": "<iso-8601>",
+        "stage": "<INIT|PLANNING|ARCH_CHECK|TEST_DESIGN|BRANCH_READY|IMPLEMENTING|TESTING|REVIEWING|RELEASE|IMPROVEMENT>",
+        "actor": "<human|agent_role>",
+        "artifact_refs": ["<string>", "..."],
+        "metrics": {
+          "<key>": "<number|string>"
+        },
+        "notes": "<string>"
+      }
+    ]
+  },
+  "determinism_requirements": {
+    "append_only": true,
+    "stable_ids": true
+  }
+}

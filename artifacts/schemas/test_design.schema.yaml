@@ -1,0 +1,42 @@
+schema_id: test_design
+version: v1
+artifact_name: test_design.yaml
+
+responsibility: >
+  Define test strategy and concrete test cases traceable to plan items and domain rules.
+
+owner_roles:
+  - agent_test_designer
+allowed_readers:
+  - human
+  - agent_orchestrator
+  - agent_test_author
+  - agent_test_runner
+  - agent_reviewer
+  - agent_implementer
+
+write_policy:
+  mutability: versioned
+  overwrite_allowed: false
+
+required_fields:
+  - id: "<stable-string-id>"
+  - created_at: "<iso-8601>"
+  - inputs:
+      implementation_plan_id: "<string>"
+      domain_rules_ref: "<string>"
+  - test_cases:
+      - id: "<stable-test-id>"
+        title: "<string>"
+        purpose: "<string>"
+        maps_to:
+          plan_items: ["<plan-item-id>", "..."]
+          domain_rules: ["<rule-id-or-section>", "..."]
+        type: "<unit|integration|e2e|data|other>"
+        steps: ["<string>", "..."]
+        expected_result: "<string>"
+  - coverage_notes: ["<string>", "..."]
+
+determinism_requirements:
+  - test_case_ids_stable: true
+  - traceability_required: true
