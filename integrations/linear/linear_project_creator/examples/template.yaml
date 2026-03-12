@@ -1,0 +1,271 @@
+# =============================================================================
+# LINEAR PROJECT CREATOR - MASTER INPUT TEMPLATE
+# =============================================================================
+#
+# PURPOSE
+#   Canonical input template for creating:
+#   project -> milestones -> epics -> stories -> tasks in Linear.
+#
+#   This template is the enforceable contract. The parser validates every
+#   required field before making any Linear API calls. Omitting or mis-typing
+#   a required field produces a clear aggregated error listing all violations.
+#
+# CONTRACT HIGHLIGHTS
+#   - Every object must have a non-empty description.
+#   - Epics must have acceptance_criteria (markdown).
+#   - Stories must have effort and complexity (see rubrics below).
+#   - Story estimate is computed deterministically: effort + complexity (2-10).
+#   - Missing labels are created automatically.
+#
+# PRIORITIES
+#   0 = No priority, 1 = Urgent, 2 = High, 3 = Normal, 4 = Low
+#
+# EFFORT SCALE  (story.effort, required, integer 1-5)
+#   1 = Trivial   — straightforward change, < 1 day
+#   2 = Small     — clear scope, 1-2 days
+#   3 = Medium    — moderate scope, a few days
+#   4 = Large     — cross-module, ~1 week
+#   5 = Very Large — high uncertainty or cross-system impact
+#
+# COMPLEXITY SCALE  (story.complexity, required, integer 1-5)
+#   1 = Simple    — well-understood, deterministic solution
+#   2 = Low       — few decisions, low risk
+#   3 = Moderate  — some unknowns or design decisions
+#   4 = High      — significant unknowns or cross-cutting concerns
+#   5 = Very High — exploratory, novel, or high coordination cost
+#
+# ESTIMATE DERIVATION
+#   estimate = effort + complexity  (range: 2-10, computed by the tool)
+#   Do not set estimate manually; the tool rejects conflicting values.
+#
+# DATES
+#   ISO-8601 date format: YYYY-MM-DD
+#
+# -----------------------------------------------------------------------------
+# PROJECT
+# -----------------------------------------------------------------------------
+project:
+  name: "My Product"                             # [REQUIRED] Project display name
+  summary: "One-line summary for project list"   # [OPTIONAL] <=255 chars
+  description: |                                 # [REQUIRED] Full markdown project content
+    Describe the product, goals, scope, and major constraints.
+  icon: ":rocket:"                               # [OPTIONAL] Emoji slug
+  color: "#4F46E5"                               # [OPTIONAL] Hex color
+  priority: 2                                    # [OPTIONAL] 0-4
+  state: "planned"                               # [OPTIONAL] Desired project status name
+  start_date: "2026-04-01"                       # [OPTIONAL] ISO date
+  target_date: "2026-12-31"                      # [OPTIONAL] ISO date
+  lead: null                                     # [OPTIONAL] User name/email/id
+  labels: ["roadmap", "platform"]                # [OPTIONAL] Project label names
+
+# -----------------------------------------------------------------------------
+# LABEL DEFINITIONS
+# Used to create labels automatically if they do not yet exist.
+# -----------------------------------------------------------------------------
+label_definitions:
+  issue_labels:                                  # Labels used on epics/stories/tasks
+    - name: "epic"                               # [REQUIRED]
+      description: "Top-level workstream issue." # [REQUIRED]
+      color: "#4F46E5"                           # [OPTIONAL]
+      is_group: false                            # [OPTIONAL]
+    - name: "story"
+      description: "Story-level implementation issue."
+      color: "#0EA5E9"
+      is_group: false
+    - name: "task"
+      description: "Task-level implementation unit."
+      color: "#10B981"
+      is_group: false
+    - name: "bug"
+      description: "Defect fix work item."
+      color: "#EF4444"
+      is_group: false
+
+  project_labels:                                # Labels attached to project object
+    - name: "roadmap"                            # [REQUIRED]
+      description: "Roadmap-visible initiative."
+      color: "#8B5CF6"
+      is_group: false
+    - name: "platform"
+      description: "Platform and infrastructure scope."
+      color: "#14B8A6"
+      is_group: false
+
+# -----------------------------------------------------------------------------
+# MILESTONES
+# Referenced by name from epics/stories.
+# -----------------------------------------------------------------------------
+milestones:
+  - name: "Alpha"                                # [REQUIRED]
+    description: "Internal alpha release with core functionality."  # [REQUIRED]
+    target_date: "2026-06-30"                    # [OPTIONAL]
+
+  - name: "Beta"
+    description: "Public beta release."
+    target_date: "2026-09-30"
+
+  - name: "v1.0 GA"
+    description: "General availability release."
+    target_date: "2026-12-15"
+
+# -----------------------------------------------------------------------------
+# EPICS -> STORIES -> TASKS
+# -----------------------------------------------------------------------------
+epics:
+  - name: "Epic Title"                           # [REQUIRED]
+    description: |                               # [REQUIRED]
+      Describe the scope and expected outcome of this epic.
+      What problem does it solve? What constraints apply?
+    priority: 2                                  # [OPTIONAL]
+    labels: ["feature"]                          # [OPTIONAL] Additional issue labels
+    due_date: "2026-07-01"                       # [OPTIONAL]
+    assignee: null                               # [OPTIONAL]
+    milestone: "Alpha"                           # [OPTIONAL]
+    state: "Backlog"                             # [OPTIONAL]
+    acceptance_criteria: |                       # [REQUIRED]
+      - [ ] Criterion one: observable behavior that must hold
+      - [ ] Criterion two: boundary condition covered
+      - [ ] Criterion three: non-goal explicitly excluded
+    links:                                       # [OPTIONAL]
+      - url: "https://example.com/spec"
+        title: "Technical Specification"
+
+    stories:
+      - name: "Story Title"                      # [REQUIRED]
+        type: "story"                            # [REQUIRED] story|feature|bug
+        description: |                           # [REQUIRED]
+          Describe the story objective, scope, and non-goals.
+
+        # -------------------------------------------------------------------------
+        # DEVOS PLANNING FIELDS
+        # The fields below provide structured input for the DevOS PLANNING,
+        # ARCH_CHECK, and TEST_DESIGN pipeline stages. They describe intent and
+        # constraints — not implementation decisions. All fields are optional but
+        # strongly recommended for stories entering the DevOS planning pipeline.
+        # -------------------------------------------------------------------------
+
+        problem_statement: |                     # [REQUIRED] Clear statement of the problem
+          # being solved. Input to PLANNING stage.
+          # Example: "Users cannot recover their session after a network drop
+          #           because the reconnect path bypasses auth token refresh."
+
+        scope: |                                 # [REQUIRED] Defines what is included in this
+          # story. Used to bound the PLANNING output.
+          # Example: "Covers the reconnect handler in the transport layer only.
+          #           Does not include UI notification or server-side session logic."
+
+        constraints: |                           # [REQUIRED] Technical or architectural
+          # constraints that must be respected. Enforced during ARCH_CHECK.
+          # Example: "Must not introduce a synchronous blocking call in the
+          #           event loop. Must remain backward-compatible with v2 clients."
+
+        architecture_context: |                  # [REQUIRED] Relevant architectural components,
+          # modules, or contracts affected by this story. Used by ARCH_CHECK to
+          # validate that the implementation plan does not violate layer boundaries.
+          # Example: "Affects: transport.reconnect, auth.token_refresh.
+          #           Depends on: SessionStore contract (v1).
+          #           Must not cross into: persistence layer."
+
+        non_goals: |                             # [REQUIRED] Explicitly states what this story
+          # will NOT address. Prevents scope creep in PLANNING output.
+          # Example: "Does not cover server-side session expiry policy.
+          #           Does not change the public API surface."
+
+        design_freedom: "high"                   # [OPTIONAL] Allowed values: high | restricted
+          # high       — the implementation agent may propose the solution design.
+          # restricted — the solution approach is pre-determined; agent must follow
+          #              the architecture_context and constraints precisely.
+
+        effort: 2                                # [REQUIRED] 1-5, see EFFORT SCALE above
+        complexity: 3                            # [REQUIRED] 1-5, see COMPLEXITY SCALE above
+        # estimate is computed: effort + complexity = 5 (do not set manually)
+        priority: 3                              # [OPTIONAL]
+        labels: []                               # [OPTIONAL]
+        due_date: null                           # [OPTIONAL]
+        assignee: null                           # [OPTIONAL]
+        milestone: "Alpha"                       # [OPTIONAL]
+        state: "Backlog"                         # [OPTIONAL]
+        acceptance_criteria: |                   # [OPTIONAL]
+          - [ ] Criterion one is met
+          - [ ] Criterion two is met
+        links: []                                # [OPTIONAL]
+
+        tasks:
+          - name: "Implement X"                  # [REQUIRED]
+            type: "task"                         # [OPTIONAL] task|bug|improvement|chore
+            description: |                       # [REQUIRED]
+              Detailed implementation notes, constraints, and done criteria.
+            priority: 3                          # [OPTIONAL]
+            labels: []                           # [OPTIONAL]
+            estimate: 2                          # [OPTIONAL]
+            due_date: null                       # [OPTIONAL]
+            assignee: null                       # [OPTIONAL]
+            state: "Backlog"                     # [OPTIONAL]
+            links: []                            # [OPTIONAL]
+
+          - name: "Write unit tests for X"
+            type: "task"
+            description: "Cover all branches including error paths."
+            priority: 3
+            estimate: 1
+
+          - name: "Fix bug in Y"
+            type: "bug"
+            description: |
+              Repro:
+              1. Do this
+              2. Observe unexpected behavior
+              Expected: ...
+              Actual: ...
+            priority: 1
+            labels: ["regression"]
+            estimate: 1
+
+      - name: "Another Story"
+        type: "story"
+        description: "Description of another story in the same epic."
+        effort: 2
+        complexity: 2
+        # estimate computed: 4
+        priority: 3
+        acceptance_criteria: |
+          - [ ] Feature is accessible from main navigation
+          - [ ] Works on mobile and desktop
+        tasks:
+          - name: "Implement navigation item"
+            type: "task"
+            description: "Implement navigation entry and route handling."
+          - name: "Add responsive styles"
+            type: "task"
+            description: "Ensure responsive behavior for all breakpoints."
+          - name: "Write integration test"
+            type: "task"
+            description: "Add integration test for end-to-end user flow."
+
+  - name: "Second Epic"
+    description: "Description of the second epic."
+    priority: 3
+    milestone: "Beta"
+    acceptance_criteria: |
+      - [ ] All stories deliver their acceptance criteria
+      - [ ] Integration tests pass end-to-end
+    stories:
+      - name: "Story in second epic"
+        type: "story"
+        description: "This story belongs to the second epic."
+        effort: 3
+        complexity: 3
+        # estimate computed: 6
+        acceptance_criteria: |
+          - [ ] All requirements are implemented
+        tasks:
+          - name: "Task A"
+            type: "task"
+            description: "Implement first sub-part of the story."
+          - name: "Task B"
+            type: "task"
+            description: "Implement second sub-part of the story."
+          - name: "Task C - complex"
+            type: "improvement"
+            description: "Detailed notes on Task C."
+            estimate: 3

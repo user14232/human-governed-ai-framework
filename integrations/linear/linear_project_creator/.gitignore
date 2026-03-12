@@ -1,0 +1,5 @@
+.env
+linear_mapping.json
+*.tmp
+__pycache__/
+*.py[cod]
