@@ -23,9 +23,9 @@ For each example:
 
 ## 3. Source and Validity
 
-- Origin of the gold standard
-- Confidence level
-- Known limitations
+- Origin of the gold standard (explicit citation: document, version, or dataset reference)
+- Known limitations (explicit: under what conditions this reference does not apply)
+- Validity scope (which rules or criteria this gold standard was derived from)
 
 ---
 

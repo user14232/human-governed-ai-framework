@@ -1,4 +1,4 @@
-# Example: `architecture_contract.md` (guidance, non-normative)
+﻿# Example: `architecture_contract.md` (guidance, non-normative)
 
 This document is a **non-normative example** of a project-provided `architecture_contract.md`.
 It is **guidance only**: projects may adopt, adapt, or ignore it.
@@ -17,7 +17,7 @@ Define an explicit architecture contract that:
 
 ### In scope
 
-- The system’s source code and build configuration.
+- The systemâ€™s source code and build configuration.
 - Data schemas and interfaces owned by the system.
 - Runtime configuration that affects behavior (must be explicit and versioned).
 
@@ -89,7 +89,7 @@ The system is organized into the following layers (names are illustrative):
 - **Runtime reflection / dynamic imports** that obscure dependency direction
 - **Cross-layer shortcuts** (e.g., Ingress calling Infrastructure directly)
 - **Implicit schema drift** (changing interfaces without versioning and recorded decision)
-- **“Magic” auto-wiring** that makes data/control flow non-auditable
+- **â€œMagicâ€ auto-wiring** that makes data/control flow non-auditable
 
 ## Stability guarantees
 
@@ -110,9 +110,9 @@ The system is organized into the following layers (names are illustrative):
 - If a change is needed, create an `architecture_change_proposal.md` artifact following the framework schema:
   - `artifacts/schemas/architecture_change_proposal.schema.md`
 - Human approval must be recorded as an append-only entry in:
-  - `artifacts/decision_log.yaml` (schema: `artifacts/schemas/decision_log.schema.yaml`)
+  - `runs/<run_id>/decision_log.yaml` (schema: `artifacts/schemas/decision_log.schema.yaml`)
 
 ## Consistency notes (framework alignment)
 
 - This contract must not introduce domain logic into the framework layer.
-- This contract is a **project input** (see `domain_input_contracts.md`) and should be explicit, deterministic, and unambiguous.
+- This contract is a **project input** (see `contracts/domain_input_contracts.md`) and should be explicit, deterministic, and unambiguous.

@@ -1,0 +1,52 @@
+schema_id: capability_registry
+version: v1
+artifact_name: project_capabilities.yaml
+
+responsibility: >
+  Machine-readable registry of project-provided capability agents.
+  This file is placed at the project root and declares which capabilities are available,
+  their providers, and their integration classification.
+
+owner_roles:
+  - human
+allowed_readers:
+  - agent_orchestrator
+  - agent_architecture_guardian
+  - agent_planner
+
+write_policy:
+  mutability: versioned
+  overwrite_allowed: false
+  notes: >
+    When capabilities change (added, removed, reclassified), create a new version
+    and reference the prior version in the supersedes_id field.
+
+required_fields:
+  - id: "<stable-string-id>"
+  - created_at: "<iso-8601>"
+  - supersedes_id: "<prior-registry-id-or-null>"
+  - capabilities:
+      - capability_id: "<string>"
+        interface_name: "<domain_validation | domain_explanation | ...>"
+        provider: "<string — agent role name or tool identifier>"
+        version: "<string>"
+        classification: "<advisory | gate_blocking>"
+        gate_blocking_scope:
+          - "<transition_name_or_null>"
+        input_artifacts: ["<string>", "..."]
+        output_artifacts: ["<string>", "..."]
+        output_schemas: ["<path-to-schema>", "..."]
+        determinism_constraints:
+          - must_not_infer_missing_rules: true
+          - must_cite_source_sections: true
+        owner: "<string>"
+
+determinism_requirements:
+  - capability_ids_stable: true
+  - gate_blocking_scope_explicit: true
+  - no_implicit_classification_changes: true
+
+change_log:
+  - version: v1
+    date: "2026-03-12"
+    change: "Initial version. Defines machine-readable capability registry schema for project-provided capability agents."

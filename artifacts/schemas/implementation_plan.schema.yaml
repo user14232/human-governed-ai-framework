@@ -21,6 +21,7 @@ write_policy:
 
 required_fields:
   - id: "<stable-string-id>"
+  - supersedes_id: "<id-of-prior-version-or-null>"
   - created_at: "<iso-8601>"
   - inputs:
       change_intent_id: "<string>"
@@ -39,3 +40,9 @@ determinism_requirements:
   - plan_item_ids_stable: true
   - all_assumptions_explicit: true
   - traceable_to_change_intent: true
+  - supersedes_id_required_on_revision: true
+
+change_log:
+  - version: v1
+    date: "2026-03-12"
+    change: "Initial version. Added supersedes_id to required_fields for versioning consistency with runtime_contract.md Section 3 (AC-02)."

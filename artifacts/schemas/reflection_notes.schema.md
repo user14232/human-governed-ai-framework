@@ -1,4 +1,4 @@
-# Schema: `reflection_notes.md` (v1)
+﻿# Schema: `reflection_notes.md` (v1)
 
 ## Schema metadata
 
@@ -25,6 +25,11 @@ Record structured, evidence-cited reflection notes for the improvement cycle.
 - **Mutability**: versioned
 - **Overwrite allowed**: no
 
+## Required artifact fields (top-level, before section content)
+
+- `id`: stable instance identifier (see `contracts/runtime_contract.md` Section 3.2)
+- `supersedes_id`: id of prior version if this is a revised record (null otherwise)
+
 ## Required sections
 
 ### Evidence referenced
@@ -49,3 +54,9 @@ Record structured, evidence-cited reflection notes for the improvement cycle.
 
 - Keep observations separate from hypotheses.
 - No new requirements or changes proposed here.
+
+## Change log
+
+| Version | Date | Change |
+| --- | --- | --- |
+| v1 | 2026-03-12 | Added id and supersedes_id to Required artifact fields for versioning consistency (AC-02). |

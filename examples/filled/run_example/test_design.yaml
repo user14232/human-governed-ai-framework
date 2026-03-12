@@ -1,0 +1,94 @@
+id: TD-RUN20260310-001
+created_at: "2026-03-10T14:00:00Z"
+supersedes_id: null
+inputs:
+  implementation_plan_id: "IP-RUN20260310-001"
+  domain_rules_ref: "domain_rules.md (v1)"
+test_cases:
+  - id: "TC-001"
+    title: "CsvFormatter - empty report produces valid RFC 4180 header row only"
+    purpose: "Verify formatter handles empty data without crashing and produces valid CSV"
+    maps_to:
+      plan_items: ["IP-001"]
+      domain_rules: []
+    type: "unit"
+    steps:
+      - "Create a Report object with zero data rows"
+      - "Call CsvFormatter.format(report)"
+      - "Parse output with stdlib csv.reader"
+    expected_result: "Output contains exactly one row (header), parses without error"
+
+  - id: "TC-002"
+    title: "CsvFormatter - field with comma is quoted per RFC 4180"
+    purpose: "Verify RFC 4180 quoting for fields containing comma delimiter"
+    maps_to:
+      plan_items: ["IP-001"]
+      domain_rules: []
+    type: "unit"
+    steps:
+      - "Create Report with a field value containing a comma"
+      - "Call CsvFormatter.format(report)"
+      - "Assert field is wrapped in double-quotes"
+    expected_result: "Field value is correctly double-quoted"
+
+  - id: "TC-003"
+    title: "CsvFormatter - field with double-quote is escaped per RFC 4180"
+    purpose: "Verify RFC 4180 escaping for fields containing double-quote character"
+    maps_to:
+      plan_items: ["IP-001"]
+      domain_rules: []
+    type: "unit"
+    steps:
+      - "Create Report with a field value containing a double-quote"
+      - "Call CsvFormatter.format(report)"
+      - "Assert the double-quote is escaped as two double-quotes within a quoted field"
+    expected_result: "Field uses double-quote escaping as per RFC 4180 section 2"
+
+  - id: "TC-004"
+    title: "CsvFormatter - line terminator is CRLF per RFC 4180"
+    purpose: "Verify that each record ends with CRLF not LF"
+    maps_to:
+      plan_items: ["IP-001"]
+      domain_rules: []
+    type: "unit"
+    steps:
+      - "Create Report with at least two rows"
+      - "Call CsvFormatter.format(report)"
+      - "Inspect raw bytes for line endings"
+    expected_result: "All record separators are CRLF (\\r\\n)"
+
+  - id: "TC-005"
+    title: "CSV export endpoint returns correct Content-Type and valid CSV body"
+    purpose: "Integration test: verify API endpoint returns RFC 4180-compliant CSV response"
+    maps_to:
+      plan_items: ["IP-002", "IP-004"]
+      domain_rules: []
+    type: "integration"
+    steps:
+      - "Load fixture report with id = 'fixture-001'"
+      - "Send GET /reports/fixture-001/export?format=csv"
+      - "Assert HTTP 200 response"
+      - "Assert Content-Type header is 'text/csv; charset=utf-8'"
+      - "Parse response body with csv.reader"
+      - "Assert all fixture rows are present and values match Report data"
+    expected_result: "Valid RFC 4180 CSV with correct headers and data for fixture-001"
+
+  - id: "TC-006"
+    title: "JSON export endpoint remains unaffected after CSV endpoint addition"
+    purpose: "Regression: verify existing JSON export path is not broken"
+    maps_to:
+      plan_items: ["IP-002"]
+      domain_rules: []
+    type: "integration"
+    steps:
+      - "Send GET /reports/fixture-001/export?format=json"
+      - "Assert HTTP 200 response"
+      - "Assert Content-Type is 'application/json'"
+      - "Assert response body matches pre-existing fixture snapshot"
+    expected_result: "JSON export unchanged; all existing assertions pass"
+
+coverage_notes:
+  - "TC-001 through TC-004 cover RFC 4180 edge cases at the unit level."
+  - "TC-005 and TC-006 cover the integration boundary."
+  - "Unicode / multi-byte field values are not covered in v1; added to known gap list."
+  - "Large file streaming is explicitly out of scope per change_intent.yaml."

@@ -1,0 +1,36 @@
+{
+  "run_id": "TR-RUN20260310-001-v1",
+  "created_at": "2026-03-10T17:30:00Z",
+  "supersedes_id": null,
+  "inputs": {
+    "test_design_id": "TD-RUN20260310-001"
+  },
+  "environment": {
+    "os": "ubuntu-22.04",
+    "tool_versions": {
+      "python": "3.11.8",
+      "pytest": "8.1.0"
+    }
+  },
+  "selection": {
+    "mode": "all",
+    "definition": "pytest tests/unit/test_csv_formatter.py tests/integration/test_reports_export_csv.py"
+  },
+  "results": {
+    "passed": 4,
+    "failed": 2,
+    "skipped": 0,
+    "failures": [
+      {
+        "test_id": "TC-004",
+        "message": "AssertionError: expected CRLF line endings, got LF",
+        "details": "CsvFormatter did not set lineterminator='\\r\\n'. Default Python csv writer uses '\\r\\n' on Windows and '\\n' on Linux. Must be set explicitly."
+      },
+      {
+        "test_id": "TC-006",
+        "message": "AssertionError: response body differs from snapshot",
+        "details": "Content-Type header now returns 'application/json; charset=utf-8' instead of 'application/json'. Snapshot must be updated to reflect the corrected header, which is actually correct behavior. Snapshot was stale."
+      }
+    ]
+  }
+}

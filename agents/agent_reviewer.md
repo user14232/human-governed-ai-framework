@@ -1,4 +1,10 @@
-# `agent_reviewer` (v1)
+﻿# `agent_reviewer`
+
+## Document metadata
+
+- **role_id**: `agent_reviewer`
+- **version**: `v1`
+- **workflow_scope**: `REVIEWING`
 
 ## Responsibility
 
@@ -12,7 +18,7 @@ and publish a deterministic review outcome artifact.
 
 ## Inputs (read-only)
 
-- Invariants: `../system_invariants.md`
+- Invariants: `../contracts/system_invariants.md`
 - Architecture constraints:
   - `architecture_contract.md`
 - Approved planning artifacts:
@@ -50,13 +56,19 @@ and publish a deterministic review outcome artifact.
 
 ## Artifact schemas
 
-- `implementation_plan.yaml` → `../artifacts/schemas/implementation_plan.schema.yaml`
-- `design_tradeoffs.md` → `../artifacts/schemas/design_tradeoffs.schema.md`
-- `test_report.json` → `../artifacts/schemas/test_report.schema.json`
-- `implementation_summary.md` → `../artifacts/schemas/implementation_summary.schema.md` (if used)
-- `review_result.md` → `../artifacts/schemas/review_result.schema.md`
-- `decision_log.yaml` → `../artifacts/schemas/decision_log.schema.yaml` (records debt acceptance approvals)
+- `implementation_plan.yaml` â†’ `../artifacts/schemas/implementation_plan.schema.yaml`
+- `design_tradeoffs.md` â†’ `../artifacts/schemas/design_tradeoffs.schema.md`
+- `test_report.json` â†’ `../artifacts/schemas/test_report.schema.json`
+- `implementation_summary.md` â†’ `../artifacts/schemas/implementation_summary.schema.md` (if used)
+- `review_result.md` â†’ `../artifacts/schemas/review_result.schema.md`
+- `decision_log.yaml` â†’ `../artifacts/schemas/decision_log.schema.yaml` (records debt acceptance approvals)
 
 ## Assumptions / trade-offs
 
 - Human decision remains authoritative; the reviewer provides structured, auditable evidence.
+
+## Change log
+
+| Version | Date | Change |
+| --- | --- | --- |
+| v1 | 2026-03-12 | Added Document metadata block (role_id, version, workflow_scope) per framework_versioning_policy.md Section 6. |

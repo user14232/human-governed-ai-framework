@@ -24,6 +24,7 @@ capabilities:
       - target_artifact_path: "<string>"
     outputs:
       - validation_result.md
+    output_schema: artifacts/schemas/validation_result.schema.md
     constraints:
       - must_not_infer_missing_rules: true
       - must_not_add_new_scope: true
@@ -40,6 +41,7 @@ capabilities:
       - question: "<string>"
     outputs:
       - explanation.md
+    output_schema: artifacts/schemas/explanation.schema.md
     constraints:
       - must_quote_or_reference_inputs: true
       - must_not_create_new_domain_facts: true

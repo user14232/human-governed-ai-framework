@@ -1,4 +1,4 @@
-# Schema: `implementation_summary.md` (v1)
+﻿# Schema: `implementation_summary.md` (v1)
 
 ## Schema metadata
 
@@ -25,6 +25,11 @@ Provide an auditable, deterministic trace of implementation changes mapped to th
 
 - **Mutability**: versioned (new version per implementation pass)
 - **Overwrite allowed**: no
+
+## Required artifact fields (top-level, before section content)
+
+- `id`: stable instance identifier (see `contracts/runtime_contract.md` Section 3.2)
+- `supersedes_id`: id of prior version if this is a revised record (null otherwise)
 
 ## Required sections (MUST appear in this order)
 
@@ -61,3 +66,9 @@ Provide an auditable, deterministic trace of implementation changes mapped to th
 
 - No unstated assumptions.
 - Plan item IDs must be cited for all changes.
+
+## Change log
+
+| Version | Date | Change |
+| --- | --- | --- |
+| v1 | 2026-03-12 | Added id and supersedes_id to Required artifact fields for versioning consistency (AC-02). |

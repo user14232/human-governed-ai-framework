@@ -1,4 +1,4 @@
-# Schema: `architecture_change_proposal.md` (v1)
+﻿# Schema: `architecture_change_proposal.md` (v1)
 
 ## Schema metadata
 
@@ -27,6 +27,11 @@ Propose an explicit change to the architecture contract. This is not an error; i
 - **Mutability**: versioned
 - **Overwrite allowed**: no
 
+## Required artifact fields (top-level, before section content)
+
+- `id`: stable instance identifier (see `contracts/runtime_contract.md` Section 3.2)
+- `supersedes_id`: id of prior version if this is a revised proposal (null otherwise)
+
 ## Required sections (MUST appear in this order)
 
 ### 1) Summary
@@ -53,11 +58,12 @@ Propose an explicit change to the architecture contract. This is not an error; i
 
 - At least one alternative and why it was rejected.
 
-### 6) Decision record
+### 6) Decision reference
 
-- Approved? (yes/no)
-- Approver identifier(s)
-- ISO-8601 timestamp(s)
+- `decision_id` from `decision_log.yaml` that records the human decision (approve/reject/defer)
+  for this proposal.
+- Required before any implementation proceeds on architecture changes.
+- Must match the `artifact_id` of this version of the proposal.
 
 ## Determinism requirements
 

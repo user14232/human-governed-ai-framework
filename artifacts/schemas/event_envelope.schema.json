@@ -1,0 +1,106 @@
+{
+  "schema_id": "event_envelope",
+  "version": "v1",
+  "artifact_name": "event_envelope (embedded in run_metrics.json events array)",
+  "responsibility": "Define the canonical, typed envelope for all runtime events. See docs/event_model.md for the full event model specification.",
+  "owner_roles": ["runtime", "agent_orchestrator"],
+  "allowed_readers": ["human", "agent_reflector", "agent_improvement_designer", "agent_orchestrator"],
+  "write_policy": {
+    "mutability": "append_only",
+    "overwrite_allowed": false
+  },
+  "envelope_fields": {
+    "event_id": {
+      "type": "string",
+      "required": true,
+      "description": "Stable unique identifier within the run. Recommended format: EVT-<run_id_short>-<monotonic_counter>."
+    },
+    "event_type": {
+      "type": "string",
+      "required": true,
+      "allowed_values": [
+        "run.started",
+        "run.completed",
+        "run.blocked",
+        "run.rework_started",
+        "run.resumed",
+        "workflow.transition_checked",
+        "workflow.transition_completed",
+        "agent.invocation_started",
+        "agent.invocation_completed",
+        "artifact.created",
+        "artifact.superseded",
+        "artifact.validated",
+        "artifact.validation_failed",
+        "decision.recorded"
+      ],
+      "description": "Event type. Required types must be emitted by every compliant runtime (see docs/event_model.md Section 2.1). Optional types are recommended."
+    },
+    "run_id": {
+      "type": "string",
+      "required": true,
+      "description": "Run identifier per runtime_contract.md Section 1.1."
+    },
+    "timestamp": {
+      "type": "string",
+      "required": true,
+      "format": "iso-8601",
+      "description": "Time of event emission."
+    },
+    "producer": {
+      "type": "string",
+      "required": true,
+      "description": "Agent role name, 'human', or 'runtime'."
+    },
+    "workflow_state": {
+      "type": "string",
+      "required": true,
+      "description": "Current workflow state at time of emission."
+    },
+    "causation_event_id": {
+      "type": "string",
+      "required": true,
+      "nullable": true,
+      "description": "event_id of the event that directly caused this one. Null for root events (e.g., run.started)."
+    },
+    "correlation_id": {
+      "type": "string",
+      "required": true,
+      "description": "run_id for delivery runs. May be a sub-scope identifier for improvement cycle runs."
+    },
+    "payload": {
+      "type": "object",
+      "required": true,
+      "description": "Typed payload per event_type. See docs/event_model.md Section 3 for payload schemas per event type."
+    }
+  },
+  "required_event_types": [
+    "run.started",
+    "run.completed",
+    "run.blocked",
+    "workflow.transition_checked",
+    "workflow.transition_completed",
+    "agent.invocation_started",
+    "agent.invocation_completed",
+    "artifact.created",
+    "decision.recorded"
+  ],
+  "determinism_requirements": {
+    "append_only": true,
+    "event_ids_unique_within_run": true,
+    "timestamps_monotonically_non_decreasing": true,
+    "no_retroactive_events": true,
+    "no_modification_after_creation": true
+  },
+  "references": {
+    "full_specification": "docs/event_model.md",
+    "persistence_target": "artifacts/schemas/run_metrics.schema.json"
+  },
+  "_changelog": [
+    {
+      "version": "v1",
+      "date": "2026-03-12",
+      "change": "Initial version. Defines canonical event envelope schema with all required and optional event types per docs/event_model.md."
+    }
+  ]
+}

@@ -1,4 +1,10 @@
-# `agent_implementer` (v1)
+﻿# `agent_implementer`
+
+## Document metadata
+
+- **role_id**: `agent_implementer`
+- **version**: `v1`
+- **workflow_scope**: `IMPLEMENTING`
 
 ## Responsibility
 
@@ -6,7 +12,7 @@ Implement the approved plan in the project codebase, with explicit, auditable ch
 
 ## Inputs (read-only)
 
-- Invariants: `../system_invariants.md`
+- Invariants: `../contracts/system_invariants.md`
 - Architecture constraints:
   - `architecture_contract.md`
 - Approved planning artifacts:
@@ -40,13 +46,19 @@ Implement the approved plan in the project codebase, with explicit, auditable ch
 
 ## Artifact schemas
 
-- `implementation_plan.yaml` → `../artifacts/schemas/implementation_plan.schema.yaml`
-- `design_tradeoffs.md` → `../artifacts/schemas/design_tradeoffs.schema.md`
-- `test_design.yaml` → `../artifacts/schemas/test_design.schema.yaml` (if used)
-- `implementation_summary.md` → `../artifacts/schemas/implementation_summary.schema.md`
-- `run_metrics.json` → `../artifacts/schemas/run_metrics.schema.json` (if used)
-- `architecture_change_proposal.md` → `../artifacts/schemas/architecture_change_proposal.schema.md` (if used)
+- `implementation_plan.yaml` â†’ `../artifacts/schemas/implementation_plan.schema.yaml`
+- `design_tradeoffs.md` â†’ `../artifacts/schemas/design_tradeoffs.schema.md`
+- `test_design.yaml` â†’ `../artifacts/schemas/test_design.schema.yaml` (if used)
+- `implementation_summary.md` â†’ `../artifacts/schemas/implementation_summary.schema.md`
+- `run_metrics.json` â†’ `../artifacts/schemas/run_metrics.schema.json` (if used)
+- `architecture_change_proposal.md` â†’ `../artifacts/schemas/architecture_change_proposal.schema.md` (if used)
 
 ## Assumptions / trade-offs
 
 - Implementation is executed in a concrete project repo; framework captures the trace via artifacts.
+
+## Change log
+
+| Version | Date | Change |
+| --- | --- | --- |
+| v1 | 2026-03-12 | Added Document metadata block (role_id, version, workflow_scope) per framework_versioning_policy.md Section 6. |

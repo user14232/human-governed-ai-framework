@@ -1,4 +1,10 @@
-# `agent_test_designer` (v1)
+﻿# `agent_test_designer`
+
+## Document metadata
+
+- **role_id**: `agent_test_designer`
+- **version**: `v1`
+- **workflow_scope**: `TEST_DESIGN`
 
 ## Responsibility
 
@@ -14,7 +20,7 @@ Design a **test strategy** and concrete test cases based on the approved plan an
 - Optional project inputs:
   - `evaluation_criteria.md`
   - `goldstandard_knowledge.md`
-- Invariants: `../system_invariants.md`
+- Invariants: `../contracts/system_invariants.md`
 - Planning artifacts (approved):
   - `implementation_plan.yaml`
   - `design_tradeoffs.md`
@@ -31,7 +37,7 @@ Design a **test strategy** and concrete test cases based on the approved plan an
 ## Prohibitions
 
 - Must not invent requirements beyond the plan and domain rules.
-- Must not “optimize away” required coverage; gaps must be explicit.
+- Must not â€œoptimize awayâ€ required coverage; gaps must be explicit.
 
 ## Determinism requirements
 
@@ -41,11 +47,17 @@ Design a **test strategy** and concrete test cases based on the approved plan an
 
 ## Artifact schemas
 
-- `implementation_plan.yaml` → `../artifacts/schemas/implementation_plan.schema.yaml`
-- `design_tradeoffs.md` → `../artifacts/schemas/design_tradeoffs.schema.md`
-- `test_design.yaml` → `../artifacts/schemas/test_design.schema.yaml`
-- `decision_log.yaml` → `../artifacts/schemas/decision_log.schema.yaml` (records human approval gate)
+- `implementation_plan.yaml` â†’ `../artifacts/schemas/implementation_plan.schema.yaml`
+- `design_tradeoffs.md` â†’ `../artifacts/schemas/design_tradeoffs.schema.md`
+- `test_design.yaml` â†’ `../artifacts/schemas/test_design.schema.yaml`
+- `decision_log.yaml` â†’ `../artifacts/schemas/decision_log.schema.yaml` (records human approval gate)
 
 ## Assumptions / trade-offs
 
 - When the plan is ambiguous, the designer documents assumptions explicitly inside `test_design.yaml`.
+
+## Change log
+
+| Version | Date | Change |
+| --- | --- | --- |
+| v1 | 2026-03-12 | Added Document metadata block (role_id, version, workflow_scope) per framework_versioning_policy.md Section 6. |

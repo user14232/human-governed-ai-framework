@@ -1,0 +1,47 @@
+schema_version: "v1"
+decisions:
+  # DEC-0001: Approve implementation plan and design tradeoffs (PLANNING gate)
+  - decision_id: "DEC-0001"
+    timestamp: "2026-03-10T11:30:00Z"
+    human_identity: "alice@example.com"
+    decision: "approve"
+    scope: "Approve implementation plan and design tradeoffs for RUN-20260310-001"
+    references:
+      - artifact: "implementation_plan.yaml"
+        artifact_id: "IP-RUN20260310-001"
+        artifact_hash: "sha256:a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2"
+      - artifact: "design_tradeoffs.md"
+        artifact_id: "DT-RUN20260310-001"
+        artifact_hash: "sha256:b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3"
+    rationale: "Plan is well-scoped and stays within architecture constraints. Option A (stdlib) is the correct tradeoff. Assumptions A-001 and A-002 are acceptable risks."
+    supersedes_decision_id: null
+
+  # DEC-0002: Approve design tradeoffs (same gate, already captured in DEC-0001; this entry
+  # demonstrates the pattern when plan and tradeoffs are approved in separate review passes)
+  # Omitted in this example — both artifacts approved in DEC-0001 as a batch.
+
+  # DEC-0003: Approve architecture change proposal (ARCH_CHECK gate, CHANGE_REQUIRED path)
+  - decision_id: "DEC-0003"
+    timestamp: "2026-03-10T13:00:00Z"
+    human_identity: "alice@example.com"
+    decision: "approve"
+    scope: "Approve architecture_change_proposal to add stdlib csv to dependency registry"
+    references:
+      - artifact: "architecture_change_proposal.md"
+        artifact_id: "ACP-RUN20260310-001"
+        artifact_hash: "sha256:c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"
+    rationale: "The proposal is a documentation-only change. Listing stdlib csv explicitly is correct practice. No risk. Approved."
+    supersedes_decision_id: null
+
+  # DEC-0004: Approve test design (TEST_DESIGN gate)
+  - decision_id: "DEC-0004"
+    timestamp: "2026-03-10T14:45:00Z"
+    human_identity: "alice@example.com"
+    decision: "approve"
+    scope: "Approve test design for RUN-20260310-001"
+    references:
+      - artifact: "test_design.yaml"
+        artifact_id: "TD-RUN20260310-001"
+        artifact_hash: "sha256:d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5"
+    rationale: "Test cases cover RFC 4180 edge cases and integration boundary. Known gap on Unicode fields is explicitly documented in coverage_notes; acceptable for v1."
+    supersedes_decision_id: null

@@ -2,7 +2,7 @@
   "schema_id": "release_metadata",
   "version": "v1",
   "artifact_name": "release_metadata.json",
-  "responsibility": "Machine-readable, auditable metadata for an approved release.",
+  "responsibility": "Machine-readable, auditable metadata for an approved release. The artifact_id of this artifact is the reference target for the release approval entry in decision_log.yaml.",
   "owner_roles": ["agent_release_manager"],
   "allowed_readers": ["human", "agent_orchestrator", "agent_reflector"],
   "write_policy": {
@@ -10,10 +10,13 @@
     "overwrite_allowed": false
   },
   "required_fields": {
-    "release_id": "<stable-string-id>",
+    "id": "<stable-string-id>",
+    "supersedes_id": "<id-of-prior-version-or-null>",
     "created_at": "<iso-8601>",
+    "run_id": "<release-run-id>",
     "inputs": {
-      "review_result_ref": "<string>",
+      "review_result_ref": "<artifact_id of review_result.md>",
+      "review_result_hash": "<sha256-or-null>",
       "test_report_run_id": "<string>",
       "implementation_plan_id": "<string>"
     },
@@ -21,7 +24,7 @@
       {
         "name": "<string>",
         "ref": "<string>",
-        "hash": "<optional-string>"
+        "hash": "<sha256-or-null>"
       }
     ],
     "environment": {
@@ -31,8 +34,21 @@
       }
     }
   },
+  "notes": {
+    "id_field": "The `id` field is the stable artifact identifier required by runtime_contract.md Section 3.2. It is the value referenced in the decision_log.yaml human approval entry for the RELEASE_REVIEW → RELEASED gate.",
+    "supersedes_id": "Set to the id of the prior release_metadata.json if this is a corrected or revised release record. Null for first-attempt release records."
+  },
   "determinism_requirements": {
-    "release_id_stable": true,
-    "inputs_must_be_explicit": true
-  }
+    "id_stable": true,
+    "supersedes_id_required_on_revision": true,
+    "inputs_must_be_explicit": true,
+    "review_result_outcome_must_not_be_failed": true
+  },
+  "_changelog": [
+    {
+      "version": "v1",
+      "date": "2026-03-12",
+      "change": "Renamed release_id to id for consistency with runtime_contract.md Section 3 artifact identity model. Added supersedes_id and run_id fields (AC-02). Added review_result_hash to inputs for hash-binding consistency with GV-04."
+    }
+  ]
 }

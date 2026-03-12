@@ -1,4 +1,4 @@
-# Schema: `improvement_proposal.md` (v1)
+﻿# Schema: `improvement_proposal.md` (v1)
 
 ## Schema metadata
 
@@ -24,6 +24,11 @@ Propose a controlled improvement to the framework usage or process, without appl
 - **Mutability**: versioned
 - **Overwrite allowed**: no
 
+## Required artifact fields (top-level, before section content)
+
+- `id`: stable instance identifier (see `contracts/runtime_contract.md` Section 3.2)
+- `supersedes_id`: id of prior version if this is a revised proposal (null otherwise)
+
 ## Required sections
 
 ### 1) Problem statement (evidence-cited)
@@ -46,13 +51,14 @@ Propose a controlled improvement to the framework usage or process, without appl
 
 - List the exact approvals needed.
 
-### 6) Decision record
+### 6) Decision reference
 
-- Approved? (yes/no)
-- Approver identifier(s)
-- ISO-8601 timestamp(s)
+- `decision_id` from `decision_log.yaml` that records the human decision (approve/reject/defer)
+  for this proposal.
+- Required at the `HUMAN_DECISION` gate in the improvement cycle.
+- Must match the `artifact_id` of this version of the proposal.
 
 ## Determinism requirements
 
-- No “implicit adoption”: proposal must not modify any file by itself.
+- No â€œimplicit adoptionâ€: proposal must not modify any file by itself.
 - All claims must be evidence-linked or explicitly labeled as hypotheses.

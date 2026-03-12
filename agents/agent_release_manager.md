@@ -1,4 +1,10 @@
-# `agent_release_manager` (v1)
+﻿# `agent_release_manager`
+
+## Document metadata
+
+- **role_id**: `agent_release_manager`
+- **version**: `v1`
+- **workflow_scope**: `RELEASE_PREPARING` (release_workflow.yaml)
 
 ## Responsibility
 
@@ -6,7 +12,7 @@ Package and record a release decision for accepted changes in a tool-agnostic wa
 
 ## Inputs (read-only)
 
-- Invariants: `../system_invariants.md`
+- Invariants: `../contracts/system_invariants.md`
 - Review outcome:
   - `review_result.md`
 - Test evidence:
@@ -27,7 +33,7 @@ Package and record a release decision for accepted changes in a tool-agnostic wa
 ## Prohibitions
 
 - Must not release if `review_result.md` outcome is FAILED.
-- Must not “silently” change versions; versioning must be explicit in release metadata.
+- Must not â€œsilentlyâ€ change versions; versioning must be explicit in release metadata.
 
 ## Determinism requirements
 
@@ -39,13 +45,19 @@ Package and record a release decision for accepted changes in a tool-agnostic wa
 
 ## Artifact schemas
 
-- `review_result.md` → `../artifacts/schemas/review_result.schema.md`
-- `test_report.json` → `../artifacts/schemas/test_report.schema.json`
-- `run_metrics.json` → `../artifacts/schemas/run_metrics.schema.json` (if used)
-- `release_notes.md` → `../artifacts/schemas/release_notes.schema.md`
-- `release_metadata.json` → `../artifacts/schemas/release_metadata.schema.json`
-- `decision_log.yaml` → `../artifacts/schemas/decision_log.schema.yaml` (records release approval if required by project)
+- `review_result.md` â†’ `../artifacts/schemas/review_result.schema.md`
+- `test_report.json` â†’ `../artifacts/schemas/test_report.schema.json`
+- `run_metrics.json` â†’ `../artifacts/schemas/run_metrics.schema.json` (if used)
+- `release_notes.md` â†’ `../artifacts/schemas/release_notes.schema.md`
+- `release_metadata.json` â†’ `../artifacts/schemas/release_metadata.schema.json`
+- `decision_log.yaml` â†’ `../artifacts/schemas/decision_log.schema.yaml` (records release approval if required by project)
 
 ## Assumptions / trade-offs
 
 - Actual release mechanics (tagging, publishing) are performed in project tooling; framework records the decision and metadata.
+
+## Change log
+
+| Version | Date | Change |
+| --- | --- | --- |
+| v1 | 2026-03-12 | Added Document metadata block (role_id, version, workflow_scope) per framework_versioning_policy.md Section 6. |

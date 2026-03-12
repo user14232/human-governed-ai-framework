@@ -1,4 +1,4 @@
-# Schema: `branch_status.md` (v1)
+﻿# Schema: `branch_status.md` (v1)
 
 ## Schema metadata
 
@@ -25,6 +25,11 @@ Record the deterministic outcome of preparing an isolated change surface (branch
 
 - **Mutability**: versioned (new version per attempt)
 - **Overwrite allowed**: no
+
+## Required artifact fields (top-level, before section content)
+
+- `id`: stable instance identifier (see `contracts/runtime_contract.md` Section 3.2)
+- `supersedes_id`: id of prior version if this is a revised record (null otherwise)
 
 ## Required sections (MUST appear in this order)
 
@@ -55,4 +60,10 @@ Record the deterministic outcome of preparing an isolated change surface (branch
 ## Determinism requirements
 
 - Stable identifiers where available.
-- No implied “success”; explicit outcome must be stated.
+- No implied â€œsuccessâ€; explicit outcome must be stated.
+
+## Change log
+
+| Version | Date | Change |
+| --- | --- | --- |
+| v1 | 2026-03-12 | Added id and supersedes_id to Required artifact fields for versioning consistency (AC-02). |

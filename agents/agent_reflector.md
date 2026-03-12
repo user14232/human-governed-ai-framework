@@ -1,4 +1,10 @@
-# `agent_reflector` (v1)
+﻿# `agent_reflector`
+
+## Document metadata
+
+- **role_id**: `agent_reflector`
+- **version**: `v1`
+- **workflow_scope**: `REFLECT` (improvement_cycle.yaml); optional post-run knowledge extraction
 
 ## Responsibility
 
@@ -6,9 +12,10 @@ Reflect on completed runs (evidence only) and produce structured observations wi
 
 ## Inputs (read-only)
 
-- Invariants: `../system_invariants.md`
+- Invariants: `../contracts/system_invariants.md`
 - Evidence artifacts:
-  - `run_metrics.json` (if present)
+  - `run_metrics.json` (**required** when operating in the improvement cycle; the workflow
+    transition `OBSERVE â†’ REFLECT` requires this artifact â€” see `improvement_cycle.yaml`)
   - `test_report.json`
   - `review_result.md`
 
@@ -24,7 +31,7 @@ Reflect on completed runs (evidence only) and produce structured observations wi
 ## Prohibitions
 
 - Must not propose changes directly; only observations.
-- Must not infer causality beyond evidence; must separate “observed” vs “hypothesized”.
+- Must not infer causality beyond evidence; must separate â€œobservedâ€ vs â€œhypothesizedâ€.
 
 ## Determinism requirements
 
@@ -38,12 +45,18 @@ Reflect on completed runs (evidence only) and produce structured observations wi
 
 ## Artifact schemas
 
-- `run_metrics.json` → `../artifacts/schemas/run_metrics.schema.json` (if used)
-- `test_report.json` → `../artifacts/schemas/test_report.schema.json`
-- `review_result.md` → `../artifacts/schemas/review_result.schema.md`
-- `reflection_notes.md` → `../artifacts/schemas/reflection_notes.schema.md`
-- `decision_log.yaml` → `../artifacts/schemas/decision_log.schema.yaml` (decision evidence may be referenced)
+- `run_metrics.json` â†’ `../artifacts/schemas/run_metrics.schema.json` (required in improvement cycle context)
+- `test_report.json` â†’ `../artifacts/schemas/test_report.schema.json`
+- `review_result.md` â†’ `../artifacts/schemas/review_result.schema.md`
+- `reflection_notes.md` â†’ `../artifacts/schemas/reflection_notes.schema.md`
+- `decision_log.yaml` â†’ `../artifacts/schemas/decision_log.schema.yaml` (decision evidence may be referenced)
 
 ## Assumptions / trade-offs
 
 - Reflection is evidence-first; it supports improvement design but does not decide changes.
+
+## Change log
+
+| Version | Date | Change |
+| --- | --- | --- |
+| v1 | 2026-03-12 | Added Document metadata block (role_id, version, workflow_scope) per framework_versioning_policy.md Section 6. |

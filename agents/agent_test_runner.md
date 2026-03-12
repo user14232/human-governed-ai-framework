@@ -1,4 +1,10 @@
-# `agent_test_runner` (v1)
+﻿# `agent_test_runner`
+
+## Document metadata
+
+- **role_id**: `agent_test_runner`
+- **version**: `v1`
+- **workflow_scope**: `TESTING`
 
 ## Responsibility
 
@@ -6,7 +12,7 @@ Execute the test suite deterministically and publish an auditable test report ar
 
 ## Inputs (read-only)
 
-- Invariants: `../system_invariants.md`
+- Invariants: `../contracts/system_invariants.md`
 - Approved test design:
   - `test_design.yaml`
 - Test code (in project repository; outside framework)
@@ -23,7 +29,7 @@ Execute the test suite deterministically and publish an auditable test report ar
 
 ## Prohibitions
 
-- Must not “massage” results (no filtering of failures).
+- Must not â€œmassageâ€ results (no filtering of failures).
 - Must not re-run selectively unless explicitly recorded (reproducible rerun policy).
 
 ## Determinism requirements
@@ -37,10 +43,16 @@ Execute the test suite deterministically and publish an auditable test report ar
 
 ## Artifact schemas
 
-- `test_design.yaml` → `../artifacts/schemas/test_design.schema.yaml`
-- `test_report.json` → `../artifacts/schemas/test_report.schema.json`
-- `run_metrics.json` → `../artifacts/schemas/run_metrics.schema.json` (if used)
+- `test_design.yaml` â†’ `../artifacts/schemas/test_design.schema.yaml`
+- `test_report.json` â†’ `../artifacts/schemas/test_report.schema.json`
+- `run_metrics.json` â†’ `../artifacts/schemas/run_metrics.schema.json` (if used)
 
 ## Assumptions / trade-offs
 
 - Full reproducibility depends on project execution environment; the framework records what was run and where.
+
+## Change log
+
+| Version | Date | Change |
+| --- | --- | --- |
+| v1 | 2026-03-12 | Added Document metadata block (role_id, version, workflow_scope) per framework_versioning_policy.md Section 6. |

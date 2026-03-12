@@ -2,7 +2,7 @@
   "schema_id": "run_metrics",
   "version": "v1",
   "artifact_name": "run_metrics.json",
-  "responsibility": "Append-only run metadata and metrics for auditability and improvement observation.",
+  "responsibility": "Append-only run metadata and metrics for auditability and improvement observation. Also serves as the normative record of agent invocations per runtime_contract.md Section 5.2.",
   "owner_roles": [
     "agent_orchestrator",
     "agent_test_runner",
@@ -26,7 +26,7 @@
       {
         "event_id": "<stable-event-id>",
         "timestamp": "<iso-8601>",
-        "stage": "<INIT|PLANNING|ARCH_CHECK|TEST_DESIGN|BRANCH_READY|IMPLEMENTING|TESTING|REVIEWING|RELEASE|IMPROVEMENT>",
+        "stage": "<INIT|PLANNING|ARCH_CHECK|TEST_DESIGN|BRANCH_READY|IMPLEMENTING|TESTING|REVIEWING|ACCEPTED|ACCEPTED_WITH_DEBT|FAILED|OBSERVE|REFLECT|PROPOSE|HUMAN_DECISION>",
         "actor": "<human|agent_role>",
         "artifact_refs": ["<string>", "..."],
         "metrics": {
@@ -34,10 +34,48 @@
         },
         "notes": "<string>"
       }
+    ],
+    "invocation_records": [
+      {
+        "_comment": "Required per runtime_contract.md Section 5.2. One entry per agent invocation.",
+        "invocation_id": "<stable-string-id>",
+        "run_id": "<run_id>",
+        "agent_role": "<agent_role_name>",
+        "workflow_state": "<state>",
+        "invoked_at": "<iso-8601>",
+        "input_artifacts": [
+          {
+            "name": "<artifact_name>",
+            "artifact_id": "<id_or_null>",
+            "artifact_hash": "<sha256_or_null>"
+          }
+        ],
+        "output_artifacts": [
+          {
+            "name": "<artifact_name>",
+            "artifact_id": "<id>",
+            "artifact_hash": "<sha256>"
+          }
+        ],
+        "outcome": "<completed|blocked|failed>",
+        "notes": "<string_or_null>"
+      }
     ]
+  },
+  "notes": {
+    "invocation_records": "The `invocation_records` array is required per runtime_contract.md Section 5.2. It must contain one entry per agent invocation. The runtime may append entries to either `run_metrics.json` or `orchestrator_log.md`; if both are present, `run_metrics.json` is the normative machine-readable record.",
+    "improvement_cycle": "run_metrics.json is required as input to the improvement cycle OBSERVE state (see improvement_cycle.yaml). Delivery runs intended to feed the improvement cycle must treat run_metrics.json as required, not optional."
   },
   "determinism_requirements": {
     "append_only": true,
-    "stable_ids": true
-  }
+    "stable_ids": true,
+    "invocation_ids_unique_within_run": true
+  },
+  "_changelog": [
+    {
+      "version": "v1",
+      "date": "2026-03-12",
+      "change": "Added invocation_records array per runtime_contract.md Section 5.2. Updated responsibility to include agent invocation records. Added improvement_cycle and invocation_records notes."
+    }
+  ]
 }

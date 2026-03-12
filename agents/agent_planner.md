@@ -1,4 +1,10 @@
-# `agent_planner` (v1)
+﻿# `agent_planner`
+
+## Document metadata
+
+- **role_id**: `agent_planner`
+- **version**: `v1`
+- **workflow_scope**: `PLANNING`
 
 ## Responsibility
 
@@ -16,7 +22,7 @@ Produce an **implementation plan** and explicit **trade-offs** based on a change
   - `data_model.md`
   - `evaluation_criteria.md`
   - `goldstandard_knowledge.md`
-- Invariants: `../system_invariants.md`
+- Invariants: `../contracts/system_invariants.md`
 - Change request artifact:
   - `change_intent.yaml`
 
@@ -43,11 +49,17 @@ Produce an **implementation plan** and explicit **trade-offs** based on a change
 
 ## Artifact schemas
 
-- `change_intent.yaml` → `../artifacts/schemas/change_intent.schema.yaml`
-- `implementation_plan.yaml` → `../artifacts/schemas/implementation_plan.schema.yaml`
-- `design_tradeoffs.md` → `../artifacts/schemas/design_tradeoffs.schema.md`
-- `decision_log.yaml` → `../artifacts/schemas/decision_log.schema.yaml` (records approval gate after planning)
+- `change_intent.yaml` â†’ `../artifacts/schemas/change_intent.schema.yaml`
+- `implementation_plan.yaml` â†’ `../artifacts/schemas/implementation_plan.schema.yaml`
+- `design_tradeoffs.md` â†’ `../artifacts/schemas/design_tradeoffs.schema.md`
+- `decision_log.yaml` â†’ `../artifacts/schemas/decision_log.schema.yaml` (records approval gate after planning)
 
 ## Assumptions / trade-offs
 
 - The planner may propose alternatives, but selection requires explicit human approval.
+
+## Change log
+
+| Version | Date | Change |
+| --- | --- | --- |
+| v1 | 2026-03-12 | Added Document metadata block (role_id, version, workflow_scope) per framework_versioning_policy.md Section 6. |

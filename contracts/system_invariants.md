@@ -37,6 +37,7 @@ These invariants apply globally and must not be bypassed by workflow, agents, or
 - **Coordinator**: `agent_orchestrator` (state machine compliance)
 - **Human governance**: approvals for plans, trade-offs, debt, architecture changes
   - recorded explicitly as append-only decisions in `decision_log.yaml` (see `artifacts/schemas/decision_log.schema.yaml`)
+- **Runtime compliance**: see `runtime_contract.md` for the normative runtime execution contract
 
 ## Change policy
 

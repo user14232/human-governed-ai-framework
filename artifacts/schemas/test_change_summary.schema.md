@@ -1,4 +1,4 @@
-# Schema: `test_change_summary.md` (v1)
+﻿# Schema: `test_change_summary.md` (v1)
 
 ## Schema metadata
 
@@ -26,6 +26,11 @@ Record an auditable summary of test code changes mapped to `test_design.yaml`.
 - **Mutability**: versioned (new version per change pass)
 - **Overwrite allowed**: no
 
+## Required artifact fields (top-level, before section content)
+
+- `id`: stable instance identifier (see `contracts/runtime_contract.md` Section 3.2)
+- `supersedes_id`: id of prior version if this is a revised record (null otherwise)
+
 ## Required sections (MUST appear in this order)
 
 ### 1) Summary
@@ -47,3 +52,9 @@ Record an auditable summary of test code changes mapped to `test_design.yaml`.
 ## Determinism requirements
 
 - Traceability to `test_design.yaml` test case IDs is mandatory.
+
+## Change log
+
+| Version | Date | Change |
+| --- | --- | --- |
+| v1 | 2026-03-12 | Added id and supersedes_id to Required artifact fields for versioning consistency (AC-02). |

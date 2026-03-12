@@ -1,0 +1,80 @@
+﻿version: v1
+id: improvement_cycle
+
+responsibility: >
+  Define the secondary improvement cycle as an explicit, asynchronous state machine.
+  The cycle produces proposals only; it never applies changes automatically.
+
+states:
+  - OBSERVE
+  - REFLECT
+  - PROPOSE
+  - HUMAN_DECISION
+
+transitions:
+  - from: OBSERVE
+    to: REFLECT
+    requires:
+      artifacts:
+        - run_metrics.json
+        - test_report.json
+        - review_result.md
+
+  - from: REFLECT
+    to: PROPOSE
+    requires:
+      artifacts:
+        - reflection_notes.md
+
+  - from: PROPOSE
+    to: HUMAN_DECISION
+    requires:
+      artifacts:
+        - improvement_proposal.md
+        - decision_log.yaml
+      human_approval:
+        - improvement_proposal.md
+
+outputs:
+  - improvement_proposal.md
+  - new_change_intent.yaml  # optional; produced only when human decision explicitly approves
+                            # a new delivery run. Follows the same schema as change_intent.yaml
+                            # with an added field: improvement_proposal_ref: "<proposal-id>".
+
+non_negotiables_reference:
+  - contracts/system_invariants.md
+  - contracts/runtime_contract.md
+approval_record:
+  artifact: decision_log.yaml
+  schema: ../artifacts/schemas/decision_log.schema.yaml
+  notes: >
+    HUMAN_DECISION is recorded as explicit entries in `decision_log.yaml` referencing
+    the decided artifact(s) (approve / reject / defer).
+
+optional_activities_at_observe:
+  knowledge_extraction:
+    note: >
+      The OBSERVE state is the normative trigger point for knowledge extraction from prior
+      delivery run artifacts. When entering OBSERVE, the responsible role (agent_reflector or
+      human) should extract knowledge records from:
+        - review findings in `review_result.md`
+        - decisions in `decision_log.yaml`
+        - architecture change rationale in `design_tradeoffs.md` and `architecture_change_proposal.md`
+        - improvement hypotheses identified during reflection
+      Extracted records follow `artifacts/schemas/knowledge_record.schema.json` and are indexed
+      in `knowledge_index.json`. See `docs/knowledge_query_contract.md` Section 7 for extraction
+      trigger rules.
+    when: after acquiring run evidence artifacts at OBSERVE entry
+    governed_by: docs/knowledge_query_contract.md
+
+assumptions_and_tradeoffs:
+  - The improvement cycle is optional and can be run out-of-band.
+  - Proposals may lead to a new `change_intent.yaml`, but only via explicit human decision.
+  - `run_metrics.json` is required as input to OBSERVE. Delivery runs that are intended to feed
+    into the improvement cycle must therefore treat `run_metrics.json` as required (not optional).
+  - The improvement cycle run has its own `run_id` separate from any delivery run.
+
+change_log:
+  - version: v1
+    date: "2026-03-12"
+    change: "Added optional_activities_at_observe.knowledge_extraction section to make knowledge extraction trigger explicit at the OBSERVE state."

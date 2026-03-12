@@ -1,4 +1,4 @@
-# Agents (role contracts) — v1
+﻿# Agents (role contracts) â€” v1
 
 ## Responsibility
 
@@ -13,10 +13,10 @@ Each agent contract MUST define:
 - **Inputs** (artifacts and read-only reference docs)
 - **Outputs** (artifacts only)
 - **Write policy** (what it may write, what it must never write)
-- **Prohibitions** (explicit “must not”)
+- **Prohibitions** (explicit â€œmust notâ€)
 - **Determinism requirements**
 
-## Core roles
+## v1 Core roles (fully integrated into delivery workflow)
 
 - `agent_orchestrator`
 - `agent_planner`
@@ -27,12 +27,16 @@ Each agent contract MUST define:
 - `agent_branch_manager`
 - `agent_implementer`
 - `agent_reviewer`
-- `agent_release_manager`
 
-## Improvement cycle roles
+## v1 Improvement cycle roles
 
 - `agent_reflector`
 - `agent_improvement_designer`
+
+## v1.1 roles (defined, release workflow deferred)
+
+- `agent_release_manager` â€” defined and ready; release is not a workflow state in v1.
+  Use post-acceptance at project discretion.
 
 ## System actor (meta-role)
 
@@ -42,4 +46,5 @@ This is not an autonomous agent; it is an explicit workflow actor for auditabili
 
 ## Invariants reference
 
-See: `../system_invariants.md`
+See: `../contracts/system_invariants.md`  
+See: `../contracts/runtime_contract.md`

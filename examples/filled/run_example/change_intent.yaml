@@ -1,0 +1,33 @@
+id: CI-RUN20260310-001
+created_at: "2026-03-10T09:00:00Z"
+requested_by: "alice@example.com"
+summary: "Add CSV export capability to the report generation module"
+scope:
+  in_scope:
+    - "Add CSV formatter class to ReportService"
+    - "Expose GET /reports/{id}/export?format=csv endpoint in API layer"
+    - "Write unit tests for CSV formatter"
+    - "Write integration test for CSV export endpoint"
+  out_of_scope:
+    - "Excel/XLSX export"
+    - "Asynchronous export jobs or job queuing"
+    - "Report scheduling or background processing"
+    - "Streaming large exports"
+constraints:
+  must_haves:
+    - "CSV output must conform to RFC 4180"
+    - "Must not break the existing GET /reports/{id}/export?format=json endpoint"
+    - "CSV formatter must not import external CSV libraries (use stdlib only)"
+  must_not:
+    - "Must not modify the Report domain model"
+    - "Must not introduce new infrastructure dependencies without architecture review"
+acceptance_criteria:
+  - "GET /reports/{id}/export?format=csv returns valid RFC 4180 output for all existing fixture reports"
+  - "All existing JSON export tests continue to pass"
+  - "Architecture contract is not violated"
+  - "No new external dependencies introduced without explicit architecture_change_proposal"
+references:
+  - name: "RFC 4180 - Common Format and MIME Type for CSV Files"
+    location: "https://tools.ietf.org/html/rfc4180"
+  - name: "Architecture contract"
+    location: "architecture_contract.md"

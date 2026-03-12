@@ -1,0 +1,71 @@
+id: IP-RUN20260310-001
+created_at: "2026-03-10T10:15:00Z"
+supersedes_id: null
+inputs:
+  change_intent_id: "CI-RUN20260310-001"
+  architecture_contract_ref: "architecture_contract.md (v1)"
+plan_items:
+  - id: "IP-001"
+    title: "Implement CsvFormatter class"
+    description: >
+      Create a new CsvFormatter class in the Application layer under
+      src/application/export/csv_formatter.py. The formatter accepts a Report
+      domain object and returns a UTF-8 encoded string conforming to RFC 4180.
+      No external dependencies; uses Python stdlib csv module only.
+    dependencies: []
+    outputs:
+      - "src/application/export/csv_formatter.py"
+    constraints:
+      - "Must use Python stdlib csv module only (architecture_contract.md: Forbidden patterns - no new external dependencies without proposal)"
+      - "Must be pure function: same Report input always produces same CSV output"
+      - "Must not depend on Infrastructure layer (architecture_contract.md: Layering rules)"
+
+  - id: "IP-002"
+    title: "Add CSV export endpoint to API layer"
+    description: >
+      Extend the existing GET /reports/{id}/export endpoint in the Ingress layer to accept
+      format=csv query parameter. Delegate formatting to CsvFormatter. Return
+      Content-Type: text/csv; charset=utf-8 with appropriate filename header.
+    dependencies:
+      - "IP-001"
+    outputs:
+      - "src/ingress/api/reports_export.py (modified)"
+    constraints:
+      - "Must not modify the Report domain model (change_intent: must_not)"
+      - "Must not break existing format=json path"
+      - "Ingress layer may depend on Application layer (architecture_contract.md: Layering rules)"
+
+  - id: "IP-003"
+    title: "Write unit tests for CsvFormatter"
+    description: >
+      Unit tests covering: empty report, single-row report, multi-row report,
+      special characters (commas, quotes, newlines in fields), and UTF-8 encoding.
+    dependencies:
+      - "IP-001"
+    outputs:
+      - "tests/unit/test_csv_formatter.py"
+    constraints:
+      - "Must cover all acceptance criteria listed in change_intent.yaml"
+
+  - id: "IP-004"
+    title: "Write integration test for CSV export endpoint"
+    description: >
+      Integration test using fixture reports. Verify: correct Content-Type header,
+      valid RFC 4180 response body, existing JSON export path unaffected.
+    dependencies:
+      - "IP-002"
+      - "IP-003"
+    outputs:
+      - "tests/integration/test_reports_export_csv.py"
+    constraints:
+      - "Must use existing test fixture reports"
+      - "Must assert RFC 4180 compliance"
+
+non_goals:
+  - "Excel/XLSX output"
+  - "Streaming large files"
+  - "Background/async export jobs"
+
+risks:
+  - "RFC 4180 edge cases in field quoting may require additional test cases not anticipated in plan"
+  - "Existing export endpoint refactor may uncover unexpected coupling to JSON-specific logic"
