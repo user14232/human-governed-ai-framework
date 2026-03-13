@@ -120,12 +120,19 @@ epics:
     labels: ["feature"]                          # [OPTIONAL] Additional issue labels
     due_date: "2026-07-01"                       # [OPTIONAL]
     assignee: null                               # [OPTIONAL]
-    milestone: "Alpha"                           # [OPTIONAL]
+    milestone: "Alpha"                           # [OPTIONAL] Strongly recommended when project
+                                                 # defines milestones (linted by EPIC_MISSING_MILESTONE).
     state: "Backlog"                             # [OPTIONAL]
     acceptance_criteria: |                       # [REQUIRED]
       - [ ] Criterion one: observable behavior that must hold
       - [ ] Criterion two: boundary condition covered
       - [ ] Criterion three: non-goal explicitly excluded
+    blocks:                                      # [OPTIONAL] List of epic names that cannot start
+      - "Second Epic"                            # until this epic is complete. Resolved to Linear
+                                                 # "blocks" relations at build time. Must reference
+                                                 # epic names defined in this YAML file.
+                                                 # Required for multi-epic projects (PROJECT_NO_EPIC_DEPS).
+                                                 # Remove this field if there are no dependencies.
     links:                                       # [OPTIONAL]
       - url: "https://example.com/spec"
         title: "Technical Specification"
@@ -182,19 +189,28 @@ epics:
         priority: 3                              # [OPTIONAL]
         labels: []                               # [OPTIONAL]
         due_date: null                           # [OPTIONAL]
-        assignee: null                           # [OPTIONAL]
+        assignee: null                           # [OPTIONAL] Strongly recommended: set to the
+                                                 # DRI (directly responsible individual) for
+                                                 # this story to ensure clear ownership.
         milestone: "Alpha"                       # [OPTIONAL]
         state: "Backlog"                         # [OPTIONAL]
-        acceptance_criteria: |                   # [OPTIONAL]
-          - [ ] Criterion one is met
-          - [ ] Criterion two is met
+        acceptance_criteria: |                   # [OPTIONAL] Use "- [ ]" checkbox format.
+          - [ ] Criterion one is met             # Each criterion must be independently
+          - [ ] Criterion two is met             # verifiable. Linted by STORY_AC_CHECKBOX_FORMAT.
         links: []                                # [OPTIONAL]
+
+        blocks:                                  # [OPTIONAL] List of story names that cannot
+          - "Another Story"                      # start until this story is complete.
+                                                 # Resolved to Linear "blocks" relations at
+                                                 # build time. Must reference story names
+                                                 # defined in this YAML file.
+                                                 # Remove this field if there are no dependencies.
 
         tasks:
           - name: "Implement X"                  # [REQUIRED]
             type: "task"                         # [OPTIONAL] task|bug|improvement|chore
             description: |                       # [REQUIRED]
-              Detailed implementation notes, constraints, and done criteria.
+              Detailed implementation notes and constraints.
             priority: 3                          # [OPTIONAL]
             labels: []                           # [OPTIONAL]
             estimate: 2                          # [OPTIONAL]
@@ -202,12 +218,20 @@ epics:
             assignee: null                       # [OPTIONAL]
             state: "Backlog"                     # [OPTIONAL]
             links: []                            # [OPTIONAL]
+            done_criteria: |                     # [OPTIONAL] Linted by TASK_MISSING_DOD.
+              Describe the verifiable outcome that proves this task is complete.
+              Must reference one of:
+                - a concrete output artifact (file, module, test file)
+                - a passing test result or test suite
+                - an observable system state
+              Example: "Module runtime/x.py is implemented and all unit tests pass."
 
           - name: "Write unit tests for X"
             type: "task"
             description: "Cover all branches including error paths."
             priority: 3
             estimate: 1
+            done_criteria: "All branches of X are covered. Test suite passes with no failures."
 
           - name: "Fix bug in Y"
             type: "bug"
@@ -220,6 +244,7 @@ epics:
             priority: 1
             labels: ["regression"]
             estimate: 1
+            done_criteria: "Bug no longer reproduces. Regression test added and passing."
 
       - name: "Another Story"
         type: "story"

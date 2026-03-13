@@ -132,6 +132,15 @@ mutation ProjectLabelCreate($input: ProjectLabelCreateInput!) {
 }
 """
 
+_ISSUE_RELATION_CREATE = """
+mutation IssueRelationCreate($input: IssueRelationCreateInput!) {
+  issueRelationCreate(input: $input) {
+    success
+    issueRelation { id }
+  }
+}
+"""
+
 
 # ---------------------------------------------------------------------------
 # Exceptions
@@ -483,6 +492,44 @@ class LinearClient:
             )
         logger.info("Created missing project label '%s' → %s", name, label_id)
         return label_id
+
+    def create_issue_relation(
+        self,
+        issue_id: str,
+        related_issue_id: str,
+        relation_type: str = "blocks",
+    ) -> None:
+        """
+        Create a directional relation between two issues (best-effort).
+
+        relation_type: "blocks" means issue_id blocks related_issue_id —
+                       i.e. related_issue_id cannot start until issue_id is done.
+
+        Errors are logged as warnings and not re-raised; relation creation is
+        non-critical and must not interrupt the main build.
+        """
+        input_payload: dict[str, Any] = {
+            "issueId": issue_id,
+            "relatedIssueId": related_issue_id,
+            "type": relation_type,
+        }
+        try:
+            data = self.run_query(_ISSUE_RELATION_CREATE, {"input": input_payload})
+            result = data.get("issueRelationCreate", {})
+            if not result.get("success"):
+                logger.warning(
+                    "issueRelationCreate returned success=false for %s → %s (%s).",
+                    issue_id, related_issue_id, relation_type,
+                )
+            else:
+                logger.info(
+                    "Created relation %s blocks %s.", issue_id, related_issue_id
+                )
+        except LinearAPIError as exc:
+            logger.warning(
+                "Could not create relation %s → %s (%s): %s",
+                issue_id, related_issue_id, relation_type, exc,
+            )
 
     # ------------------------------------------------------------------
     # Core HTTP / GraphQL execution

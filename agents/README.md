@@ -1,4 +1,4 @@
-﻿# Agents (role contracts) â€” v1
+# Agents (role contracts) â€” v1
 
 ## Responsibility
 
@@ -32,6 +32,15 @@ Each agent contract MUST define:
 
 - `agent_reflector`
 - `agent_improvement_designer`
+
+## Work breakdown authoring (pre-workflow)
+
+These agents operate **upstream of the delivery workflow**. They produce the structured
+work breakdown artifacts that are consumed by the workflow (via the `linear_project_creator`
+integration) rather than participating in the PLANNING → ACCEPTED state machine directly.
+
+- `agent_work_item_author` — Generates Linear project definition YAML from a project brief,
+  conforming to the Work Item Contract and quality checklists.
 
 ## v1.1 roles (defined, release workflow deferred)
 

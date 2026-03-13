@@ -13,9 +13,15 @@ Field semantics:
 
 Quality contract:
   - EpicModel.acceptance_criteria is required; the parser rejects epics without it.
+  - EpicModel.blocks: optional; names of epics that cannot start until this epic is
+    complete. Resolved to Linear issue relations by project_builder.py.
   - StoryModel.effort and StoryModel.complexity are required bounded integers (1-5).
   - StoryModel.estimate is always derived as effort + complexity (range 2-10); explicit
     overrides in YAML that conflict with the computed value are rejected by the parser.
+  - TaskModel.done_criteria: optional but linted; describes the verifiable outcome of
+    the task (output artifact, test result, or observable state).
+  - StoryModel.blocks: optional; names of stories that cannot start until this story is
+    complete. Resolved to Linear issue relations by project_builder.py.
 """
 
 from __future__ import annotations
@@ -91,6 +97,9 @@ class TaskModel:
 
     type: "task" | "bug" | "improvement" | "chore"
           Passed as a label to Linear (Linear has no native type field in standard API).
+    done_criteria: Optional. Describes the verifiable outcome that defines task completion
+                   (output artifact, test result, or observable system state). Linted by
+                   TASK_MISSING_DOD when absent.
     """
     name: str
     type: str                    # issue type → applied as label
@@ -102,6 +111,7 @@ class TaskModel:
     assignee: str | None         # User name, email, or Linear ID
     state: str | None            # Workflow state name, e.g. "Todo", "In Progress"
     links: tuple[LinkModel, ...]
+    done_criteria: str | None    # Explicit definition of done for this task
 
 
 @dataclass(frozen=True)
@@ -145,6 +155,8 @@ class StoryModel:
     architecture_context: str | None
     non_goals: str | None
     design_freedom: str | None   # "high" | "restricted"
+    # Dependency modeling
+    blocks: tuple[str, ...]      # Names of stories that cannot start until this story is done
 
 
 @dataclass(frozen=True)
@@ -154,6 +166,9 @@ class EpicModel:
 
     type: "epic" | "feature"  (always applied as a label)
     acceptance_criteria: Required. Markdown block with verifiable done conditions.
+    blocks: Optional. Names of epics that cannot start until this epic is complete.
+            Resolved to Linear 'blocks' issue relations by project_builder.py.
+            Cross-epic dependency sequencing must be declared here; it is not inferred.
     """
     name: str
     description: str
@@ -166,3 +181,4 @@ class EpicModel:
     state: str | None
     links: tuple[LinkModel, ...]
     stories: tuple[StoryModel, ...]
+    blocks: tuple[str, ...]      # Names of epics that cannot start until this epic is done

@@ -38,6 +38,8 @@ Required / optional field summary:
     milestone           optional  (name of a milestone defined above)
     state               optional
     links[]             optional  → {url: required, title: required}
+    blocks              optional  (list of epic names that cannot start until this epic is
+                                   complete; resolved to Linear issue relations at build time)
 
   stories[]:
     name                required
@@ -52,7 +54,7 @@ Required / optional field summary:
     assignee            optional
     milestone           optional
     state               optional
-    acceptance_criteria optional  (Markdown string)
+    acceptance_criteria optional  (Markdown string; linted for "- [ ]" checkbox format)
     links[]             optional
     problem_statement   optional  (DevOS: problem being solved; input to PLANNING stage)
     scope               optional  (DevOS: what is included; bounds the PLANNING output)
@@ -60,20 +62,25 @@ Required / optional field summary:
     architecture_context optional (DevOS: affected modules/contracts; used at ARCH_CHECK)
     non_goals           optional  (DevOS: explicit exclusions; prevents scope creep)
     design_freedom      optional  (DevOS: "high" | "restricted"; agent design latitude)
+    blocks              optional  (list of story names that cannot start until this story
+                                   is complete; resolved to Linear issue relations at build time)
 
   tasks[]:
     Bare string  → name only
     OR mapping:
-      name        required
-      type        optional  (default: "task")
-      description optional
-      priority    optional
-      labels      optional
-      estimate    optional
-      due_date    optional
-      assignee    optional
-      state       optional
-      links[]     optional
+      name          required
+      type          optional  (default: "task")
+      description   optional
+      priority      optional
+      labels        optional
+      estimate      optional
+      due_date      optional
+      assignee      optional
+      state         optional
+      links[]       optional
+      done_criteria optional  (explicit definition of done: output artifact, test result,
+                               or observable state that proves the task is complete; linted
+                               by TASK_MISSING_DOD when absent)
 """
 
 from __future__ import annotations
@@ -259,6 +266,7 @@ def _parse_epic(raw: Any, idx: int, errors: list[str]) -> EpicModel | None:
         state=_opt_str(raw, "state"),
         links=_parse_links(raw, context, errors),
         stories=stories,
+        blocks=_opt_str_list(raw, "blocks", context, errors),
     )
 
 
@@ -350,6 +358,7 @@ def _parse_story(
         architecture_context=_opt_str(raw, "architecture_context"),
         non_goals=_opt_str(raw, "non_goals"),
         design_freedom=_opt_str(raw, "design_freedom"),
+        blocks=_opt_str_list(raw, "blocks", context, errors),
     )
 
 
@@ -383,6 +392,7 @@ def _parse_task(
             assignee=None,
             state=None,
             links=(),
+            done_criteria=None,
         )
 
     if isinstance(raw, dict):
@@ -400,6 +410,7 @@ def _parse_task(
             assignee=_opt_str(raw, "assignee"),
             state=_opt_str(raw, "state"),
             links=_parse_links(raw, context, errors),
+            done_criteria=_opt_str(raw, "done_criteria"),
         )
 
     errors.append(

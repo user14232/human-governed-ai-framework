@@ -70,7 +70,7 @@ $env:LINEAR_TEAM_ID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 ## Usage
 
 ```
-python main.py <YAML_FILE> [--dry-run] [--verbose] [--output <path>]
+python main.py <YAML_FILE> [--dry-run] [--verbose] [--output <path>] [--lint-mode <enforce|warn>]
 ```
 
 ### Arguments
@@ -81,20 +81,120 @@ python main.py <YAML_FILE> [--dry-run] [--verbose] [--output <path>]
 | `--dry-run`   | Log all actions without making any Linear API calls.     |
 | `--verbose`   | Enable DEBUG-level logging.                              |
 | `--output`    | Path for the output mapping JSON (default: `linear_mapping.json`). |
+| `--lint-mode` | Lint gate behavior: `enforce` (default) or `warn`.       |
 
 ### Examples
 
-**Dry-run against an included example:**
+**Dry-run against the canonical template:**
 
 ```powershell
-python main.py examples/devos_runtime_v1.yaml --dry-run --verbose
+python main.py templates/template.yaml --dry-run --verbose --lint-mode enforce
 ```
 
 **Create the project for real:**
 
 ```powershell
-python main.py examples/devos_runtime_v1.yaml --output my_mapping.json
+python main.py my_project.yaml --output my_mapping.json --lint-mode enforce
 ```
+
+---
+
+## Work Item Quality System
+
+The tool enforces two distinct validation layers before making any Linear API calls.
+
+### Layer 1 — Structural validation (`yaml_parser.py`)
+
+Checks required fields, types, and bounded values. Errors are reported as a single
+aggregated message listing every violation.
+
+### Layer 2 — Semantic quality lint (`work_item_linter.py`)
+
+Applies the rules from [`contracts/work_item_linter_rules.md`](contracts/work_item_linter_rules.md)
+to the parsed model. Checks that work items satisfy the
+[Work Item Contract](contracts/work_item_contract.md) at the semantic level.
+
+Rules enforced:
+
+| Rule ID | Scope | Description |
+|---|---|---|
+| `EPIC_MIN_STORIES` | Epic | Must contain ≥ 2 stories |
+| `EPIC_MAX_STORIES` | Epic | Must contain ≤ 10 stories |
+| `EPIC_DESC_MIN_WORDS` | Epic | Description must contain ≥ 20 words covering capability, motivation, and system impact |
+| `STORY_REQUIRED_FIELD` | Story | Must define all five DevOS planning fields |
+| `STORY_AC_REQUIRED` | Story | Must include `acceptance_criteria` |
+| `STORY_AC_CHECKBOX_FORMAT` | Story | `acceptance_criteria` must contain at least one `- [ ]` checkbox item |
+| `STORY_TASK_MIN` | Story | Must contain ≥ 2 tasks |
+| `STORY_TASK_MAX` | Story | Must contain ≤ 7 tasks |
+| `STORY_DESIGN_FREEDOM` | Story | `design_freedom`, when present, must be `high` or `restricted` |
+| `TASK_MULTI_ACTION` | Task | Name must not combine multiple unrelated actions |
+| `TASK_MISSING_DOD` | Task | Must include a non-empty `done_criteria` field |
+
+Violations are reported with full context paths and rule IDs. Behavior is controlled by
+`--lint-mode`:
+- `enforce` (default): violations block execution with exit code `1`
+- `warn`: violations are logged as warnings and execution continues
+
+### Generation prompts
+
+When authoring YAML input files, use the generation prompts as authoring guidance:
+
+- [`prompts/epic_generation_prompt.md`](prompts/epic_generation_prompt.md) — Epic authoring rules
+- [`prompts/story_generation_prompt.md`](prompts/story_generation_prompt.md) — Story authoring rules
+
+### Quality checklists
+
+Before submitting a YAML file, verify each Story and Task against:
+
+- [`quality/story_quality_checklist.md`](quality/story_quality_checklist.md) — Story readiness checks
+- [`quality/task_quality_checklist.md`](quality/task_quality_checklist.md) — Task readiness checks
+
+A Story is considered DevOS-ready only when all checklist items pass. The linter enforces
+the mechanically verifiable subset; the checklists cover the full semantic contract.
+
+### Lint mode
+
+```
+python main.py <YAML_FILE> --lint-mode enforce
+python main.py <YAML_FILE> --lint-mode warn
+```
+
+Use `enforce` for normal DevOS operation (deterministic gate).  
+Use `warn` only when an explicitly approved temporary bypass is required (for example, legacy
+YAML migration). Work items with unresolved violations must still be revised before entering
+the DevOS planning pipeline.
+
+### Task Definition of Done (`done_criteria`)
+
+Every task should include a `done_criteria` field describing the verifiable outcome that
+proves the task is complete. Linted by `TASK_MISSING_DOD`.
+
+```yaml
+tasks:
+  - name: "Implement run lifecycle initialization logic"
+    description: "Add run_id assignment, run directory setup, and resume entry points."
+    done_criteria: |
+      runtime/run_engine.py initializes run directories with correct identifiers.
+      Resume path reconstructs run state from persisted evidence.
+      Unit tests cover both init and resume paths. All tests pass.
+```
+
+### Story Dependency Modeling (`blocks`)
+
+Stories may declare explicit blocking dependencies using the `blocks` field.
+After all issues are created, these are resolved to Linear `blocks` issue relations.
+
+```yaml
+stories:
+  - name: "Implement shared types and framework loaders"
+    blocks:
+      - "Implement run engine and workflow engine state progression"
+      - "Implement store and artifact system behavior"
+```
+
+This means `Implement shared types` must complete before the blocked stories can start.
+The tool creates the corresponding Linear relations automatically in a post-build pass.
+Cross-epic references are supported. Unresolvable names are logged as warnings.
 
 ---
 
@@ -102,16 +202,25 @@ python main.py examples/devos_runtime_v1.yaml --output my_mapping.json
 
 The tool enforces a strict quality contract before making any Linear API calls.
 All validation errors are aggregated and reported in a single failure message.
-See [`examples/template.yaml`](examples/template.yaml) for the full annotated reference.
+See [`templates/template.yaml`](templates/template.yaml) for the full annotated reference.
 
 ### Required fields per object level
 
 | Level     | Required fields                                                             |
 |-----------|-----------------------------------------------------------------------------|
 | `project` | `name`, `description`                                                       |
-| `epic`    | `name`, `description`, `acceptance_criteria`                                |
+| `epic`    | `name`, `description` (≥ 20 words), `acceptance_criteria`                  |
 | `story`   | `name`, `description`, `effort` (1–5), `complexity` (1–5)                  |
 | `task`    | `name` (bare string or mapping)                                             |
+
+### Optional fields with lint enforcement
+
+| Field | Level | Lint rule | Notes |
+|---|---|---|---|
+| `acceptance_criteria` | Story | `STORY_AC_CHECKBOX_FORMAT` | When present, must use `- [ ]` format |
+| `done_criteria` | Task | `TASK_MISSING_DOD` | Verifiable outcome for task completion |
+| `blocks` | Story | — (warning at build time) | List of story names blocked by this story |
+| `assignee` | Story/Task | — | Strongly recommended; enables ownership tracking |
 
 ### Effort and complexity scales
 
@@ -228,19 +337,26 @@ This file is flushed to disk incrementally after each epic completes. If the run
 
 ```
 linear_project_creator/
-├── main.py            # CLI entry point
-├── linear_client.py   # GraphQL HTTP client with retry and rate-limit handling
-├── project_builder.py # Orchestration: project → epics → stories → tasks
-├── yaml_parser.py     # YAML loading and structural validation
-├── models.py          # Frozen dataclasses (TaskModel, StoryModel, EpicModel, ProjectModel)
-├── config.py          # Environment variable loading
+├── main.py                # CLI entry point
+├── linear_client.py       # GraphQL HTTP client; includes create_issue_relation()
+├── project_builder.py     # Orchestration: project → epics → stories → tasks → relations
+├── yaml_parser.py         # YAML loading and structural validation (Layer 1)
+├── work_item_linter.py    # Semantic quality linting against work item contract (Layer 2)
+├── models.py              # Frozen dataclasses (TaskModel, StoryModel, EpicModel, ProjectModel)
+├── config.py              # Environment variable loading
 ├── requirements.txt
 ├── README.md
-└── examples/
-    ├── template.yaml                  # Annotated canonical input contract
-    ├── shared_runtime_types_p-1.yaml  # Package 1: shared runtime types
-    ├── framework_loaders_p-2.yaml     # Package 2: framework loader layer
-    └── devos_runtime_v1.yaml          # Full DevOS runtime v1 project
+├── contracts/
+│   ├── work_item_contract.md       # Semantic quality requirements for all work items
+│   └── work_item_linter_rules.md   # Automatable linting rules (enforced by work_item_linter.py)
+├── prompts/
+│   ├── epic_generation_prompt.md   # Authoring guidance for Epics (description requirements)
+│   └── story_generation_prompt.md  # Authoring guidance for Stories (vertical slice + dependencies)
+├── quality/
+│   ├── story_quality_checklist.md  # Full Story readiness checklist (vertical slice + dependency)
+│   └── task_quality_checklist.md   # Full Task readiness checklist (done_criteria)
+└── templates/
+    └── template.yaml               # Annotated canonical input contract
 ```
 
 ---

@@ -46,6 +46,34 @@ capabilities:
       - must_quote_or_reference_inputs: true
       - must_not_create_new_domain_facts: true
 
+  work_item_authoring:
+    purpose: >
+      Generate a well-formed Linear project definition YAML from a human-authored
+      project brief, satisfying the Work Item Contract and passing all linter rules.
+      Output is validated deterministically by yaml_parser.py (structural) and
+      work_item_linter.py (semantic) before any API call is made.
+    inputs:
+      - project_brief: "<unstructured human text>"
+      - template: "integrations/linear/linear_project_creator/templates/template.yaml"
+      - quality_contract: "integrations/linear/linear_project_creator/contracts/work_item_contract.md"
+      - linter_rules: "integrations/linear/linear_project_creator/contracts/work_item_linter_rules.md"
+      - epic_prompt: "integrations/linear/linear_project_creator/prompts/epic_generation_prompt.md"
+      - story_prompt: "integrations/linear/linear_project_creator/prompts/story_generation_prompt.md"
+      - story_checklist: "integrations/linear/linear_project_creator/quality/story_quality_checklist.md"
+      - task_checklist: "integrations/linear/linear_project_creator/quality/task_quality_checklist.md"
+    outputs:
+      - "<project_slug>.yaml"
+    validation_gate: "python integrations/linear/linear_project_creator/main.py <output.yaml> --dry-run --lint-mode enforce"
+    constraints:
+      - must_not_prescribe_implementation: true
+      - must_not_invent_requirements: true
+      - output_must_pass_structural_validation: true
+      - output_must_pass_semantic_lint: true
+    agent_role: agent_work_item_author
+
 assumptions_and_tradeoffs:
   - Capability agents are optional and project-owned.
   - Framework agents may consume capability outputs only via artifacts.
+  - The work_item_authoring capability is a pre-workflow integration utility.
+    Its output (a YAML file) is the upstream input to the linear_project_creator tool,
+    not a framework governance artifact.

@@ -5,7 +5,9 @@ Responsibilities:
   - Resolve label/state/user names to Linear IDs via LinearClient lookup methods.
   - Create the Linear project (with all metadata).
   - Create milestones, then epics → stories → tasks (strict top-down, sequential).
-  - Compose full issue descriptions from description + acceptance_criteria.
+  - Compose full issue descriptions from description + acceptance_criteria + done_criteria.
+  - After all issues are created, create issue relations for epic.blocks declarations.
+  - After all issues are created, create issue relations for story.blocks declarations.
   - Accumulate and incrementally flush the mapping dict to disk.
   - Support dry-run mode: zero API calls, placeholder IDs returned.
 
@@ -22,6 +24,17 @@ Note on label strategy:
   Issue types (epic, story, task, bug, etc.) are applied as labels so that Linear's
   issue list can be filtered by type. All type labels plus any explicit labels from
   the YAML are resolved to IDs and combined into a single labelIds list per issue.
+
+Note on relation strategy:
+  Both epic.blocks and story.blocks are resolved in a second pass after the full
+  issue tree is created. This allows cross-epic references (A in epic-1 blocks B in
+  epic-2) to be resolved correctly. Unresolvable names are logged as warnings and
+  skipped without failing the build.
+
+  Order:
+    1. Create all epics → stories → tasks (first pass).
+    2. Create epic-level 'blocks' relations (second pass).
+    3. Create story-level 'blocks' relations (third pass).
 """
 
 from __future__ import annotations
@@ -186,6 +199,18 @@ def build_project(
         if flush_path is not None:
             _flush_mapping(mapping, flush_path)
 
+    # ------------------------------------------------------------------
+    # Step 4: Create epic-level 'blocks' relations — second pass.
+    # All epics are in mapping["epics"]; resolve epic.blocks references.
+    # ------------------------------------------------------------------
+    _create_all_epic_relations(project, mapping["epics"], client, dry_run)
+
+    # ------------------------------------------------------------------
+    # Step 5: Create story-level 'blocks' relations — third pass.
+    # All stories are in mapping["stories"]; resolve story.blocks references.
+    # ------------------------------------------------------------------
+    _create_all_story_relations(project, mapping["stories"], client, dry_run)
+
     return mapping
 
 
@@ -310,7 +335,7 @@ def _create_task(
         return f"{_DRY_RUN_PREFIX}:task:{_slug(task.name)}"
     return client.create_issue(
         title=task.name,
-        description=task.description,
+        description=_compose_task_description(task),
         project_id=project_id,
         parent_id=story_id,
         priority=task.priority,
@@ -321,6 +346,101 @@ def _create_task(
         state_id=state_id,
         links=[{"url": l.url, "title": l.title} for l in task.links] or None,
     )
+
+
+# ---------------------------------------------------------------------------
+# Relation helpers
+# ---------------------------------------------------------------------------
+
+
+def _create_all_epic_relations(
+    project: ProjectModel,
+    epic_name_to_id: dict[str, str],
+    client: LinearClient,
+    dry_run: bool,
+) -> None:
+    """
+    Create 'blocks' relations in Linear for all epics that declare epic.blocks.
+
+    Runs as a second pass after the full build so that all epic IDs are available.
+    Unresolvable epic names are logged as warnings and skipped.
+    """
+    for epic in project.epics:
+        if not epic.blocks:
+            continue
+        blocker_id = epic_name_to_id.get(epic.name)
+        if blocker_id is None:
+            logger.warning(
+                "Cannot create relations for epic '%s': ID not in mapping.",
+                epic.name,
+            )
+            continue
+        for blocked_name in epic.blocks:
+            blocked_id = epic_name_to_id.get(blocked_name)
+            if blocked_id is None:
+                logger.warning(
+                    "Epic '%s' blocks '%s', but '%s' was not found in the "
+                    "epic mapping. Skipping this relation.",
+                    epic.name, blocked_name, blocked_name,
+                )
+                continue
+            if dry_run:
+                logger.info(
+                    "[DRY-RUN] Would create relation: epic '%s' blocks epic '%s'.",
+                    epic.name, blocked_name,
+                )
+            else:
+                client.create_issue_relation(
+                    issue_id=blocker_id,
+                    related_issue_id=blocked_id,
+                    relation_type="blocks",
+                )
+
+
+def _create_all_story_relations(
+    project: ProjectModel,
+    story_name_to_id: dict[str, str],
+    client: LinearClient,
+    dry_run: bool,
+) -> None:
+    """
+    Create 'blocks' relations in Linear for all stories that declare story.blocks.
+
+    Runs as a second pass after the full build so that cross-epic references
+    (story in epic-1 blocks story in epic-2) are always resolvable.
+    Unresolvable story names are logged as warnings and skipped.
+    """
+    for epic in project.epics:
+        for story in epic.stories:
+            if not story.blocks:
+                continue
+            blocker_id = story_name_to_id.get(story.name)
+            if blocker_id is None:
+                logger.warning(
+                    "Cannot create relations for story '%s': ID not in mapping.",
+                    story.name,
+                )
+                continue
+            for blocked_name in story.blocks:
+                blocked_id = story_name_to_id.get(blocked_name)
+                if blocked_id is None:
+                    logger.warning(
+                        "Story '%s' blocks '%s', but '%s' was not found in the "
+                        "story mapping. Skipping this relation.",
+                        story.name, blocked_name, blocked_name,
+                    )
+                    continue
+                if dry_run:
+                    logger.info(
+                        "[DRY-RUN] Would create relation: '%s' blocks '%s'.",
+                        story.name, blocked_name,
+                    )
+                else:
+                    client.create_issue_relation(
+                        issue_id=blocker_id,
+                        related_issue_id=blocked_id,
+                        relation_type="blocks",
+                    )
 
 
 # ---------------------------------------------------------------------------
@@ -428,6 +548,24 @@ def _compose_story_description(story: StoryModel) -> str:
 
     if story.acceptance_criteria and story.acceptance_criteria.strip():
         parts.append("## Acceptance Criteria\n\n" + story.acceptance_criteria.strip())
+
+    return "\n\n".join(parts)
+
+
+def _compose_task_description(task: TaskModel) -> str:
+    """
+    Build a full Markdown issue body for a task.
+
+    Renders the base description first, then appends the done_criteria block
+    under a '## Done Criteria' heading when present.
+    """
+    parts: list[str] = []
+
+    if task.description:
+        parts.append(task.description.strip())
+
+    if task.done_criteria and task.done_criteria.strip():
+        parts.append("## Done Criteria\n\n" + task.done_criteria.strip())
 
     return "\n\n".join(parts)
 

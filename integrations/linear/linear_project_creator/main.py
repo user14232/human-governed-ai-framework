@@ -2,7 +2,7 @@
 CLI entry point for the Linear project creator.
 
 Usage:
-    python main.py <yaml_file> [--dry-run] [--verbose] [--output <path>]
+    python main.py <yaml_file> [--dry-run] [--verbose] [--output <path>] [--lint-mode <mode>]
 
 Arguments:
     yaml_file           Path to the YAML project definition file.
@@ -12,6 +12,7 @@ Options:
     --verbose           Set log level to DEBUG (default: INFO).
     --output <path>     Path for the output mapping JSON file.
                         Default: linear_mapping.json in the current directory.
+    --lint-mode <mode>  Work item lint behavior: enforce (default) or warn.
 
 Exit codes:
     0  All objects created successfully (or dry-run completed successfully).
@@ -34,6 +35,7 @@ from config import load_config
 from linear_client import LinearAPIError, LinearClient
 from models import ProjectModel
 from project_builder import build_project
+from work_item_linter import LintViolation, lint_project
 from yaml_parser import parse_yaml
 
 
@@ -89,6 +91,16 @@ def _build_parser() -> argparse.ArgumentParser:
         default="linear_mapping.json",
         help="Output path for the Linear ID mapping file (default: linear_mapping.json).",
     )
+    parser.add_argument(
+        "--lint-mode",
+        choices=("enforce", "warn"),
+        default="enforce",
+        help=(
+            "Work item quality lint mode: "
+            "'enforce' (default) blocks execution on violations, "
+            "'warn' logs violations and continues."
+        ),
+    )
     return parser
 
 
@@ -117,6 +129,27 @@ def _print_summary(mapping: dict, dry_run: bool) -> None:
             print(f"    {issue_id}  {name}")
 
     print()
+
+
+def _report_lint_violations(violations: list[LintViolation], lint_mode: str) -> None:
+    is_warn_mode = lint_mode == "warn"
+    level_fn = logger.warning if is_warn_mode else logger.error
+    level_fn(
+        "Work item quality check failed: %d violation(s) detected.", len(violations)
+    )
+    for v in violations:
+        level_fn("  [%s] %s — %s", v.rule_id, v.context, v.message)
+    if is_warn_mode:
+        logger.warning(
+            "Proceeding despite lint violations because --lint-mode=warn was specified. "
+            "Revise these work items before submitting to the DevOS planning pipeline."
+        )
+    else:
+        logger.error(
+            "Revise the YAML file to satisfy the work item contract before running again. "
+            "Contract reference: contracts/work_item_contract.md  "
+            "Linter rules: contracts/work_item_linter_rules.md"
+        )
 
 
 def _write_mapping(mapping: dict, output_path: Path) -> None:
@@ -158,6 +191,20 @@ def main(argv: list[str] | None = None) -> int:
         project.name,
         len(project.epics),
     )
+
+    # ------------------------------------------------------------------
+    # Step 1.5: Work item quality lint — semantic validation against the
+    # work item contract (contracts/work_item_linter_rules.md).
+    # Runs before any API call; violations block execution in enforce mode.
+    # ------------------------------------------------------------------
+    logger.info("Running work item quality lint.")
+    lint_violations = lint_project(project)
+    if lint_violations:
+        _report_lint_violations(lint_violations, lint_mode=args.lint_mode)
+        if args.lint_mode == "enforce":
+            return 1
+    else:
+        logger.info("Work item quality lint passed — no violations.")
 
     # ------------------------------------------------------------------
     # Step 2: Load config — required even in dry-run so the user sees
