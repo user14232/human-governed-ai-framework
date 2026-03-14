@@ -1,0 +1,35 @@
+stages:
+  - verify
+
+default:
+  image: python:3.12.8-slim
+  variables:
+    PIP_DISABLE_PIP_VERSION_CHECK: "1"
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+    PYTHONDONTWRITEBYTECODE: "1"
+    PYTHONHASHSEED: "0"
+  before_script:
+    - python --version
+    - python -m pip install --upgrade pip
+    - python -m pip install --requirement requirements-runtime-tests.txt
+    - mkdir -p ci_artifacts
+  cache:
+    key:
+      files:
+        - requirements-runtime-tests.txt
+    paths:
+      - .cache/pip
+  artifacts:
+    when: always
+    expire_in: 14 days
+    paths:
+      - ci_artifacts/
+
+runtime_verify:
+  stage: verify
+  rules:
+    - if: $CI_PIPELINE_SOURCE
+  script:
+    - python -m compileall runtime tests > ci_artifacts/compileall.log 2>&1
+    - python -m unittest discover -s tests/unit -p "test_*.py" -v > ci_artifacts/unit.log 2>&1
+    - python -m unittest discover -s tests/integration -p "test_*.py" -v > ci_artifacts/integration.log 2>&1
