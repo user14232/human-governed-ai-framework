@@ -50,6 +50,15 @@ class RuntimeCliTest(unittest.TestCase):
             )
             change_intent = root / "change_intent.yaml"
             change_intent.write_text("id: CI-1\n", encoding="utf-8")
+            # Prepare required inputs so INIT deterministically advances to PLANNING on resume fallback.
+            for name in (
+                "domain_scope.md",
+                "domain_rules.md",
+                "source_policy.md",
+                "glossary.md",
+                "architecture_contract.md",
+            ):
+                (root / name).write_text("ok", encoding="utf-8")
 
             evaluator = PassEvaluator()
             cli = RuntimeCLI(evaluator=evaluator)
@@ -58,14 +67,14 @@ class RuntimeCliTest(unittest.TestCase):
             self.assertEqual(run_ctx.current_state, "INIT")
 
             status = cli.status(root, run_ctx.run_id, "default_workflow")
-            self.assertEqual(status["current_state"], "INIT")
+            self.assertEqual(status["current_state"], "PLANNING")
 
             check = cli.check(root, run_ctx.run_id, "default_workflow")
             self.assertEqual(check["gate_result"], "pass")
 
             advance = cli.advance(root, run_ctx.run_id, "default_workflow")
             self.assertEqual(advance["result"], "transitioned")
-            self.assertEqual(advance["state"], "PLANNING")
+            self.assertEqual(advance["state"], "ARCH_CHECK")
             self.assertGreaterEqual(evaluator.calls, 2)
 
     def test_main_check_works_without_manual_evaluator_injection(self) -> None:

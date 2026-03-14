@@ -1,0 +1,134 @@
+{
+  "simulation_contract": {
+    "responsibility": "Deterministic end-to-end workflow replay with explicit quality checks.",
+    "inputs": {
+      "workflow_name": "default_workflow",
+      "target_terminal_state": "ACCEPTED",
+      "induce_planning_block": true
+    },
+    "outputs": {
+      "run_id": "RUN-20260314-0001",
+      "run_metrics_path": "C:\\Users\\phili\\workspace\\human-governed-ai-framework\\examples\\manual_runtime_exploration\\default_workflow_accept\\runs\\RUN-20260314-0001\\artifacts\\run_metrics.json",
+      "report_path": "C:\\Users\\phili\\workspace\\human-governed-ai-framework\\examples\\manual_runtime_exploration\\default_workflow_accept\\runs\\RUN-20260314-0001\\artifacts\\simulation_report.json"
+    },
+    "assumptions": [
+      "Artifact schemas are copied from template project.",
+      "Agent invocations run in human_as_agent mode for reproducibility.",
+      "Decision approvals are explicit and append-only."
+    ]
+  },
+  "result": {
+    "pass": true,
+    "terminal_state": "ACCEPTED",
+    "transition_count": 8,
+    "blocked_count": 1
+  },
+  "checks": [
+    {
+      "id": "CHK-001",
+      "name": "target_terminal_reached",
+      "pass": true,
+      "evidence": {
+        "current_state": "ACCEPTED",
+        "target": "ACCEPTED"
+      }
+    },
+    {
+      "id": "CHK-002",
+      "name": "required_event_types_present",
+      "pass": true,
+      "evidence": {
+        "missing": [],
+        "present_count": 10
+      }
+    },
+    {
+      "id": "CHK-003",
+      "name": "planning_block_observed",
+      "pass": true,
+      "evidence": {
+        "blocked_trace": [
+          {
+            "state": "PLANNING",
+            "reason": "planning_gate_without_artifacts"
+          }
+        ]
+      }
+    },
+    {
+      "id": "CHK-004",
+      "name": "invocation_event_balance",
+      "pass": true,
+      "evidence": {
+        "started_events": 7,
+        "completed_events": 7,
+        "invocation_records": 7
+      }
+    },
+    {
+      "id": "CHK-005",
+      "name": "causation_links_resolve",
+      "pass": true,
+      "evidence": {
+        "event_count": 46
+      }
+    },
+    {
+      "id": "CHK-006",
+      "name": "artifact_hashes_present",
+      "pass": true,
+      "evidence": {
+        "artifact_created_events": 8
+      }
+    },
+    {
+      "id": "CHK-007",
+      "name": "decision_events_match_decisions",
+      "pass": true,
+      "evidence": {
+        "decision_events": 3,
+        "decision_entries": 3
+      }
+    }
+  ],
+  "transition_trace": [
+    {
+      "from": "INIT",
+      "to": "PLANNING"
+    },
+    {
+      "from": "PLANNING",
+      "to": "ARCH_CHECK"
+    },
+    {
+      "from": "ARCH_CHECK",
+      "to": "TEST_DESIGN"
+    },
+    {
+      "from": "TEST_DESIGN",
+      "to": "BRANCH_READY"
+    },
+    {
+      "from": "BRANCH_READY",
+      "to": "IMPLEMENTING"
+    },
+    {
+      "from": "IMPLEMENTING",
+      "to": "TESTING"
+    },
+    {
+      "from": "TESTING",
+      "to": "REVIEWING"
+    },
+    {
+      "from": "REVIEWING",
+      "to": "ACCEPTED"
+    }
+  ],
+  "blocked_trace": [
+    {
+      "state": "PLANNING",
+      "reason": "planning_gate_without_artifacts"
+    }
+  ]
+}

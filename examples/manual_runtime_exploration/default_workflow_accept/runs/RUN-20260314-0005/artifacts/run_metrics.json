@@ -1,0 +1,34 @@
+{
+  "run_metadata": {},
+  "events": [
+    {
+      "event_id": "EVT-RUN202603140005-0001",
+      "event_type": "run.started",
+      "run_id": "RUN-20260314-0005",
+      "timestamp": "2026-03-14T19:39:49.290797+00:00",
+      "producer": "runtime",
+      "workflow_state": "RELEASE_INIT",
+      "causation_event_id": null,
+      "correlation_id": "RUN-20260314-0005",
+      "payload": {
+        "workflow_id": "release_workflow",
+        "change_intent_id": "unknown",
+        "project_inputs": []
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603140005-0002",
+      "event_type": "run.resumed",
+      "run_id": "RUN-20260314-0005",
+      "timestamp": "2026-03-14T19:45:02.886716+00:00",
+      "producer": "runtime",
+      "workflow_state": "RELEASED",
+      "causation_event_id": null,
+      "correlation_id": "RUN-20260314-0005",
+      "payload": {
+        "resumed": true
+      }
+    }
+  ],
+  "invocation_records": []
+}

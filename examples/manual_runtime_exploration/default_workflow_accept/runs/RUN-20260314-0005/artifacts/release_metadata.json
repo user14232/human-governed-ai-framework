@@ -1,0 +1,25 @@
+{
+  "id": "RM-0005",
+  "supersedes_id": null,
+  "created_at": "2026-03-14T20:54:00Z",
+  "run_id": "RUN-20260314-0005",
+  "inputs": {
+    "review_result_ref": "RR-0005",
+    "review_result_hash": null,
+    "test_report_run_id": "RUN-20260314-0005",
+    "implementation_plan_id": "IP-0001"
+  },
+  "artifacts": [
+    {
+      "name": "review_result.md",
+      "ref": "RR-0005",
+      "hash": null
+    }
+  ],
+  "environment": {
+    "os": "win32",
+    "tool_versions": {
+      "python": "3.14"
+    }
+  }
+}

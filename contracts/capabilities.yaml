@@ -48,22 +48,22 @@ capabilities:
 
   work_item_authoring:
     purpose: >
-      Generate a well-formed Linear project definition YAML from a human-authored
+      Generate a well-formed DevOS planning artifact YAML from a human-authored
       project brief, satisfying the Work Item Contract and passing all linter rules.
-      Output is validated deterministically by yaml_parser.py (structural) and
-      work_item_linter.py (semantic) before any API call is made.
+      Output is validated deterministically by the DevOS planning parser (structural)
+      and deterministic planning linter (semantic) before any integration sync.
     inputs:
       - project_brief: "<unstructured human text>"
-      - template: "integrations/linear/linear_project_creator/templates/template.yaml"
-      - quality_contract: "integrations/linear/linear_project_creator/contracts/work_item_contract.md"
-      - linter_rules: "integrations/linear/linear_project_creator/contracts/work_item_linter_rules.md"
-      - epic_prompt: "integrations/linear/linear_project_creator/prompts/epic_generation_prompt.md"
-      - story_prompt: "integrations/linear/linear_project_creator/prompts/story_generation_prompt.md"
-      - story_checklist: "integrations/linear/linear_project_creator/quality/story_quality_checklist.md"
-      - task_checklist: "integrations/linear/linear_project_creator/quality/task_quality_checklist.md"
+      - template: ".devOS/planning/project_plan.yaml"
+      - quality_contract: "devos/planning/contracts/work_item_contract.md"
+      - linter_rules: "devos/planning/contracts/work_item_linter_rules.md"
+      - epic_prompt: "devos/planning/prompts/epic_generation_prompt.md"
+      - story_prompt: "devos/planning/prompts/story_generation_prompt.md"
+      - story_checklist: "devos/planning/quality/story_quality_checklist.md"
+      - task_checklist: "devos/planning/quality/task_quality_checklist.md"
     outputs:
-      - "<project_slug>.yaml"
-    validation_gate: "python integrations/linear/linear_project_creator/main.py <output.yaml> --dry-run --lint-mode enforce"
+      - ".devOS/planning/project_plan.yaml"
+    validation_gate: "python -m devos.planning.cli sync linear .devOS/planning/project_plan.yaml --dry-run --lint-mode enforce"
     constraints:
       - must_not_prescribe_implementation: true
       - must_not_invent_requirements: true
@@ -75,5 +75,5 @@ assumptions_and_tradeoffs:
   - Capability agents are optional and project-owned.
   - Framework agents may consume capability outputs only via artifacts.
   - The work_item_authoring capability is a pre-workflow integration utility.
-    Its output (a YAML file) is the upstream input to the linear_project_creator tool,
-    not a framework governance artifact.
+    Its output is the repository planning artifact (.devOS/planning/project_plan.yaml),
+    which can optionally be synchronized to external trackers like Linear.

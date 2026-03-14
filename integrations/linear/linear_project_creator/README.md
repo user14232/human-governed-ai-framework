@@ -1,6 +1,10 @@
 # linear_project_creator
 
-A Python CLI tool that creates a full project hierarchy in Linear (project → epics → stories → tasks) from a YAML definition file using the Linear GraphQL API.
+DevOS planning CLI and optional Linear sync adapter.
+
+The repository planning artifact (`.devOS/planning/project_plan.yaml`) is the
+source of truth. This tool validates that artifact deterministically, then
+optionally projects it to Linear (project → epics → stories → tasks).
 
 ---
 
@@ -70,14 +74,14 @@ $env:LINEAR_TEAM_ID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 ## Usage
 
 ```
-python main.py <YAML_FILE> [--dry-run] [--verbose] [--output <path>] [--lint-mode <enforce|warn>]
+python main.py [PROJECT_PLAN] [--dry-run] [--verbose] [--output <path>] [--lint-mode <enforce|warn>]
 ```
 
 ### Arguments
 
 | Argument      | Description                                              |
 |---------------|----------------------------------------------------------|
-| `YAML_FILE`   | Path to the project definition YAML file.                |
+| `PROJECT_PLAN`| Path to DevOS planning artifact YAML (default: `.devOS/planning/project_plan.yaml`; legacy fallback: `.devos/planning/project_plan.yaml`). |
 | `--dry-run`   | Log all actions without making any Linear API calls.     |
 | `--verbose`   | Enable DEBUG-level logging.                              |
 | `--output`    | Path for the output mapping JSON (default: `linear_mapping.json`). |
@@ -85,16 +89,16 @@ python main.py <YAML_FILE> [--dry-run] [--verbose] [--output <path>] [--lint-mod
 
 ### Examples
 
-**Dry-run against the canonical template:**
+**Dry-run against canonical DevOS planning artifact:**
 
 ```powershell
-python main.py templates/template.yaml --dry-run --verbose --lint-mode enforce
+python main.py .devOS/planning/project_plan.yaml --dry-run --verbose --lint-mode enforce
 ```
 
-**Create the project for real:**
+**Validate then sync to Linear for real:**
 
 ```powershell
-python main.py my_project.yaml --output my_mapping.json --lint-mode enforce
+python main.py .devOS/planning/project_plan.yaml --output my_mapping.json --lint-mode enforce
 ```
 
 ---
@@ -422,7 +426,10 @@ A machine-readable run report is written alongside the mapping file (e.g.
 
 ```
 linear_project_creator/
-├── main.py                # CLI entry point; writes mapping + run report
+├── main.py                # Planning validation + optional Linear projection
+├── planning_engine.py     # Tool-agnostic parsing + deterministic linting
+├── linear_provider.py     # Linear WorkItemProvider adapter
+├── work_item_provider.py  # External integration adapter interface
 ├── linear_client.py       # GraphQL HTTP client; includes create_issue_relation()
 ├── project_builder.py     # Orchestration: project → epics → stories → tasks → relations
 │                          # Returns (mapping, BuildStats) with creation counters

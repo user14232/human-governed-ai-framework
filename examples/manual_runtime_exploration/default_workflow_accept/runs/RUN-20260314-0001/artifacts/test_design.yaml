@@ -1,0 +1,21 @@
+id: TD-001
+created_at: '2026-01-01T00:00:00+00:00'
+inputs:
+  implementation_plan_id: PLAN-001
+  domain_rules_ref: domain_rules.md
+test_cases:
+- id: TC-001
+  title: Workflow gate pass path
+  purpose: Validate deterministic transition progression.
+  maps_to:
+    plan_items:
+    - P-001
+    domain_rules:
+    - DR-001
+  type: integration
+  steps:
+  - run simulation
+  - validate transition events
+  expected_result: All required transitions are emitted.
+coverage_notes:
+- Covers state progression and event emission.

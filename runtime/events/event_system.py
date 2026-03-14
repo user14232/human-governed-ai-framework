@@ -38,14 +38,9 @@ class EventSystem:
             payload=payload,
         )
         self._validate_envelope(envelope)
-        section = (
-            "invocation_records"
-            if event_type in {EventType.AGENT_INVOCATION_STARTED, EventType.AGENT_INVOCATION_COMPLETED}
-            else "events"
-        )
         payload_dict = asdict(envelope)
         payload_dict["event_type"] = envelope.event_type.value
-        metrics_writer.append_event(run_metrics_path, payload_dict, section)
+        metrics_writer.append_event(run_metrics_path, payload_dict, "events")
         return envelope
 
     def last_event_id(self, run_metrics_path: Path) -> str | None:

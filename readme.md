@@ -391,6 +391,21 @@ Cursor is currently used as:
 
 ---
 
+## Planning Layer (Pre-Workflow)
+
+DevOS also includes a deterministic planning package for repository-owned work breakdowns:
+
+- package: `devos/planning/`
+- canonical artifact: `.devOS/planning/project_plan.yaml`
+- compatibility fallback: `.devos/planning/project_plan.yaml`
+- gate behavior: parse + lint before any optional external sync
+
+This layer is upstream of delivery workflow execution and produces validated planning
+inputs that can be projected to external systems (for example Linear) without making
+those systems the source of truth.
+
+---
+
 ## Repository Structure
 
 The repository is organized into five conceptual layers:
@@ -450,6 +465,15 @@ human-governed-ai-framework/
 │       ├─ *.schema.yaml
 │       ├─ *.schema.json
 │       └─ *.schema.md
+│
+├─ devos/
+│   └─ planning/                          # Deterministic planning package (pre-workflow)
+│       ├─ cli.py
+│       ├─ planning_engine.py
+│       ├─ planning_parser.py
+│       ├─ planning_models.py
+│       ├─ work_item_linter.py
+│       └─ work_item_provider.py
 │
 │  Layer 5 — Observability & Knowledge
 │  (docs/event_model.md, docs/knowledge_query_contract.md)
@@ -526,3 +550,4 @@ Key normative references:
 | --- | --- | --- |
 | v1 | 2026-03-12 | Corrected decision_log.yaml location reference to point to per-run normative path. Updated repository structure and v1.1 component status. Added key normative references section. |
 | v1.1 | 2026-03-14 | Architecture alignment refactor. Re-titled as DevOS. Added System Overview and OS Mental Model sections. Updated repository structure to reflect documentation layers. |
+| v1.2 | 2026-03-14 | Added explicit Planning Layer documentation (`devos/planning`) with deterministic input/output contracts and canonical `.devOS` artifact path. |

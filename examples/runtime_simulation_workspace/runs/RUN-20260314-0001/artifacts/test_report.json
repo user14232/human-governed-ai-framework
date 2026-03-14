@@ -1,0 +1,23 @@
+{
+  "run_id": "RUN-20260314-0001",
+  "created_at": "2026-01-01T00:00:00+00:00",
+  "inputs": {
+    "test_design_id": "TD-001"
+  },
+  "environment": {
+    "os": "windows",
+    "tool_versions": {
+      "python": "3.x"
+    }
+  },
+  "selection": {
+    "mode": "all",
+    "definition": "deterministic simulation scope"
+  },
+  "results": {
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "failures": []
+  }
+}

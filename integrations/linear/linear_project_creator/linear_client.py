@@ -27,7 +27,10 @@ from typing import Any
 
 import requests
 
-from config import Config
+try:
+    from .config import Config
+except ImportError:  # pragma: no cover - script execution fallback
+    from config import Config
 
 logger = logging.getLogger(__name__)
 

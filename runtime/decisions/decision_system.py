@@ -11,7 +11,7 @@ from runtime.store import file_store
 from runtime.store.run_store import run_metrics_path
 from runtime.types.artifact import ArtifactHash, ArtifactId, ArtifactRef, ArtifactSchema
 from runtime.types.decision import DecisionEntry, DecisionReference, DecisionType
-from runtime.types.event import EventType
+from runtime.types.event import EventEnvelope, EventType
 from runtime.types.run import RunContext
 
 
@@ -80,25 +80,97 @@ class DecisionSystem:
         _ = schemas  # schema-dependent content checks are out of scope for decision parsing.
         new_entries = self.get_new_entries(decision_log_path, last_known_count)
         signals: list[DecisionSignal] = []
+        metrics_path = run_metrics_path(ctx.run_dir)
+        last_event_id = self._events.last_event_id(metrics_path) if self._events is not None else None
 
         for entry in new_entries:
+            signal = self._signal_from_entry(entry)
+            decision_event: EventEnvelope | None = None
             if self._events is not None:
-                self._events.emit(
-                    run_metrics_path=run_metrics_path(ctx.run_dir),
+                decision_event = self._events.emit(
+                    run_metrics_path=metrics_path,
                     run_id=ctx.run_id,
                     event_type=EventType.DECISION_RECORDED,
                     producer="human",
                     workflow_state=ctx.current_state,
-                    causation_event_id=None,
+                    causation_event_id=last_event_id,
                     payload={
                         "decision_id": entry.decision_id,
                         "decision": entry.decision.value,
                         "scope": entry.scope,
+                        "derived_signal": signal.signal_type.value,
                         "reference_count": len(entry.references),
+                        "artifact_refs": [
+                            {
+                                "artifact": ref.artifact,
+                                "artifact_id": ref.artifact_id,
+                                "artifact_hash": ref.artifact_hash,
+                            }
+                            for ref in entry.references
+                        ],
                     },
                 )
-            signals.append(self._signal_from_entry(entry))
+                last_event_id = decision_event.event_id
+                followup_event = self._emit_signal_event(
+                    ctx=ctx,
+                    signal=signal,
+                    causation_event_id=last_event_id,
+                )
+                if followup_event is not None:
+                    last_event_id = followup_event.event_id
+            signals.append(signal)
         return signals
+
+    def _emit_signal_event(
+        self,
+        ctx: RunContext,
+        signal: DecisionSignal,
+        causation_event_id: str | None,
+    ) -> EventEnvelope | None:
+        if self._events is None:
+            return None
+        metrics_path = run_metrics_path(ctx.run_dir)
+        if signal.signal_type is SignalType.REWORK:
+            artifact_name = signal.artifact_ref.name if signal.artifact_ref is not None else None
+            artifact_id = signal.artifact_ref.artifact_id if signal.artifact_ref is not None else None
+            artifact_hash = signal.artifact_ref.artifact_hash if signal.artifact_ref is not None else None
+            return self._events.emit(
+                run_metrics_path=metrics_path,
+                run_id=ctx.run_id,
+                event_type=EventType.RUN_REWORK_STARTED,
+                producer="runtime",
+                workflow_state=ctx.current_state,
+                causation_event_id=causation_event_id,
+                payload={
+                    "decision_id": signal.entry.decision_id,
+                    "scope": signal.entry.scope,
+                    "reason": "reject_decision",
+                    "artifact_name": artifact_name,
+                    "artifact_id": artifact_id,
+                    "artifact_hash": artifact_hash,
+                },
+            )
+        if signal.signal_type is SignalType.DEFERRED:
+            return self._events.emit(
+                run_metrics_path=metrics_path,
+                run_id=ctx.run_id,
+                event_type=EventType.RUN_BLOCKED,
+                producer="runtime",
+                workflow_state=ctx.current_state,
+                causation_event_id=causation_event_id,
+                payload={
+                    "blocked_at_state": ctx.current_state,
+                    "blocking_reason": "deferred_decision",
+                    "missing_artifacts": [],
+                    "missing_approvals": [],
+                    "failed_conditions": [],
+                    "deferred_decision": {
+                        "decision_id": signal.entry.decision_id,
+                        "scope": signal.entry.scope,
+                    },
+                },
+            )
+        return None
 
     def find_approval(
         self,

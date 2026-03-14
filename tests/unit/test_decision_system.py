@@ -77,8 +77,22 @@ class DecisionSystemTest(unittest.TestCase):
             self.assertIsNone(signals[2].artifact_ref)
 
             metrics = json.loads(run_metrics_path(ctx.run_dir).read_text(encoding="utf-8"))
-            self.assertEqual(len(metrics["events"]), 3)
-            self.assertTrue(all(e["event_type"] == "decision.recorded" for e in metrics["events"]))
+            event_types = [event["event_type"] for event in metrics["events"]]
+            self.assertEqual(
+                event_types,
+                [
+                    "decision.recorded",
+                    "decision.recorded",
+                    "run.rework_started",
+                    "decision.recorded",
+                    "run.blocked",
+                ],
+            )
+            # Causation chain is explicit: follow-up events reference their decision.recorded cause.
+            self.assertEqual(metrics["events"][2]["causation_event_id"], metrics["events"][1]["event_id"])
+            self.assertEqual(metrics["events"][4]["causation_event_id"], metrics["events"][3]["event_id"])
+            self.assertEqual(metrics["events"][2]["payload"]["reason"], "reject_decision")
+            self.assertEqual(metrics["events"][4]["payload"]["blocking_reason"], "deferred_decision")
 
     def test_get_new_entries_returns_empty_when_no_new_items(self) -> None:
         with tempfile.TemporaryDirectory() as td:

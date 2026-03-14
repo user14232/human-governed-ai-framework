@@ -1,0 +1,48 @@
+schema_id: implementation_plan
+version: v1
+artifact_name: implementation_plan.yaml
+
+responsibility: >
+  Provide an auditable, stepwise plan to implement `change_intent.yaml` under the architecture contract.
+
+owner_roles:
+  - agent_planner
+allowed_readers:
+  - human
+  - agent_orchestrator
+  - agent_architecture_guardian
+  - agent_test_designer
+  - agent_implementer
+  - agent_reviewer
+
+write_policy:
+  mutability: versioned
+  overwrite_allowed: false
+
+required_fields:
+  - id: "<stable-string-id>"
+  - supersedes_id: "<id-of-prior-version-or-null>"
+  - created_at: "<iso-8601>"
+  - inputs:
+      change_intent_id: "<string>"
+      architecture_contract_ref: "<string>"
+  - plan_items:
+      - id: "<stable-item-id>"
+        title: "<string>"
+        description: "<string>"
+        dependencies: ["<item-id>", "..."]
+        outputs: ["<artifact or code change summary>", "..."]
+        constraints: ["<string>", "..."]
+  - non_goals: ["<string>", "..."]
+  - risks: ["<string>", "..."]
+
+determinism_requirements:
+  - plan_item_ids_stable: true
+  - all_assumptions_explicit: true
+  - traceable_to_change_intent: true
+  - supersedes_id_required_on_revision: true
+
+change_log:
+  - version: v1
+    date: "2026-03-12"
+    change: "Initial version. Added supersedes_id to required_fields for versioning consistency with runtime_contract.md Section 3 (AC-02)."

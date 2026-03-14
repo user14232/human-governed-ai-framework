@@ -1,0 +1,35 @@
+schema_version: v1
+decisions:
+- decision_id: DEC-0001
+  timestamp: '2026-01-01T00:11:00+00:00'
+  human_identity: human.simulation@example.local
+  decision: approve
+  scope: gate_approval:implementation_plan.yaml
+  references:
+  - artifact: implementation_plan.yaml
+    artifact_id: PLAN-001
+    artifact_hash: 378237b633d435ca9223a92e6f0f9ec46583393af1d4bcc51a84fa0e4cd4951a
+  rationale: Deterministic simulation approval.
+  supersedes_decision_id: null
+- decision_id: DEC-0002
+  timestamp: '2026-01-01T00:12:00+00:00'
+  human_identity: human.simulation@example.local
+  decision: approve
+  scope: gate_approval:design_tradeoffs.md
+  references:
+  - artifact: design_tradeoffs.md
+    artifact_id: DT-001
+    artifact_hash: 4c095a07268737ba2d97b97862219e7d00ae16cb2106bd26649e11d08c2215e7
+  rationale: Deterministic simulation approval.
+  supersedes_decision_id: null
+- decision_id: DEC-0003
+  timestamp: '2026-01-01T00:13:00+00:00'
+  human_identity: human.simulation@example.local
+  decision: approve
+  scope: gate_approval:test_design.yaml
+  references:
+  - artifact: test_design.yaml
+    artifact_id: TD-001
+    artifact_hash: 68b72f5b6cd2efe13f0da01baf5885d25e7f3d42e12747272e547ddc07947def
+  rationale: Deterministic simulation approval.
+  supersedes_decision_id: null

@@ -1,0 +1,60 @@
+schema_id: change_intent
+version: v1
+artifact_name: change_intent.yaml
+
+responsibility: >
+  Capture the human-approved intent of a change without embedding implementation details.
+
+owner_roles:
+  - human
+allowed_readers:
+  - agent_orchestrator
+  - agent_planner
+  - agent_architecture_guardian
+  - agent_test_designer
+  - agent_implementer
+  - agent_reviewer
+
+write_policy:
+  mutability: immutable_preferred
+  overwrite_allowed: false
+  notes: >
+    If changed, create a new versioned artifact (project convention).
+
+required_fields:
+  - id: "<stable-string-id>"
+  - created_at: "<iso-8601>"
+  - requested_by: "<string>"
+  - summary: "<string>"
+  - scope:
+      in_scope: ["<string>", "..."]
+      out_of_scope: ["<string>", "..."]
+  - constraints:
+      must_haves: ["<string>", "..."]
+      must_not: ["<string>", "..."]
+  - acceptance_criteria: ["<string>", "..."]
+  - references:
+      - name: "<string>"
+        location: "<string>" # file path or link
+
+optional_fields:
+  - supersedes_run_id: "<prior-run-id-or-null>"
+    notes: >
+      Set when this intent starts a new delivery run that replaces a FAILED prior run
+      (see runtime_contract.md Section 8.1). Null for first-time intents.
+  - improvement_proposal_ref: "<improvement-proposal-id-or-null>"
+    notes: >
+      Set when this intent was produced as the output of an approved improvement cycle
+      (see improvement_cycle.yaml outputs and runtime_contract.md Section 9).
+      Null for human-originated intents.
+
+determinism_requirements:
+  - id_must_be_stable: true
+  - no_hidden_state: true
+  - no_implicit_scope_expansion: true
+  - cross_run_fields_must_be_explicit: true
+
+change_log:
+  - version: v1
+    date: "2026-03-12"
+    change: "Added optional_fields: supersedes_run_id and improvement_proposal_ref for cross-run traceability (runtime_contract.md Section 8.1 and 9). Added cross_run_fields_must_be_explicit to determinism_requirements."

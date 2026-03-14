@@ -1,11 +1,13 @@
 """
-CLI entry point for the Linear project creator.
+CLI entry point for DevOS planning validation + optional Linear sync.
 
 Usage:
-    python main.py <yaml_file> [--dry-run] [--verbose] [--output <path>] [--lint-mode <mode>]
+    python main.py [project_plan.yaml] [--dry-run] [--verbose] [--output <path>] [--lint-mode <mode>]
+    python main.py planning sync linear [project_plan.yaml] [--dry-run] ...
 
 Arguments:
-    yaml_file           Path to the YAML project definition file.
+    yaml_file           Path to DevOS planning artifact YAML file.
+                        Default: .devos/planning/project_plan.yaml
 
 Options:
     --dry-run           Log what would be created without calling the Linear API.
@@ -32,12 +34,30 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from config import load_config
-from linear_client import LinearAPIError, LinearClient
-from models import ProjectModel
-from project_builder import BuildStats, build_project
-from work_item_linter import LintViolation, lint_project
-from yaml_parser import parse_yaml
+try:
+    from .config import load_config
+    from .linear_client import LinearAPIError, LinearClient
+    from .linear_provider import LinearProvider
+    from .models import ProjectModel
+    from .planning_engine import (
+        DEFAULT_PROJECT_PLAN_PATH,
+        PlanValidationError,
+        PlanningEngine,
+    )
+    from .project_builder import BuildStats
+    from .work_item_linter import LintViolation
+except ImportError:  # pragma: no cover - script execution fallback
+    from config import load_config
+    from linear_client import LinearAPIError, LinearClient
+    from linear_provider import LinearProvider
+    from models import ProjectModel
+    from planning_engine import (
+        DEFAULT_PROJECT_PLAN_PATH,
+        PlanValidationError,
+        PlanningEngine,
+    )
+    from project_builder import BuildStats
+    from work_item_linter import LintViolation
 
 
 # ---------------------------------------------------------------------------
@@ -65,14 +85,21 @@ logger = logging.getLogger(__name__)
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="linear_project_creator",
-        description="Create a Linear project hierarchy from a YAML definition file.",
+        prog="devos_planning",
+        description=(
+            "Validate a DevOS planning artifact and optionally sync it to Linear."
+        ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "yaml_file",
-        metavar="YAML_FILE",
-        help="Path to the project definition YAML file.",
+        metavar="PROJECT_PLAN",
+        nargs="?",
+        default=str(DEFAULT_PROJECT_PLAN_PATH),
+        help=(
+            "Path to DevOS planning artifact YAML file "
+            f"(default: {DEFAULT_PROJECT_PLAN_PATH.as_posix()})."
+        ),
     )
     parser.add_argument(
         "--dry-run",
@@ -102,6 +129,12 @@ def _build_parser() -> argparse.ArgumentParser:
             "'warn' logs violations and continues."
         ),
     )
+    parser.add_argument(
+        "--no-sync",
+        action="store_true",
+        default=False,
+        help="Validate planning artifact only; skip external tool sync.",
+    )
     return parser
 
 
@@ -112,7 +145,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
 def _print_summary(mapping: dict, dry_run: bool) -> None:
     mode_label = " [DRY-RUN]" if dry_run else ""
-    print(f"\n=== Linear Project Creator — Summary{mode_label} ===")
+    print(f"\n=== DevOS Planning Sync — Summary{mode_label} ===")
     print(f"  Project ID  : {mapping['project']}")
     print(f"  Milestones  : {len(mapping.get('milestones', {}))}")
     print(f"  Epics       : {len(mapping['epics'])}")
@@ -220,24 +253,56 @@ def _write_run_report(
 # ---------------------------------------------------------------------------
 
 
+def _normalize_cli_argv(argv: list[str] | None) -> list[str] | None:
+    """
+    Support `devos planning ...` style aliases in this standalone CLI.
+
+    Supported forms:
+      - planning sync linear [PROJECT_PLAN] [flags...]
+      - planning validate [PROJECT_PLAN] [flags...]
+    """
+    if argv is None:
+        return None
+    if argv[:3] == ["planning", "sync", "linear"]:
+        return argv[3:]
+    if argv[:2] == ["planning", "validate"]:
+        remainder = argv[2:]
+        if "--no-sync" not in remainder:
+            remainder = [*remainder, "--no-sync"]
+        return remainder
+    return argv
+
+
 def main(argv: list[str] | None = None) -> int:
+    raw_argv = sys.argv[1:] if argv is None else argv
+    argv = _normalize_cli_argv(raw_argv)
     parser = _build_parser()
     args = parser.parse_args(argv)
 
     _configure_logging(args.verbose)
 
     output_path = Path(args.output).resolve()
+    planning_engine = PlanningEngine()
 
     # ------------------------------------------------------------------
-    # Step 1: Parse YAML input — fail fast, no API calls yet.
+    # Step 1: Parse + validate plan artifact (tool-agnostic planning layer).
     # ------------------------------------------------------------------
-    logger.info("Parsing input file: %s", args.yaml_file)
+    logger.info("Loading planning artifact: %s", args.yaml_file)
     try:
-        project: ProjectModel = parse_yaml(args.yaml_file)
+        validation_result = planning_engine.load_and_validate(
+            plan_path=args.yaml_file,
+            lint_mode=args.lint_mode,
+        )
+        project: ProjectModel = validation_result.project
+        lint_violations = list(validation_result.violations)
     except FileNotFoundError as exc:
         logger.error("%s", exc)
         return 1
-    except (ValueError, Exception) as exc:
+    except PlanValidationError as exc:
+        lint_violations = list(exc.violations)
+        _report_lint_violations(lint_violations, lint_mode=args.lint_mode)
+        return 1
+    except ValueError as exc:
         logger.error("YAML parse error: %s", exc)
         return 1
 
@@ -247,19 +312,14 @@ def main(argv: list[str] | None = None) -> int:
         len(project.epics),
     )
 
-    # ------------------------------------------------------------------
-    # Step 1.5: Work item quality lint — semantic validation against the
-    # work item contract (contracts/work_item_linter_rules.md).
-    # Runs before any API call; violations block execution in enforce mode.
-    # ------------------------------------------------------------------
-    logger.info("Running work item quality lint.")
-    lint_violations = lint_project(project)
     if lint_violations:
         _report_lint_violations(lint_violations, lint_mode=args.lint_mode)
-        if args.lint_mode == "enforce":
-            return 1
     else:
-        logger.info("Work item quality lint passed — no violations.")
+        logger.info("Planning lint passed — no violations.")
+
+    if args.no_sync:
+        logger.info("No-sync mode enabled. Planning validation completed.")
+        return 0
 
     # ------------------------------------------------------------------
     # Step 2: Load config — required even in dry-run so the user sees
@@ -291,17 +351,19 @@ def main(argv: list[str] | None = None) -> int:
             client = None  # type: ignore[assignment]
 
     # ------------------------------------------------------------------
-    # Step 3: Build the project hierarchy.
+    # Step 3: Optional sync projection into Linear.
     # ------------------------------------------------------------------
     logger.info("Starting project build (dry_run=%s).", args.dry_run)
 
     # Pass flush_path so progress is persisted after each epic even on failure.
     try:
-        mapping, build_stats = build_project(
-            project=project,
+        provider = LinearProvider(
             client=client,  # type: ignore[arg-type]  # safe: dry_run guards API calls
             team_id=team_id,
             dry_run=args.dry_run,
+        )
+        mapping, build_stats = provider.sync_project(
+            project=project,
             flush_path=output_path,
         )
     except LinearAPIError as exc:

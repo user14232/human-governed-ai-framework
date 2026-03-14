@@ -8,10 +8,12 @@ from time import perf_counter
 from typing import Protocol
 
 from runtime.events import metrics_writer
+from runtime.events.event_system import EventSystem
 from runtime.artifacts.artifact_system import ArtifactSystem
 from runtime.framework.agent_loader import AgentContract
 from runtime.store.run_store import run_metrics_path
 from runtime.types.artifact import ArtifactRef, ArtifactSchema
+from runtime.types.event import EventType
 from runtime.types.run import RunContext
 
 
@@ -73,8 +75,13 @@ class AgentAdapter(Protocol):
 
 
 class AgentInvocationLayer:
-    def __init__(self, artifact_system: ArtifactSystem | None = None) -> None:
+    def __init__(
+        self,
+        artifact_system: ArtifactSystem | None = None,
+        event_system: EventSystem | None = None,
+    ) -> None:
         self._artifact_system = artifact_system or ArtifactSystem()
+        self._events = event_system or EventSystem()
 
     def invoke(
         self,
@@ -92,6 +99,7 @@ class AgentInvocationLayer:
         started_at = datetime.now(timezone.utc)
         started_clock = perf_counter()
         metrics_path = run_metrics_path(ctx.run_dir)
+        last_event_id = self._events.last_event_id(metrics_path)
 
         self.check_single_shot(
             ctx=ctx,
@@ -101,6 +109,21 @@ class AgentInvocationLayer:
         )
 
         input_paths = self._resolve_inputs(ctx, contract)
+        started_event = self._events.emit(
+            run_metrics_path=metrics_path,
+            run_id=ctx.run_id,
+            event_type=EventType.AGENT_INVOCATION_STARTED,
+            producer="runtime",
+            workflow_state=ctx.current_state,
+            causation_event_id=last_event_id,
+            payload={
+                "agent_role": agent_role,
+                "mode": mode.value,
+                "input_artifacts": list(contract.input_artifacts),
+                "output_artifacts_declared": list(contract.output_artifacts),
+            },
+        )
+        last_event_id = started_event.event_id
 
         if mode == InvocationMode.AUTOMATED:
             adapter_outputs = self._run_automated(adapter, input_paths, ctx.artifacts_dir, contract)
@@ -115,6 +138,8 @@ class AgentInvocationLayer:
             schemas=schemas,
             owner_role=agent_role,
             resolved_outputs=adapter_outputs,
+            metrics_path=metrics_path,
+            causation_event_id=last_event_id,
         )
 
         duration_seconds = perf_counter() - started_clock
@@ -133,6 +158,21 @@ class AgentInvocationLayer:
             notes=None,
         )
         metrics_writer.append_event(metrics_path, invocation_record, "invocation_records")
+        self._events.emit(
+            run_metrics_path=metrics_path,
+            run_id=ctx.run_id,
+            event_type=EventType.AGENT_INVOCATION_COMPLETED,
+            producer="runtime",
+            workflow_state=ctx.current_state,
+            causation_event_id=started_event.event_id,
+            payload={
+                "agent_role": agent_role,
+                "mode": mode.value,
+                "outcome": InvocationOutcome.COMPLETED.value,
+                "duration_seconds": round(duration_seconds, 6),
+                "output_artifacts": [self._artifact_ref_to_dict(ref) for ref in output_refs],
+            },
+        )
 
         return InvocationResult(
             agent_role=agent_role,
@@ -235,8 +275,11 @@ class AgentInvocationLayer:
         schemas: dict[str, ArtifactSchema],
         owner_role: str,
         resolved_outputs: dict[str, Path],
+        metrics_path: Path,
+        causation_event_id: str | None,
     ) -> tuple[ArtifactRef, ...]:
         registered: list[ArtifactRef] = []
+        last_event_id = causation_event_id
         for artifact_name in contract.output_artifacts:
             resolved_path = resolved_outputs.get(artifact_name, ctx.artifacts_dir / artifact_name)
             if resolved_path.parent.resolve() != ctx.artifacts_dir.resolve():
@@ -256,6 +299,21 @@ class AgentInvocationLayer:
                 schemas=schemas,
             )
             registered.append(ref)
+            created_event = self._events.emit(
+                run_metrics_path=metrics_path,
+                run_id=ctx.run_id,
+                event_type=EventType.ARTIFACT_CREATED,
+                producer=owner_role,
+                workflow_state=ctx.current_state,
+                causation_event_id=last_event_id,
+                payload={
+                    "artifact_name": ref.name,
+                    "artifact_id": ref.artifact_id,
+                    "artifact_hash": ref.artifact_hash,
+                    "owner_role": owner_role,
+                },
+            )
+            last_event_id = created_event.event_id
         return tuple(registered)
 
     @staticmethod

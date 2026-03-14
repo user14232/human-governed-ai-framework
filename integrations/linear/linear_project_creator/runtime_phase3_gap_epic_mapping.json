@@ -1,0 +1,49 @@
+{
+  "project_id": "b4b4ff0b-6e27-4b2c-85a0-aeb220d9edd2",
+  "epic": {
+    "Close Runtime Contract Compliance Gaps": "af7ab819-1f07-4921-a5cc-d66150d1e373"
+  },
+  "stories": {
+    "Emit required workflow and invocation events in execution path": "3e2b6994-9979-4cdc-88d1-73413248d437",
+    "Fix deterministic branching for advance and resume reconstruction": "39022fe3-9e7c-4846-9723-feddfde70405",
+    "Implement blocked and rework event signaling for decision-driven paths": "eafe3191-1dce-4b22-b171-6f22cc15f697",
+    "Realign SC evidence and compliance tests with runtime behavior": "c61b0c6c-d2d6-4fce-bdd6-caf0f2037fdb"
+  },
+  "tasks": {
+    "Wire workflow transition and blocked event emission": "8c0b0af8-76d6-48a0-ba63-705c5397ba9f",
+    "Wire invocation lifecycle event emission": "4923cdf7-732a-44b5-9fbf-6d485e365418",
+    "Add execution-path required-event integration tests": "1adaac10-d339-4df1-9752-505833552a00",
+    "Implement full ordered candidate evaluation in advance": "decff9b6-b8c0-48e0-9203-35896eee9146",
+    "Align resume fallback traversal with advance semantics": "6564f095-850e-473e-ae97-f7444c57bb22",
+    "Add regression tests for branching transition semantics": "9e24468c-3823-4566-9996-aaf99b6e265f",
+    "Implement rework event emission on reject signal path": "977c36b0-54e7-483c-9c0b-0d6338f4cc25",
+    "Standardize blocked reason payloads for gate and defer outcomes": "b895274c-4663-49a4-bf70-6f3f1c25008d",
+    "Add decision-path signaling tests": "67dddd31-2110-4b0a-8976-e79111e4dde1",
+    "Update Phase 3 implementation record evidence mapping": "bc1de16c-53f5-459d-86cc-0a287d026e60",
+    "Add compliance regression tests for required events and branching": "6095482f-ad65-469d-bf71-d9f4a0fb9d58",
+    "Verify SC claim-to-test traceability in CI": "0b4ac28a-1151-4463-b7cb-dadf6080dc8e"
+  },
+  "relations": [
+    {
+      "type": "blocks",
+      "from": "Emit required workflow and invocation events in execution path",
+      "to": "Realign SC evidence and compliance tests with runtime behavior",
+      "from_id": "3e2b6994-9979-4cdc-88d1-73413248d437",
+      "to_id": "c61b0c6c-d2d6-4fce-bdd6-caf0f2037fdb"
+    },
+    {
+      "type": "blocks",
+      "from": "Fix deterministic branching for advance and resume reconstruction",
+      "to": "Realign SC evidence and compliance tests with runtime behavior",
+      "from_id": "39022fe3-9e7c-4846-9723-feddfde70405",
+      "to_id": "c61b0c6c-d2d6-4fce-bdd6-caf0f2037fdb"
+    },
+    {
+      "type": "blocks",
+      "from": "Implement blocked and rework event signaling for decision-driven paths",
+      "to": "Realign SC evidence and compliance tests with runtime behavior",
+      "from_id": "eafe3191-1dce-4b22-b171-6f22cc15f697",
+      "to_id": "c61b0c6c-d2d6-4fce-bdd6-caf0f2037fdb"
+    }
+  ]
+}

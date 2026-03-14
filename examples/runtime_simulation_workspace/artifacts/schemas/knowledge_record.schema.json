@@ -1,0 +1,115 @@
+{
+  "schema_id": "knowledge_record",
+  "version": "v1",
+  "artifact_name": "knowledge_record.json (or knowledge_record_<id>.json)",
+  "responsibility": "Represent a single structured, reusable piece of engineering knowledge extracted from run artifacts. A knowledge record normalizes knowledge out of its source document into a queryable, provenance-linked form.",
+  "owner_roles": ["agent_reflector", "agent_improvement_designer", "human"],
+  "allowed_readers": ["human", "agent_orchestrator", "agent_planner", "agent_architecture_guardian", "agent_reviewer"],
+  "write_policy": {
+    "mutability": "versioned",
+    "overwrite_allowed": false,
+    "notes": "A knowledge record is superseded when its source artifact is superseded or when the knowledge is explicitly invalidated. Superseded records are retained for provenance."
+  },
+  "required_fields": {
+    "knowledge_id": {
+      "type": "string",
+      "description": "Stable unique identifier. Recommended format: KR-<project_short>-<monotonic_counter>."
+    },
+    "version": {
+      "type": "string",
+      "description": "Version string, e.g. 'v1'. Increment when the record is superseded."
+    },
+    "supersedes_id": {
+      "type": "string",
+      "nullable": true,
+      "description": "knowledge_id of the prior version of this record. Null for first versions."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "iso-8601"
+    },
+    "knowledge_type": {
+      "type": "string",
+      "allowed_values": [
+        "decision",
+        "tradeoff",
+        "architecture_rule",
+        "definition",
+        "finding",
+        "goldstandard_example",
+        "review_issue",
+        "domain_invariant",
+        "improvement_hypothesis"
+      ],
+      "description": "Type of knowledge. Determines expected content structure."
+    },
+    "title": {
+      "type": "string",
+      "description": "Short, human-readable title. Must be unique enough to distinguish within a project."
+    },
+    "content": {
+      "type": "string",
+      "description": "Explicit, self-contained description of the knowledge. Must not rely on reader context not captured in provenance."
+    },
+    "validity_scope": {
+      "type": "object",
+      "fields": {
+        "applies_to": {
+          "type": "array",
+          "items": "string",
+          "description": "Run IDs, workflow states, or artifact types where this knowledge applies."
+        },
+        "does_not_apply_to": {
+          "type": "array",
+          "items": "string",
+          "description": "Explicit exclusions."
+        }
+      }
+    },
+    "provenance": {
+      "type": "array",
+      "description": "Source artifacts from which this knowledge was extracted.",
+      "items": {
+        "artifact": "string (filename)",
+        "artifact_id": "string or null",
+        "artifact_hash": "string or null",
+        "run_id": "string",
+        "section_ref": "string or null (section heading or field path)"
+      }
+    },
+    "status": {
+      "type": "string",
+      "allowed_values": ["active", "superseded", "deprecated"],
+      "description": "active = currently valid; superseded = replaced by newer version; deprecated = no longer applicable."
+    },
+    "tags": {
+      "type": "array",
+      "items": "string",
+      "description": "Optional facets for deterministic filtering. Must be explicit strings, not inferred categories."
+    }
+  },
+  "optional_fields": {
+    "related_knowledge_ids": {
+      "type": "array",
+      "items": "string",
+      "description": "knowledge_ids of related records in the same index."
+    },
+    "falsification_condition": {
+      "type": "string",
+      "description": "For knowledge_type=improvement_hypothesis: explicit condition under which this hypothesis would be falsified."
+    }
+  },
+  "determinism_requirements": {
+    "knowledge_ids_stable": true,
+    "provenance_required": true,
+    "no_inferred_content": true,
+    "status_explicit": true
+  },
+  "_changelog": [
+    {
+      "version": "v1",
+      "date": "2026-03-12",
+      "change": "Initial version. Defines single structured knowledge record schema with provenance, validity_scope, and status fields."
+    }
+  ]
+}

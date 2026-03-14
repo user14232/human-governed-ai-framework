@@ -1,0 +1,13 @@
+schema_version: v1
+decisions:
+  - decision_id: DEC-0004-001
+    timestamp: "2026-03-14T20:50:00Z"
+    human_identity: "phili"
+    decision: approve
+    scope: improvement_cycle
+    references:
+      - artifact: improvement_proposal.md
+        artifact_id: IPROP-0004
+        artifact_hash: ""
+    rationale: "Approved for controlled rollout planning."
+    supersedes_decision_id: null

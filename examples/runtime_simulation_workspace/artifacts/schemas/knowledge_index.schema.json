@@ -1,0 +1,90 @@
+{
+  "schema_id": "knowledge_index",
+  "version": "v1",
+  "artifact_name": "knowledge_index.json",
+  "responsibility": "Provide a project-level catalog of all knowledge records. Enables deterministic lookup and filtering without requiring exhaustive artifact traversal. Acts as the entry point for knowledge queries.",
+  "owner_roles": ["agent_reflector", "agent_improvement_designer", "human"],
+  "allowed_readers": ["human", "agent_orchestrator", "agent_planner", "agent_architecture_guardian", "agent_reviewer"],
+  "write_policy": {
+    "mutability": "append_only",
+    "overwrite_allowed": false,
+    "notes": "New entries are appended when new knowledge records are created or superseded. The index never deletes entries; superseded records are marked with status=superseded."
+  },
+  "required_fields": {
+    "index_id": {
+      "type": "string",
+      "description": "Stable identifier for this index instance, e.g. 'KI-<project_short>-v1'."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "iso-8601"
+    },
+    "last_updated_at": {
+      "type": "string",
+      "format": "iso-8601"
+    },
+    "entries": {
+      "type": "array",
+      "description": "One entry per knowledge record, regardless of status.",
+      "items": {
+        "knowledge_id": "string",
+        "version": "string",
+        "knowledge_type": "string (one of the values defined in knowledge_record.schema.json)",
+        "title": "string",
+        "status": "string (active | superseded | deprecated)",
+        "tags": "array of strings",
+        "run_ids": "array of run_ids from provenance",
+        "artifact_refs": "array of source artifact filenames",
+        "record_path": "string (relative path to the knowledge_record file)"
+      }
+    }
+  },
+  "query_contract": {
+    "description": "The index supports the following deterministic query operations. All queries are exact-match or filter-based; no heuristic or fuzzy matching.",
+    "operations": [
+      {
+        "name": "filter_by_type",
+        "inputs": ["knowledge_type"],
+        "output": "entries where knowledge_type matches"
+      },
+      {
+        "name": "filter_by_status",
+        "inputs": ["status"],
+        "output": "entries where status matches"
+      },
+      {
+        "name": "filter_by_tag",
+        "inputs": ["tag"],
+        "output": "entries where tags array contains the tag"
+      },
+      {
+        "name": "filter_by_run_id",
+        "inputs": ["run_id"],
+        "output": "entries where run_ids array contains the run_id"
+      },
+      {
+        "name": "lookup_by_knowledge_id",
+        "inputs": ["knowledge_id"],
+        "output": "single entry or null"
+      },
+      {
+        "name": "get_history",
+        "inputs": ["knowledge_id"],
+        "output": "all versions of the record (including superseded), ordered by version"
+      }
+    ]
+  },
+  "determinism_requirements": {
+    "append_only": true,
+    "no_duplicate_knowledge_ids": true,
+    "status_must_reflect_record": true,
+    "record_path_must_resolve": true
+  },
+  "_changelog": [
+    {
+      "version": "v1",
+      "date": "2026-03-12",
+      "change": "Initial version. Defines project-level knowledge catalog schema with deterministic query contract."
+    }
+  ]
+}

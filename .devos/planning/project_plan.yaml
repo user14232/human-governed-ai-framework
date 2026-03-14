@@ -1,0 +1,215 @@
+# =============================================================================
+# DEVOS PLANNING ARTIFACT (SOURCE OF TRUTH)
+# =============================================================================
+#
+# This file is the canonical planning artifact for DevOS.
+# External tools (Linear, Jira, etc.) are optional projections of this artifact.
+#
+
+project:
+  name: "Example DevOS Plan"
+  summary: "Canonical repository-owned planning artifact."
+  description: |
+    This planning artifact defines project, epic, story, and task hierarchy
+    in repository source control. It is validated deterministically before
+    any optional synchronization to external issue tracking tools.
+  priority: 3
+  state: "planned"
+  labels: ["devos", "planning"]
+
+label_definitions:
+  issue_labels:
+    - name: "epic"
+      description: "Top-level capability workstream."
+      color: "#4F46E5"
+      is_group: false
+    - name: "story"
+      description: "Story-level deliverable."
+      color: "#0EA5E9"
+      is_group: false
+    - name: "task"
+      description: "Execution-level unit of work."
+      color: "#10B981"
+      is_group: false
+  project_labels:
+    - name: "devos"
+      description: "DevOS-managed planning artifact."
+      color: "#8B5CF6"
+      is_group: false
+    - name: "planning"
+      description: "Planning-layer project."
+      color: "#14B8A6"
+      is_group: false
+
+milestones:
+  - name: "Planning Baseline"
+    description: "Baseline planning artifact accepted and validated."
+  - name: "Integration Sync"
+    description: "Optional Linear synchronization available."
+
+epics:
+  - name: "Establish Planning Layer"
+    description: |
+      Create the repository-owned planning layer as the authoritative source
+      of project intent, decomposition, and constraints. Ensure planning
+      artifacts are validated deterministically and can operate independently
+      from external tool integrations.
+    milestone: "Planning Baseline"
+    acceptance_criteria: |
+      - [ ] Planning artifact is stored in repository under .devOS/planning.
+      - [ ] Parse and lint complete deterministically before any sync step.
+      - [ ] External tool projection is optional and not required for planning.
+    blocks:
+      - "Enable Linear Projection Adapter"
+    stories:
+      - name: "Define canonical project plan artifact"
+        type: "story"
+        description: |
+          Define the repository-resident planning artifact structure for project,
+          epics, stories, and tasks so planning is tool-agnostic.
+        problem_statement: |
+          Planning semantics exist but are currently framed as a Linear-first
+          input, which obscures repository ownership of planning data.
+        scope: |
+          Specify and maintain a canonical project plan artifact in repository
+          with stable hierarchy and fields required by DevOS stages.
+        constraints: |
+          Keep structure deterministic and explicit. Do not remove required
+          DevOS planning context fields from stories.
+        architecture_context: |
+          Affects planning artifact schema and pre-sync validation boundary.
+          Must remain independent from external API clients.
+        non_goals: |
+          This story does not add new planning semantics beyond the existing
+          hierarchy and required story context fields.
+        design_freedom: "restricted"
+        effort: 2
+        complexity: 2
+        acceptance_criteria: |
+          - [ ] Artifact defines project, epics, stories, and tasks.
+          - [ ] Required story planning fields are preserved.
+        tasks:
+          - name: "Define project plan artifact structure"
+            type: "task"
+            task_type: "implementation"
+            description: "Create canonical artifact in .devOS/planning."
+            done_criteria: "Artifact exists with valid project/epic/story/task hierarchy."
+          - name: "Validate artifact structure with deterministic parser tests"
+            type: "task"
+            task_type: "verification"
+            description: "Run parser and ensure deterministic validation behavior."
+            done_criteria: "Parser accepts valid artifact and rejects invalid shapes."
+
+      - name: "Enforce deterministic planning validation"
+        type: "story"
+        description: |
+          Ensure deterministic linting rules gate plan acceptance before any
+          external synchronization.
+        problem_statement: |
+          Without deterministic gating, invalid or ambiguous plans can be
+          projected into tools and create inconsistent execution inputs.
+        scope: |
+          Apply existing linter and quality rules directly to project plans.
+        constraints: |
+          Reuse existing linter and contracts without heuristic logic.
+        architecture_context: |
+          Planning engine depends on yaml_parser and work_item_linter only.
+        non_goals: |
+          This story does not alter existing rule semantics.
+        design_freedom: "restricted"
+        effort: 2
+        complexity: 3
+        acceptance_criteria: |
+          - [ ] Plan validation runs before any integration sync.
+          - [ ] Existing linter rules remain unchanged in behavior.
+        tasks:
+          - name: "Wire planning engine to parser"
+            type: "task"
+            task_type: "implementation"
+            description: "Build deterministic load-and-validate flow."
+            done_criteria: "Planning engine returns typed model and lint violations deterministically."
+          - name: "Verify lint gate behavior for enforce mode"
+            type: "task"
+            task_type: "verification"
+            description: "Exercise both lint modes and confirm deterministic outcomes."
+            done_criteria: "Enforce mode blocks on violations and warn mode reports violations."
+
+  - name: "Enable Linear Projection Adapter"
+    description: |
+      Implement Linear as an optional adapter that projects validated planning
+      artifacts into Linear issues without owning planning semantics. Keep sync
+      deterministic and preserve existing creation behavior.
+    milestone: "Integration Sync"
+    acceptance_criteria: |
+      - [ ] Linear projection runs only after planning validation succeeds.
+      - [ ] Provider interface separates core planning from Linear sync logic.
+      - [ ] Linear remains optional for repository planning workflows.
+    stories:
+      - name: "Introduce provider interface for work item projection"
+        type: "story"
+        description: |
+          Add explicit adapter contract so external systems can project work
+          items without owning planning models or validation logic.
+        problem_statement: |
+          Current orchestration tightly couples planning model usage with Linear
+          operations, making integrations harder to isolate.
+        scope: |
+          Introduce WorkItemProvider interface and implement LinearProvider adapter.
+        constraints: |
+          Preserve deterministic sync ordering and existing Linear API behavior.
+        architecture_context: |
+          Adapter boundary sits between planning engine outputs and external
+          Linear client methods.
+        non_goals: |
+          This story does not add non-Linear providers yet.
+        design_freedom: "high"
+        effort: 3
+        complexity: 3
+        acceptance_criteria: |
+          - [ ] WorkItemProvider interface exists with epic/story/task methods.
+          - [ ] LinearProvider implements adapter contract.
+        tasks:
+          - name: "Define WorkItemProvider interface"
+            type: "task"
+            task_type: "implementation"
+            description: "Create explicit provider contract for external projections."
+            done_criteria: "Provider interface defines create_epic, create_story, and create_task."
+          - name: "Write verification checks for adapter contract behavior"
+            type: "task"
+            task_type: "verification"
+            description: "Ensure Linear adapter is invoked only after plan validation."
+            done_criteria: "Validation-first execution order is confirmed in sync flow."
+
+      - name: "Project validated plans into Linear optionally"
+        type: "story"
+        description: |
+          Support optional synchronization of validated plans into Linear while
+          keeping repository artifacts as source of truth.
+        problem_statement: |
+          Teams may need Linear projection, but planning must still function
+          when no external tracker integration is configured.
+        scope: |
+          Implement optional sync path from validated plan to Linear issue hierarchy.
+        constraints: |
+          Keep deterministic mapping outputs and existing relation behavior.
+        architecture_context: |
+          Uses linear_client and current project build orchestration as adapter internals.
+        non_goals: |
+          This story does not require Linear for planning validation.
+        design_freedom: "restricted"
+        effort: 3
+        complexity: 3
+        acceptance_criteria: |
+          - [ ] Sync can run from canonical planning artifact path.
+          - [ ] Mapping and run report output remain deterministic.
+        tasks:
+          - name: "Connect planning engine output to Linear provider sync"
+            type: "task"
+            task_type: "implementation"
+            description: "Sync validated project model through adapter."
+            done_criteria: "Linear sync consumes validated ProjectModel and writes mapping output."
+          - name: "Verify dry-run sync path without Linear credentials"
+            type: "task"
+            task_type: "verification"
+            description: "Confirm dry-run behavior and outputs remain deterministic."
+            done_criteria: "Dry-run completes with deterministic mapping placeholders."

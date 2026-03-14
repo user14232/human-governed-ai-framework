@@ -35,6 +35,24 @@ class RunEngineLifecycleTest(unittest.TestCase):
             self.assertEqual(ctx.current_state, "INIT")
             self.assertRegex(ctx.run_id, r"^RUN-\d{8}-\d{4}$")
 
+    def test_initialize_run_uses_workflow_declared_initial_state(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            project_root = Path(td)
+            (project_root / "workflow").mkdir(parents=True, exist_ok=True)
+            (project_root / "workflow" / "improvement_cycle.yaml").write_text(
+                (self.repo_root / "workflow" / "improvement_cycle.yaml").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            change_intent = project_root / "change_intent.yaml"
+            change_intent.write_text("id: CI-1\n", encoding="utf-8")
+
+            ctx = self.engine.initialize_run(
+                project_root,
+                change_intent,
+                workflow_name="improvement_cycle",
+            )
+            self.assertEqual(ctx.current_state, "OBSERVE")
+
     def test_initialize_run_missing_input_raises(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)

@@ -97,6 +97,14 @@ class InvocationLayerTest(unittest.TestCase):
             metrics = json.loads(run_metrics_path(ctx.run_dir).read_text(encoding="utf-8"))
             self.assertEqual(len(metrics["invocation_records"]), 1)
             self.assertEqual(metrics["invocation_records"][0]["agent_role"], "agent_implementer")
+            event_types = [event.get("event_type") for event in metrics.get("events", [])]
+            self.assertEqual(
+                event_types,
+                ["agent.invocation_started", "artifact.created", "agent.invocation_completed"],
+            )
+            self.assertEqual(metrics["events"][0]["payload"]["agent_role"], "agent_implementer")
+            self.assertEqual(metrics["events"][1]["payload"]["artifact_name"], "implementation_summary.md")
+            self.assertEqual(metrics["events"][2]["payload"]["outcome"], "completed")
 
     def test_human_mode_uses_declared_output_paths(self) -> None:
         with tempfile.TemporaryDirectory() as td:

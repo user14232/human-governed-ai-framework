@@ -1,0 +1,49 @@
+schema_id: migration_record
+version: v1
+artifact_name: migration_record.yaml
+
+responsibility: >
+  Record a framework Major version migration. One record per major version transition per project.
+  See migration_contract.md for the normative migration process.
+
+owner_roles:
+  - human
+allowed_readers:
+  - human
+  - agent_orchestrator
+  - agent_reflector
+
+write_policy:
+  mutability: append_only
+  overwrite_allowed: false
+  notes: >
+    New migration records are appended when a project migrates to a new major framework version.
+    Prior records must not be modified.
+
+required_fields:
+  - id: "<stable-string-id>"
+  - created_at: "<iso-8601>"
+  - from_framework_version: "<vMAJOR.MINOR>"
+  - to_framework_version: "<vMAJOR.MINOR>"
+  - migration_date: "<iso-8601>"
+  - performed_by: "<string>"
+  - architecture_change_proposal_ref: "<proposal-id>"
+  - decision_ref: "<decision_id from decision_log.yaml>"
+  - affected_assets:
+      - asset_path: "<string>"
+        prior_version: "<string>"
+        new_version: "<string>"
+        migration_action: "<updated|replaced|removed|no_change>"
+  - prior_run_compatibility:
+      existing_runs_valid: "<true|false>"
+      notes: "<string>"
+
+determinism_requirements:
+  - append_only: true
+  - ids_stable: true
+  - no_silent_migrations: true
+
+change_log:
+  - version: v1
+    date: "2026-03-12"
+    change: "Initial version. Defines migration record schema for documenting framework Major version transitions."

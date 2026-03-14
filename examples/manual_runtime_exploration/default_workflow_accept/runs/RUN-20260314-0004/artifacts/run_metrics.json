@@ -1,0 +1,300 @@
+{
+  "run_metadata": {},
+  "events": [
+    {
+      "event_id": "EVT-RUN202603140004-0001",
+      "event_type": "run.started",
+      "run_id": "RUN-20260314-0004",
+      "timestamp": "2026-03-14T19:39:48.225628+00:00",
+      "producer": "runtime",
+      "workflow_state": "OBSERVE",
+      "causation_event_id": null,
+      "correlation_id": "RUN-20260314-0004",
+      "payload": {
+        "workflow_id": "improvement_cycle",
+        "change_intent_id": "unknown",
+        "project_inputs": []
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603140004-0002",
+      "event_type": "run.resumed",
+      "run_id": "RUN-20260314-0004",
+      "timestamp": "2026-03-14T19:42:38.234554+00:00",
+      "producer": "runtime",
+      "workflow_state": "REFLECT",
+      "causation_event_id": null,
+      "correlation_id": "RUN-20260314-0004",
+      "payload": {
+        "resumed": true
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603140004-0003",
+      "event_type": "run.resumed",
+      "run_id": "RUN-20260314-0004",
+      "timestamp": "2026-03-14T19:42:39.292658+00:00",
+      "producer": "runtime",
+      "workflow_state": "REFLECT",
+      "causation_event_id": null,
+      "correlation_id": "RUN-20260314-0004",
+      "payload": {
+        "resumed": true
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603140004-0004",
+      "event_type": "workflow.transition_checked",
+      "run_id": "RUN-20260314-0004",
+      "timestamp": "2026-03-14T19:42:39.310941+00:00",
+      "producer": "runtime",
+      "workflow_state": "REFLECT",
+      "causation_event_id": "EVT-RUN202603140004-0003",
+      "correlation_id": "RUN-20260314-0004",
+      "payload": {
+        "from_state": "REFLECT",
+        "to_state": "PROPOSE",
+        "result": "fail",
+        "checks": [
+          {
+            "check_type": "artifact_presence",
+            "subject": "reflection_notes.md",
+            "result": "fail",
+            "detail": "Artifact file not found."
+          }
+        ]
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603140004-0005",
+      "event_type": "run.blocked",
+      "run_id": "RUN-20260314-0004",
+      "timestamp": "2026-03-14T19:42:39.315534+00:00",
+      "producer": "runtime",
+      "workflow_state": "REFLECT",
+      "causation_event_id": "EVT-RUN202603140004-0004",
+      "correlation_id": "RUN-20260314-0004",
+      "payload": {
+        "blocked_at_state": "REFLECT",
+        "blocking_reason": "missing_artifact",
+        "attempted_to_states": [
+          "PROPOSE"
+        ],
+        "missing_artifacts": [
+          "reflection_notes.md"
+        ],
+        "missing_approvals": [],
+        "failed_conditions": []
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603140004-0006",
+      "event_type": "run.resumed",
+      "run_id": "RUN-20260314-0004",
+      "timestamp": "2026-03-14T19:42:56.503724+00:00",
+      "producer": "runtime",
+      "workflow_state": "PROPOSE",
+      "causation_event_id": null,
+      "correlation_id": "RUN-20260314-0004",
+      "payload": {
+        "resumed": true
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603140004-0007",
+      "event_type": "run.resumed",
+      "run_id": "RUN-20260314-0004",
+      "timestamp": "2026-03-14T19:42:57.584433+00:00",
+      "producer": "runtime",
+      "workflow_state": "PROPOSE",
+      "causation_event_id": null,
+      "correlation_id": "RUN-20260314-0004",
+      "payload": {
+        "resumed": true
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603140004-0008",
+      "event_type": "workflow.transition_checked",
+      "run_id": "RUN-20260314-0004",
+      "timestamp": "2026-03-14T19:42:57.603369+00:00",
+      "producer": "runtime",
+      "workflow_state": "PROPOSE",
+      "causation_event_id": "EVT-RUN202603140004-0007",
+      "correlation_id": "RUN-20260314-0004",
+      "payload": {
+        "from_state": "PROPOSE",
+        "to_state": "HUMAN_DECISION",
+        "result": "fail",
+        "checks": [
+          {
+            "check_type": "artifact_presence",
+            "subject": "improvement_proposal.md",
+            "result": "fail",
+            "detail": "Artifact file not found."
+          },
+          {
+            "check_type": "artifact_presence",
+            "subject": "decision_log.yaml",
+            "result": "fail",
+            "detail": "Artifact file not found."
+          },
+          {
+            "check_type": "approval",
+            "subject": "improvement_proposal.md",
+            "result": "fail",
+            "detail": "Artifact not found for approval lookup."
+          }
+        ]
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603140004-0009",
+      "event_type": "run.blocked",
+      "run_id": "RUN-20260314-0004",
+      "timestamp": "2026-03-14T19:42:57.608596+00:00",
+      "producer": "runtime",
+      "workflow_state": "PROPOSE",
+      "causation_event_id": "EVT-RUN202603140004-0008",
+      "correlation_id": "RUN-20260314-0004",
+      "payload": {
+        "blocked_at_state": "PROPOSE",
+        "blocking_reason": "missing_artifact",
+        "attempted_to_states": [
+          "HUMAN_DECISION"
+        ],
+        "missing_artifacts": [
+          "decision_log.yaml",
+          "improvement_proposal.md"
+        ],
+        "missing_approvals": [
+          "improvement_proposal.md"
+        ],
+        "failed_conditions": []
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603140004-0010",
+      "event_type": "run.resumed",
+      "run_id": "RUN-20260314-0004",
+      "timestamp": "2026-03-14T19:43:14.200696+00:00",
+      "producer": "runtime",
+      "workflow_state": "PROPOSE",
+      "causation_event_id": null,
+      "correlation_id": "RUN-20260314-0004",
+      "payload": {
+        "resumed": true
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603140004-0011",
+      "event_type": "run.resumed",
+      "run_id": "RUN-20260314-0004",
+      "timestamp": "2026-03-14T19:43:15.309281+00:00",
+      "producer": "runtime",
+      "workflow_state": "PROPOSE",
+      "causation_event_id": null,
+      "correlation_id": "RUN-20260314-0004",
+      "payload": {
+        "resumed": true
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603140004-0012",
+      "event_type": "workflow.transition_checked",
+      "run_id": "RUN-20260314-0004",
+      "timestamp": "2026-03-14T19:43:15.327694+00:00",
+      "producer": "runtime",
+      "workflow_state": "PROPOSE",
+      "causation_event_id": "EVT-RUN202603140004-0011",
+      "correlation_id": "RUN-20260314-0004",
+      "payload": {
+        "from_state": "PROPOSE",
+        "to_state": "HUMAN_DECISION",
+        "result": "fail",
+        "checks": [
+          {
+            "check_type": "artifact_presence",
+            "subject": "improvement_proposal.md",
+            "result": "pass",
+            "detail": null
+          },
+          {
+            "check_type": "artifact_presence",
+            "subject": "decision_log.yaml",
+            "result": "pass",
+            "detail": null
+          },
+          {
+            "check_type": "approval",
+            "subject": "improvement_proposal.md",
+            "result": "fail",
+            "detail": "No matching approval entry found."
+          }
+        ]
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603140004-0013",
+      "event_type": "run.blocked",
+      "run_id": "RUN-20260314-0004",
+      "timestamp": "2026-03-14T19:43:15.332915+00:00",
+      "producer": "runtime",
+      "workflow_state": "PROPOSE",
+      "causation_event_id": "EVT-RUN202603140004-0012",
+      "correlation_id": "RUN-20260314-0004",
+      "payload": {
+        "blocked_at_state": "PROPOSE",
+        "blocking_reason": "missing_approval",
+        "attempted_to_states": [
+          "HUMAN_DECISION"
+        ],
+        "missing_artifacts": [],
+        "missing_approvals": [
+          "improvement_proposal.md"
+        ],
+        "failed_conditions": []
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603140004-0014",
+      "event_type": "run.resumed",
+      "run_id": "RUN-20260314-0004",
+      "timestamp": "2026-03-14T19:44:30.970467+00:00",
+      "producer": "runtime",
+      "workflow_state": "HUMAN_DECISION",
+      "causation_event_id": null,
+      "correlation_id": "RUN-20260314-0004",
+      "payload": {
+        "resumed": true
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603140004-0015",
+      "event_type": "run.resumed",
+      "run_id": "RUN-20260314-0004",
+      "timestamp": "2026-03-14T19:44:32.052246+00:00",
+      "producer": "runtime",
+      "workflow_state": "HUMAN_DECISION",
+      "causation_event_id": null,
+      "correlation_id": "RUN-20260314-0004",
+      "payload": {
+        "resumed": true
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603140004-0016",
+      "event_type": "run.resumed",
+      "run_id": "RUN-20260314-0004",
+      "timestamp": "2026-03-14T19:45:01.827838+00:00",
+      "producer": "runtime",
+      "workflow_state": "HUMAN_DECISION",
+      "causation_event_id": null,
+      "correlation_id": "RUN-20260314-0004",
+      "payload": {
+        "resumed": true
+      }
+    }
+  ],
+  "invocation_records": []
+}

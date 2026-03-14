@@ -1,0 +1,47 @@
+{
+  "run_metadata": {},
+  "events": [
+    {
+      "event_id": "EVT-RUN202603140002-0001",
+      "event_type": "run.started",
+      "run_id": "RUN-20260314-0002",
+      "timestamp": "2026-03-14T19:38:38.972190+00:00",
+      "producer": "runtime",
+      "workflow_state": "INIT",
+      "causation_event_id": null,
+      "correlation_id": "RUN-20260314-0002",
+      "payload": {
+        "workflow_id": "improvement_cycle",
+        "change_intent_id": "unknown",
+        "project_inputs": []
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603140002-0002",
+      "event_type": "run.resumed",
+      "run_id": "RUN-20260314-0002",
+      "timestamp": "2026-03-14T19:38:56.227669+00:00",
+      "producer": "runtime",
+      "workflow_state": "INIT",
+      "causation_event_id": null,
+      "correlation_id": "RUN-20260314-0002",
+      "payload": {
+        "resumed": true
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603140002-0003",
+      "event_type": "run.resumed",
+      "run_id": "RUN-20260314-0002",
+      "timestamp": "2026-03-14T19:38:57.289826+00:00",
+      "producer": "runtime",
+      "workflow_state": "INIT",
+      "causation_event_id": null,
+      "correlation_id": "RUN-20260314-0002",
+      "payload": {
+        "resumed": true
+      }
+    }
+  ],
+  "invocation_records": []
+}

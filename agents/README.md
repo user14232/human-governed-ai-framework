@@ -1,22 +1,24 @@
-# Agents (role contracts) â€” v1
+# Agents (role contracts) - v1.1
 
 ## Responsibility
 
-This folder contains **role contracts** for framework agents.
-Each agent is a **single-shot role** with explicit inputs/outputs and prohibitions.
+This folder defines deterministic role contracts for DevOS agents. Each role is single-shot,
+artifact-driven, and bound by explicit write boundaries and prohibitions.
 
-## Contract shape (applies to all agents)
+## Contract Shape (required fields)
 
-Each agent contract MUST define:
+Every agent contract must define:
 
-- **Responsibility** (single responsibility)
-- **Inputs** (artifacts and read-only reference docs)
-- **Outputs** (artifacts only)
-- **Write policy** (what it may write, what it must never write)
-- **Prohibitions** (explicit â€œmust notâ€)
-- **Determinism requirements**
+- responsibility (single purpose)
+- inputs (artifacts and read-only references)
+- outputs (artifacts only)
+- write policy (what may be written and what is forbidden)
+- prohibitions (explicit must-not rules)
+- determinism requirements
 
-## v1 Core roles (fully integrated into delivery workflow)
+## Delivery Workflow Roles
+
+Integrated into the primary delivery state machine:
 
 - `agent_orchestrator`
 - `agent_planner`
@@ -28,32 +30,29 @@ Each agent contract MUST define:
 - `agent_implementer`
 - `agent_reviewer`
 
-## v1 Improvement cycle roles
+## Improvement Cycle Roles
+
+Asynchronous improvement loop support:
 
 - `agent_reflector`
 - `agent_improvement_designer`
 
-## Work breakdown authoring (pre-workflow)
+## Pre-Workflow Authoring Roles
 
-These agents operate **upstream of the delivery workflow**. They produce the structured
-work breakdown artifacts that are consumed by the workflow (via the `linear_project_creator`
-integration) rather than participating in the PLANNING → ACCEPTED state machine directly.
+These roles run before delivery workflow execution and produce planning artifacts:
 
-- `agent_work_item_author` — Generates Linear project definition YAML from a project brief,
-  conforming to the Work Item Contract and quality checklists.
+- `agent_work_item_author` - authors `.devOS/planning/project_plan.yaml` from a human brief,
+  aligned with `devos/planning/contracts/work_item_contract.md` and linter rules.
 
-## v1.1 roles (defined, release workflow deferred)
+## Release Role
 
-- `agent_release_manager` â€” defined and ready; release is not a workflow state in v1.
-  Use post-acceptance at project discretion.
+- `agent_release_manager` - defined role for post-acceptance release activities.
 
-## System actor (meta-role)
+## System Actor
 
-This is not an autonomous agent; it is an explicit workflow actor for auditability:
+- `human_decision_authority` (explicit governance actor, not autonomous)
 
-- `human_decision_authority`
+## References
 
-## Invariants reference
-
-See: `../contracts/system_invariants.md`  
-See: `../contracts/runtime_contract.md`
+- `../contracts/system_invariants.md`
+- `../contracts/runtime_contract.md`

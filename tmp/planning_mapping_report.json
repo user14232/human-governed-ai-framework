@@ -1,0 +1,18 @@
+{
+  "schema_version": "1",
+  "lint": {
+    "mode": "enforce",
+    "violation_count": 0,
+    "violations": []
+  },
+  "build": {
+    "project_id": "dry-run:project:example-devos-plan",
+    "milestones_created": 2,
+    "epics_created": 2,
+    "stories_created": 4,
+    "tasks_created": 8,
+    "relations_created": 1,
+    "unresolved_blocks_count": 0,
+    "unresolved_blocks": []
+  }
+}

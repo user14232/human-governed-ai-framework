@@ -1,0 +1,47 @@
+{
+  "run_metadata": {},
+  "events": [
+    {
+      "event_id": "EVT-RUN202603140003-0001",
+      "event_type": "run.started",
+      "run_id": "RUN-20260314-0003",
+      "timestamp": "2026-03-14T19:38:40.285464+00:00",
+      "producer": "runtime",
+      "workflow_state": "INIT",
+      "causation_event_id": null,
+      "correlation_id": "RUN-20260314-0003",
+      "payload": {
+        "workflow_id": "release_workflow",
+        "change_intent_id": "unknown",
+        "project_inputs": []
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603140003-0002",
+      "event_type": "run.resumed",
+      "run_id": "RUN-20260314-0003",
+      "timestamp": "2026-03-14T19:38:58.362029+00:00",
+      "producer": "runtime",
+      "workflow_state": "INIT",
+      "causation_event_id": null,
+      "correlation_id": "RUN-20260314-0003",
+      "payload": {
+        "resumed": true
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603140003-0003",
+      "event_type": "run.resumed",
+      "run_id": "RUN-20260314-0003",
+      "timestamp": "2026-03-14T19:38:59.414896+00:00",
+      "producer": "runtime",
+      "workflow_state": "INIT",
+      "causation_event_id": null,
+      "correlation_id": "RUN-20260314-0003",
+      "payload": {
+        "resumed": true
+      }
+    }
+  ],
+  "invocation_records": []
+}

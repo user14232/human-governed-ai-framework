@@ -1,0 +1,126 @@
+﻿version: v1
+id: release_workflow
+
+responsibility: >
+  Define the normative release lifecycle as an explicit, opt-in state machine that executes
+  after a delivery run reaches ACCEPTED or ACCEPTED_WITH_DEBT. Release is governance-controlled,
+  not automatic.
+
+  This workflow is separate from the delivery workflow (workflow/default_workflow.yaml).
+  A project must explicitly start a release run after delivery acceptance.
+
+notes:
+  - This workflow is defined as v1.1-scope in the delivery workflow but is now fully normative.
+  - Release is not mandatory; projects may choose not to release after every accepted delivery run.
+  - Release governance (who must approve) is partially project-defined, but framework-level gates
+    are defined here.
+
+inputs:
+  required_from_prior_delivery_run:
+    - review_result.md     # outcome must be ACCEPTED or ACCEPTED_WITH_DEBT
+    - test_report.json
+    - decision_log.yaml    # must contain the approval for the delivery run's ACCEPTED state
+  project_optional:
+    - run_metrics.json
+
+invariants_reference:
+  - contracts/system_invariants.md
+  - contracts/runtime_contract.md
+approval_record:
+  artifact: decision_log.yaml
+  schema: ../artifacts/schemas/decision_log.schema.yaml
+  notes: >
+    Release approval is recorded as an explicit human decision in decision_log.yaml.
+    Release must not proceed without a recorded approve decision unless the project
+    defines no release approval gate explicitly in its architecture_contract.md.
+
+states:
+  - RELEASE_INIT
+  - RELEASE_PREPARING
+  - RELEASE_REVIEW
+  - RELEASED
+  - RELEASE_FAILED
+
+transitions:
+  - from: RELEASE_INIT
+    to: RELEASE_PREPARING
+    requires:
+      artifacts:
+        - review_result.md
+        - test_report.json
+        - decision_log.yaml
+      conditions:
+        review_outcome: ACCEPTED
+        note: >
+          ACCEPTED_WITH_DEBT is also permitted. If review_outcome is ACCEPTED_WITH_DEBT,
+          the decision_log.yaml must contain an explicit prior human approval of the debt.
+
+  - from: RELEASE_INIT
+    to: RELEASE_FAILED
+    requires:
+      conditions:
+        review_outcome: FAILED
+    notes: >
+      A delivery run with FAILED outcome must not trigger a release run.
+      RELEASE_INIT â†’ RELEASE_FAILED is the terminal path for invalid inputs.
+
+  - from: RELEASE_PREPARING
+    to: RELEASE_REVIEW
+    requires:
+      artifacts:
+        - release_notes.md
+        - release_metadata.json
+
+  - from: RELEASE_REVIEW
+    to: RELEASED
+    requires:
+      artifacts:
+        - release_notes.md
+        - release_metadata.json
+        - decision_log.yaml
+      human_approval:
+        - release_metadata.json
+      notes: >
+        Human approval of release_metadata.json is required before RELEASED state.
+        This approval must reference the release_metadata artifact_id and hash.
+
+  - from: RELEASE_REVIEW
+    to: RELEASE_FAILED
+    requires:
+      artifacts:
+        - decision_log.yaml
+      conditions:
+        decision_log_reject_for: release_metadata.json
+      notes: >
+        A human records an explicit reject decision in decision_log.yaml targeting the
+        current release_metadata.json artifact_id (decision_type: reject).
+        The runtime evaluates this gate by checking decision_log.yaml for a reject entry
+        whose artifact_ref matches the release_metadata artifact_id in scope.
+        This is the symmetric counterpart to the RELEASED gate (which requires
+        decision_type: approve for the same artifact).
+        RELEASE_FAILED is terminal; a new release run must be started if release is retried.
+
+artifacts_used:
+  - review_result.md
+  - test_report.json
+  - release_notes.md
+  - release_metadata.json
+  - decision_log.yaml
+  - run_metrics.json      # optional trace
+
+change_log:
+  - version: v1
+    date: "2026-03-12"
+    change: >
+      Initial normative version. Fixed RELEASE_REVIEW â†’ RELEASE_FAILED reject condition
+      to use decision_log.yaml reject entry (decision_log_reject_for: release_metadata.json)
+      instead of non-deterministic release_blocked_by_human flag.
+
+assumptions_and_tradeoffs:
+  - Release is governance-controlled and always requires at least one human approval
+    unless the project explicitly waives it in architecture_contract.md.
+  - Release mechanics (tagging, packaging, publishing) are project-owned and tool-agnostic.
+    The framework records the governance outcome, not the mechanics.
+  - ACCEPTED_WITH_DEBT delivery runs may proceed to release only if the debt was explicitly
+    approved by a human in the delivery decision_log.yaml.
+  - A release run has its own run_id, separate from the delivery run.

@@ -8,12 +8,12 @@
 
 ## Responsibility
 
-Generate a well-formed Linear project definition YAML that satisfies the Work Item Contract
+Generate a well-formed DevOS planning artifact YAML that satisfies the Work Item Contract
 and passes the work item quality linter.
 
 This role operates **before** the DevOS delivery workflow. It translates a human-authored
-project brief into a structured set of Epics, Stories, and Tasks, ready for submission to
-the `linear_project_creator` tool.
+project brief into a structured set of Epics, Stories, and Tasks, ready for deterministic
+validation and optional external sync.
 
 The agent does **not** make implementation decisions. It structures intent into work items
 that describe capabilities and outcomes — not implementation mechanics.
@@ -22,27 +22,27 @@ that describe capabilities and outcomes — not implementation mechanics.
 
 - Project brief or feature description (human-provided, unstructured text)
 - Canonical template (structural contract):
-  - `integrations/linear/linear_project_creator/templates/template.yaml`
+  - `.devOS/planning/project_plan.yaml`
 - Quality contracts (semantic contract):
-  - `integrations/linear/linear_project_creator/contracts/work_item_contract.md`
-  - `integrations/linear/linear_project_creator/contracts/work_item_linter_rules.md`
+  - `devos/planning/contracts/work_item_contract.md`
+  - `devos/planning/contracts/work_item_linter_rules.md`
 - Generation prompts (authoring context):
-  - `integrations/linear/linear_project_creator/prompts/epic_generation_prompt.md`
-  - `integrations/linear/linear_project_creator/prompts/story_generation_prompt.md`
+  - `devos/planning/prompts/epic_generation_prompt.md`
+  - `devos/planning/prompts/story_generation_prompt.md`
 - Quality checklists (self-validation before output):
-  - `integrations/linear/linear_project_creator/quality/story_quality_checklist.md`
-  - `integrations/linear/linear_project_creator/quality/task_quality_checklist.md`
+  - `devos/planning/quality/story_quality_checklist.md`
+  - `devos/planning/quality/task_quality_checklist.md`
 
 ## Outputs (artifacts only)
 
-- `<project_slug>.yaml` — Linear project definition file conforming to the template schema.
+- `.devOS/planning/project_plan.yaml` — canonical DevOS planning artifact.
 
-The output file is the sole artifact produced. It is passed directly to the
-`linear_project_creator` tool.
+The output file is the sole artifact produced. It is validated first, then may
+be projected by optional integrations (for example Linear).
 
 ## Write policy
 
-- **May write**: the project definition YAML only.
+- **May write**: `.devOS/planning/project_plan.yaml` only.
 - **Must not write**: implementation code, test plans, architecture contracts,
   framework workflow definitions, domain input files.
 
@@ -63,9 +63,9 @@ The output file is the sole artifact produced. It is passed directly to the
 ## Determinism requirements
 
 - The output YAML must be structurally valid per the template schema.
-  Verified by: `yaml_parser.py` (run via `main.py --dry-run --lint-mode enforce`).
+  Verified by: `devos.planning.planning_parser` (run via `python -m devos.planning.cli`).
 - The output YAML must pass all semantic rules in `work_item_linter_rules.md`.
-  Verified by: `work_item_linter.py` (run via `main.py --dry-run --lint-mode enforce`).
+  Verified by: `devos.planning.work_item_linter` (run via `python -m devos.planning.cli`).
 - Stories must describe system capabilities and observable outcomes — not
   implementation steps.
 - All values must be derived from the project brief; no content may be invented.
@@ -75,7 +75,7 @@ The output file is the sole artifact produced. It is passed directly to the
 The output YAML must pass the following gate before being accepted:
 
 ```
-python main.py <output.yaml> --dry-run --lint-mode enforce
+python -m devos.planning.cli sync linear .devOS/planning/project_plan.yaml --dry-run --lint-mode enforce
 ```
 
 Exit code 0 with the message "Work item quality lint passed" is required.
@@ -83,9 +83,9 @@ Any exit code 1 (structural or semantic violation) requires revision.
 
 ## Artifact schemas
 
-- Output YAML structure → `integrations/linear/linear_project_creator/templates/template.yaml`
-- Semantic quality contract → `integrations/linear/linear_project_creator/contracts/work_item_contract.md`
-- Linter rules → `integrations/linear/linear_project_creator/contracts/work_item_linter_rules.md`
+- Output YAML structure → `.devOS/planning/project_plan.yaml`
+- Semantic quality contract → `devos/planning/contracts/work_item_contract.md`
+- Linter rules → `devos/planning/contracts/work_item_linter_rules.md`
 
 ## Assumptions / trade-offs
 
@@ -93,7 +93,8 @@ Any exit code 1 (structural or semantic violation) requires revision.
 - All architectural and design decisions in the brief are respected as given.
 - Ambiguous scope must be surfaced explicitly in `non_goals` — not resolved silently.
 - This agent is not part of the core DevOS delivery workflow. Its output is the
-  upstream input that produces the `change_intent.yaml` entries consumed by the workflow.
+  repository planning artifact, which may be synchronized to external tools by
+  optional adapters.
 
 ## Change log
 

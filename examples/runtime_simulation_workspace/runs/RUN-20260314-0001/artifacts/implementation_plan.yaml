@@ -1,0 +1,20 @@
+id: PLAN-001
+supersedes_id: null
+created_at: '2026-01-01T00:00:00+00:00'
+inputs:
+  change_intent_id: CI-EXAMPLE-001
+  architecture_contract_ref: architecture_contract.md
+plan_items:
+- id: P-001
+  title: Implement deterministic simulation scaffold
+  description: Create reproducible sample run assets.
+  dependencies: []
+  outputs:
+  - implementation_summary.md
+  constraints:
+  - deterministic
+  - audit-ready
+non_goals:
+- No implicit runtime behavior
+risks:
+- Schema drift in simulation assets

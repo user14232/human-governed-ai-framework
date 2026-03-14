@@ -48,8 +48,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from linear_client import LinearAPIError, LinearClient
-from models import EpicModel, ProjectModel, StoryModel, TaskModel
+try:
+    from .linear_client import LinearAPIError, LinearClient
+    from .models import EpicModel, ProjectModel, StoryModel, TaskModel
+except ImportError:  # pragma: no cover - script execution fallback
+    from linear_client import LinearAPIError, LinearClient
+    from models import EpicModel, ProjectModel, StoryModel, TaskModel
 
 logger = logging.getLogger(__name__)
 

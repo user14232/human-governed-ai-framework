@@ -55,20 +55,21 @@ class RunEngine:
         copyfile(change_intent_path, artifacts_dir / "change_intent.yaml")
         metrics_path = run_metrics_path(run_dir)
 
+        initial_state = workflow_def.states[0]
         ctx = RunContext(
             run_id=run_id,
             project_root=project_root.resolve(),
             run_dir=run_dir.resolve(),
             artifacts_dir=artifacts_dir.resolve(),
             workflow_def=workflow_def,
-            current_state="INIT",
+            current_state=initial_state,
         )
         self._events.emit(
             run_metrics_path=metrics_path,
             run_id=ctx.run_id,
             event_type=self._events_event_type("run.started"),
             producer="runtime",
-            workflow_state=ctx.current_state,
+            workflow_state=initial_state,
             causation_event_id=None,
             payload={
                 "workflow_id": workflow_def.workflow_id,

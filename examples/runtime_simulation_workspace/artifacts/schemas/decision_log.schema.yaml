@@ -1,0 +1,46 @@
+schema_id: decision_log
+version: v1
+artifact_name: decision_log.yaml
+
+responsibility: >
+  Provide a deterministic, append-only audit trail of explicit human decisions
+  (approve / reject / defer) required by workflow gates.
+
+owner_roles:
+  - human_decision_authority
+allowed_readers:
+  - human
+  - agent_orchestrator
+  - agent_reviewer
+  - agent_release_manager
+  - agent_reflector
+  - agent_improvement_designer
+  - agent_architecture_guardian
+
+write_policy:
+  mutability: append_only
+  overwrite_allowed: false
+  notes: >
+    Add new decision entries; do not rewrite history. If a decision is superseded,
+    add a new entry that references the prior `decision_id`.
+
+required_fields:
+  - schema_version: "v1"
+  - decisions:
+      - decision_id: "<stable-string-id>"
+        timestamp: "<iso-8601>"
+        human_identity: "<string>"
+        decision: "<approve|reject|defer>"
+        scope: "<string>"
+        references:
+          - artifact: "<filename>"
+            artifact_id: "<string-or-null>"
+            artifact_hash: "<string-or-null>"
+        rationale: "<string>"
+        supersedes_decision_id: "<string-or-null>"
+
+determinism_requirements:
+  - append_only: true
+  - decision_ids_unique_within_file: true
+  - no_implicit_approvals: true
+  - each_gate_approval_requires_explicit_reference: true
