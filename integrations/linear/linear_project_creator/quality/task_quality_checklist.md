@@ -8,6 +8,16 @@ Tasks represent concrete implementation actions.
 □ Task affects a limited number of files or components
 □ Task produces a concrete result
 
+## Task Type (Recommended)
+
+□ `task_type` is set to `implementation` or `verification`
+□ All tasks that produce test evidence declare `task_type: verification`
+  (preferred over relying on keyword matching in the task name)
+□ All tasks that produce a code artifact or system change declare
+  `task_type: implementation`
+□ `task_type` value is valid — `implementation` or `verification` only
+  (required by TASK_TYPE_VALID when the field is present)
+
 ## Task Clarity
 
 □ Task description is unambiguous

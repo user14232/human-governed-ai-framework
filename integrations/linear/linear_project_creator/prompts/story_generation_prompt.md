@@ -102,22 +102,30 @@ Rules:
 
 ## Test Task Obligation
 
-Every Story that changes runtime behavior must contain at least one task with a
-test-oriented name.
+Every Story that changes runtime behavior must contain at least one verification task.
 
-Accepted keywords: `test`, `verify`, `validate`, `spec`, `check`.
+**Preferred method**: set `task_type: verification` on the task that produces test
+evidence. This is explicit, machine-readable, and does not rely on task name wording.
+
+**Legacy method**: task name contains a keyword from: `test`, `verify`, `validate`,
+`spec`, `check`. Supported for backward compatibility.
+
+Also set `task_type: implementation` on tasks that produce code artifacts or system
+changes. Both values are applied as Linear labels, enabling agent-side filtering.
 
 Rationale: bundling implementation and test evidence into a single task produces
 ambiguous done states. The test task is independently completable and produces
 attributable evidence.
 
-Example:
+Preferred example (explicit task_type):
 
 ```yaml
 tasks:
   - name: "Implement gate check sequence"
+    task_type: implementation
     done_criteria: "gate_evaluator enforces checks in fixed order per contract."
   - name: "Write unit tests for gate check sequence"
+    task_type: verification
     done_criteria: "All pass/fail cases per check type covered. Test suite passes."
 ```
 

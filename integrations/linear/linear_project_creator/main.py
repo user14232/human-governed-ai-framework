@@ -29,12 +29,13 @@ import argparse
 import json
 import logging
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 from config import load_config
 from linear_client import LinearAPIError, LinearClient
 from models import ProjectModel
-from project_builder import build_project
+from project_builder import BuildStats, build_project
 from work_item_linter import LintViolation, lint_project
 from yaml_parser import parse_yaml
 
@@ -160,6 +161,60 @@ def _write_mapping(mapping: dict, output_path: Path) -> None:
     logger.info("Mapping written to %s", output_path)
 
 
+def _write_run_report(
+    mapping: dict,
+    stats: BuildStats,
+    lint_violations: list[LintViolation],
+    lint_mode: str,
+    yaml_source: str,
+    dry_run: bool,
+    output_path: Path,
+) -> None:
+    """
+    Write a machine-readable run report JSON alongside the mapping file.
+
+    The report captures: timestamp, input, lint results, build counts, and
+    any unresolved blocks references — in a fixed, deterministic structure
+    suitable for automated post-processing by DevOS agents or CI pipelines.
+
+    The report file is written atomically (tmp → replace) like the mapping.
+    Failure to write the report is logged as a warning but never aborts the run.
+    """
+    report = {
+        "schema_version": "1",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "yaml_source": yaml_source,
+        "dry_run": dry_run,
+        "lint": {
+            "mode": lint_mode,
+            "violation_count": len(lint_violations),
+            "violations": [
+                {"context": v.context, "rule_id": v.rule_id, "message": v.message}
+                for v in lint_violations
+            ],
+        },
+        "build": {
+            "project_id": mapping.get("project", ""),
+            "milestones_created": stats.milestones_created,
+            "epics_created": stats.epics_created,
+            "stories_created": stats.stories_created,
+            "tasks_created": stats.tasks_created,
+            "relations_created": stats.relations_created,
+            "unresolved_blocks_count": len(stats.unresolved_blocks),
+            "unresolved_blocks": stats.unresolved_blocks,
+        },
+    }
+    report_path = output_path.with_name(output_path.stem + "_report.json")
+    try:
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = report_path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(report, indent=2), encoding="utf-8")
+        tmp.replace(report_path)
+        logger.info("Run report written to %s", report_path)
+    except OSError as exc:
+        logger.warning("Could not write run report to %s: %s", report_path, exc)
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -242,7 +297,7 @@ def main(argv: list[str] | None = None) -> int:
 
     # Pass flush_path so progress is persisted after each epic even on failure.
     try:
-        mapping = build_project(
+        mapping, build_stats = build_project(
             project=project,
             client=client,  # type: ignore[arg-type]  # safe: dry_run guards API calls
             team_id=team_id,
@@ -257,13 +312,23 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     # ------------------------------------------------------------------
-    # Step 4: Write final mapping and print summary.
+    # Step 4: Write final mapping + run report and print summary.
     # ------------------------------------------------------------------
     try:
         _write_mapping(mapping, output_path)
     except OSError as exc:
         logger.error("Could not write mapping file: %s", exc)
         return 1
+
+    _write_run_report(
+        mapping=mapping,
+        stats=build_stats,
+        lint_violations=lint_violations,
+        lint_mode=args.lint_mode,
+        yaml_source=str(Path(args.yaml_file).resolve()),
+        dry_run=args.dry_run,
+        output_path=output_path,
+    )
 
     _print_summary(mapping, dry_run=args.dry_run)
     return 0

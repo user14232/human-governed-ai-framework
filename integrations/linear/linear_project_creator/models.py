@@ -18,8 +18,14 @@ Quality contract:
   - StoryModel.effort and StoryModel.complexity are required bounded integers (1-5).
   - StoryModel.estimate is always derived as effort + complexity (range 2-10); explicit
     overrides in YAML that conflict with the computed value are rejected by the parser.
+  - StoryModel.design_freedom: required; declares agent latitude for solution design.
+    Allowed values: "high" | "restricted". Linted by STORY_DESIGN_FREEDOM_REQUIRED.
   - TaskModel.done_criteria: optional but linted; describes the verifiable outcome of
     the task (output artifact, test result, or observable state).
+  - TaskModel.task_type: optional; semantic classification of the task role in the
+    DevOS pipeline. Allowed values: "implementation" | "verification". When set to
+    "verification", satisfies STORY_MISSING_TEST_TASK without keyword matching.
+    Applied as an additional label in Linear so agents can filter by task role.
   - StoryModel.blocks: optional; names of stories that cannot start until this story is
     complete. Resolved to Linear issue relations by project_builder.py.
 """
@@ -97,12 +103,20 @@ class TaskModel:
 
     type: "task" | "bug" | "improvement" | "chore"
           Passed as a label to Linear (Linear has no native type field in standard API).
+    task_type: Optional. Semantic role of this task in the DevOS pipeline.
+               Allowed values: "implementation" | "verification".
+               "implementation" — produces a code artifact or system change.
+               "verification"   — produces test evidence; satisfies STORY_MISSING_TEST_TASK
+                                  without relying on keyword matching in the task name.
+               Applied as an additional label in Linear for agent-side filtering.
+               Validated by TASK_TYPE_VALID when present.
     done_criteria: Optional. Describes the verifiable outcome that defines task completion
                    (output artifact, test result, or observable system state). Linted by
                    TASK_MISSING_DOD when absent.
     """
     name: str
     type: str                    # issue type → applied as label
+    task_type: str | None        # "implementation" | "verification" — DevOS pipeline role
     description: str
     priority: int | None         # 0–4
     labels: tuple[str, ...]      # Additional labels beyond the type label

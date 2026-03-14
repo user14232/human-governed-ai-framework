@@ -118,17 +118,27 @@ Rules enforced:
 
 | Rule ID | Scope | Description |
 |---|---|---|
+| `PROJECT_NO_EPIC_DEPS` | Project | Multi-epic project must declare at least one epic `blocks` dependency |
 | `EPIC_MIN_STORIES` | Epic | Must contain ≥ 2 stories |
 | `EPIC_MAX_STORIES` | Epic | Must contain ≤ 10 stories |
 | `EPIC_DESC_MIN_WORDS` | Epic | Description must contain ≥ 20 words covering capability, motivation, and system impact |
+| `EPIC_MISSING_MILESTONE` | Epic | Must be assigned to a milestone when project defines milestones |
+| `EPIC_AC_CHECKBOX_FORMAT` | Epic | `acceptance_criteria` must contain at least one `- [ ]` checkbox item |
+| `EPIC_BLOCKS_VALID` | Epic | All `blocks` references must name epics defined in this project |
+| `EPIC_BLOCKS_CYCLE` | Epic | `blocks` declarations must not form a directed cycle |
 | `STORY_REQUIRED_FIELD` | Story | Must define all five DevOS planning fields |
+| `STORY_DESIGN_FREEDOM_REQUIRED` | Story | `design_freedom` is required; must be `high` or `restricted` |
+| `STORY_DESIGN_FREEDOM` | Story | `design_freedom`, when present, must be `high` or `restricted` |
 | `STORY_AC_REQUIRED` | Story | Must include `acceptance_criteria` |
 | `STORY_AC_CHECKBOX_FORMAT` | Story | `acceptance_criteria` must contain at least one `- [ ]` checkbox item |
 | `STORY_TASK_MIN` | Story | Must contain ≥ 2 tasks |
 | `STORY_TASK_MAX` | Story | Must contain ≤ 7 tasks |
-| `STORY_DESIGN_FREEDOM` | Story | `design_freedom`, when present, must be `high` or `restricted` |
+| `STORY_MISSING_TEST_TASK` | Story | At least one task must declare `task_type: verification` or have a test-oriented name |
+| `STORY_BLOCKS_VALID` | Story | All `blocks` references must name stories defined in this project |
+| `STORY_BLOCKS_CYCLE` | Story | `blocks` declarations must not form a directed cycle |
 | `TASK_MULTI_ACTION` | Task | Name must not combine multiple unrelated actions |
 | `TASK_MISSING_DOD` | Task | Must include a non-empty `done_criteria` field |
+| `TASK_TYPE_VALID` | Task | `task_type`, when present, must be `implementation` or `verification` |
 
 Violations are reported with full context paths and rule IDs. Behavior is controlled by
 `--lint-mode`:
@@ -172,11 +182,34 @@ proves the task is complete. Linted by `TASK_MISSING_DOD`.
 ```yaml
 tasks:
   - name: "Implement run lifecycle initialization logic"
+    task_type: implementation
     description: "Add run_id assignment, run directory setup, and resume entry points."
     done_criteria: |
       runtime/run_engine.py initializes run directories with correct identifiers.
       Resume path reconstructs run state from persisted evidence.
       Unit tests cover both init and resume paths. All tests pass.
+```
+
+### Task Type (`task_type`)
+
+Tasks may declare a `task_type` field to express their **semantic pipeline role**:
+
+| Value | Meaning | Effect |
+|---|---|---|
+| `implementation` | Produces a code artifact or system change | Applied as a Linear label |
+| `verification` | Produces test evidence | Applied as a Linear label; satisfies `STORY_MISSING_TEST_TASK` without keyword matching |
+
+Using `task_type: verification` is the preferred way to declare a test task. It is
+explicit, machine-readable, and works regardless of task name wording.
+
+```yaml
+tasks:
+  - name: "Implement gate check sequence"
+    task_type: implementation
+    done_criteria: "gate_evaluator enforces checks in fixed order per contract."
+  - name: "Write unit tests for gate check sequence"
+    task_type: verification
+    done_criteria: "All pass/fail cases covered. Test suite passes."
 ```
 
 ### Story Dependency Modeling (`blocks`)
@@ -194,7 +227,11 @@ stories:
 
 This means `Implement shared types` must complete before the blocked stories can start.
 The tool creates the corresponding Linear relations automatically in a post-build pass.
-Cross-epic references are supported. Unresolvable names are logged as warnings.
+Cross-epic references are supported. Unresolvable names are logged as warnings and
+captured in the run report.
+
+Cycle detection runs at lint time (`STORY_BLOCKS_CYCLE`, `EPIC_BLOCKS_CYCLE`). Cycles
+fail the build in `enforce` mode before any API call is made.
 
 ---
 
@@ -210,16 +247,19 @@ See [`templates/template.yaml`](templates/template.yaml) for the full annotated 
 |-----------|-----------------------------------------------------------------------------|
 | `project` | `name`, `description`                                                       |
 | `epic`    | `name`, `description` (≥ 20 words), `acceptance_criteria`                  |
-| `story`   | `name`, `description`, `effort` (1–5), `complexity` (1–5)                  |
+| `story`   | `name`, `description`, `effort` (1–5), `complexity` (1–5), `design_freedom` |
 | `task`    | `name` (bare string or mapping)                                             |
 
 ### Optional fields with lint enforcement
 
 | Field | Level | Lint rule | Notes |
 |---|---|---|---|
+| `acceptance_criteria` | Epic | `EPIC_AC_CHECKBOX_FORMAT` | Must use `- [ ]` format |
 | `acceptance_criteria` | Story | `STORY_AC_CHECKBOX_FORMAT` | When present, must use `- [ ]` format |
 | `done_criteria` | Task | `TASK_MISSING_DOD` | Verifiable outcome for task completion |
-| `blocks` | Story | — (warning at build time) | List of story names blocked by this story |
+| `task_type` | Task | `TASK_TYPE_VALID` | `implementation` or `verification`; enables agent filtering |
+| `blocks` | Story | `STORY_BLOCKS_VALID`, `STORY_BLOCKS_CYCLE` | List of story names blocked by this story |
+| `blocks` | Epic | `EPIC_BLOCKS_VALID`, `EPIC_BLOCKS_CYCLE` | List of epic names blocked by this epic |
 | `assignee` | Story/Task | — | Strongly recommended; enables ownership tracking |
 
 ### Effort and complexity scales
@@ -257,8 +297,9 @@ If `estimate` is present and conflicts with the computed value, the parser retur
 
 ### Epic acceptance criteria
 
-Every epic must include a non-empty `acceptance_criteria` markdown block.
-The tool appends it to the Linear issue body under a `## Acceptance Criteria` heading.
+Every epic must include a non-empty `acceptance_criteria` markdown block using `- [ ]`
+checkbox format. The tool appends it to the Linear issue body under a `## Acceptance Criteria`
+heading. Enforced by `EPIC_AC_CHECKBOX_FORMAT`.
 
 ```yaml
 epics:
@@ -270,11 +311,17 @@ epics:
     stories:
       - name: "My Story"
         description: "Story objective and scope."
+        design_freedom: "high"
         effort: 2
         complexity: 3
         tasks:
           - name: "Implement X"
+            task_type: implementation
             description: "Implementation notes."
+            done_criteria: "Module X is implemented. All unit tests pass."
+          - name: "Write unit tests for X"
+            task_type: verification
+            done_criteria: "All branches covered. Test suite passes."
 ```
 
 ### Label auto-creation
@@ -298,9 +345,12 @@ label_definitions:
 
 ---
 
-## Output: linear_mapping.json
+## Output Files
 
-After a successful run, a mapping file is written to `linear_mapping.json` (or the path specified with `--output`). It maps human-readable names to Linear IDs:
+### `linear_mapping.json`
+
+After a successful run, a mapping file is written to `linear_mapping.json` (or the path
+specified with `--output`). It maps human-readable names to Linear IDs:
 
 ```json
 {
@@ -320,7 +370,42 @@ After a successful run, a mapping file is written to `linear_mapping.json` (or t
 }
 ```
 
-This file is flushed to disk incrementally after each epic completes. If the run fails mid-way, the partial mapping contains all IDs created before the failure.
+This file is flushed to disk incrementally after each epic completes. If the run fails
+mid-way, the partial mapping contains all IDs created before the failure.
+
+### `<mapping_stem>_report.json`
+
+A machine-readable run report is written alongside the mapping file (e.g.
+`linear_mapping_report.json`). It captures:
+
+- Timestamp and input file path
+- Lint mode and violation list
+- Creation counts (milestones, epics, stories, tasks, relations)
+- Unresolved blocks references (if any)
+
+```json
+{
+  "schema_version": "1",
+  "timestamp": "2026-03-14T10:00:00+00:00",
+  "yaml_source": "/path/to/project.yaml",
+  "dry_run": false,
+  "lint": {
+    "mode": "enforce",
+    "violation_count": 0,
+    "violations": []
+  },
+  "build": {
+    "project_id": "PRJ-xxxxxxxx",
+    "milestones_created": 3,
+    "epics_created": 3,
+    "stories_created": 13,
+    "tasks_created": 39,
+    "relations_created": 12,
+    "unresolved_blocks_count": 0,
+    "unresolved_blocks": []
+  }
+}
+```
 
 ---
 
@@ -337,9 +422,10 @@ This file is flushed to disk incrementally after each epic completes. If the run
 
 ```
 linear_project_creator/
-├── main.py                # CLI entry point
+├── main.py                # CLI entry point; writes mapping + run report
 ├── linear_client.py       # GraphQL HTTP client; includes create_issue_relation()
 ├── project_builder.py     # Orchestration: project → epics → stories → tasks → relations
+│                          # Returns (mapping, BuildStats) with creation counters
 ├── yaml_parser.py         # YAML loading and structural validation (Layer 1)
 ├── work_item_linter.py    # Semantic quality linting against work item contract (Layer 2)
 ├── models.py              # Frozen dataclasses (TaskModel, StoryModel, EpicModel, ProjectModel)
@@ -354,7 +440,7 @@ linear_project_creator/
 │   └── story_generation_prompt.md  # Authoring guidance for Stories (vertical slice + dependencies)
 ├── quality/
 │   ├── story_quality_checklist.md  # Full Story readiness checklist (vertical slice + dependency)
-│   └── task_quality_checklist.md   # Full Task readiness checklist (done_criteria)
+│   └── task_quality_checklist.md   # Full Task readiness checklist (done_criteria + task_type)
 └── templates/
     └── template.yaml               # Annotated canonical input contract
 ```

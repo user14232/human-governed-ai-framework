@@ -70,6 +70,9 @@ Required / optional field summary:
     OR mapping:
       name          required
       type          optional  (default: "task")
+      task_type     optional  ("implementation" | "verification"; semantic pipeline role;
+                               linted by TASK_TYPE_VALID; "verification" satisfies
+                               STORY_MISSING_TEST_TASK without keyword matching)
       description   optional
       priority      optional
       labels        optional
@@ -384,6 +387,7 @@ def _parse_task(
         return TaskModel(
             name=task_name,
             type="task",
+            task_type=None,
             description=f"Task: {task_name}",
             priority=None,
             labels=(),
@@ -402,6 +406,7 @@ def _parse_task(
         return TaskModel(
             name=name,
             type=_opt_str(raw, "type") or "task",
+            task_type=_opt_str(raw, "task_type"),
             description=_opt_str(raw, "description") or f"Task: {name}",
             priority=_opt_int(raw, "priority", context, errors),
             labels=_opt_str_list(raw, "labels", context, errors),

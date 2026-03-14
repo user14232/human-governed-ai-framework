@@ -70,7 +70,17 @@ Epic acceptance criteria must describe:
 • integration expectations
 • completion conditions for the Epic
 
-Each criterion must use the `- [ ]` checkbox format so it is independently verifiable.
+Each criterion **must** use the `- [ ]` checkbox format so it is independently
+verifiable. Enforced by `EPIC_AC_CHECKBOX_FORMAT`.
+
+Example:
+
+```
+acceptance_criteria: |
+  - [ ] Gate evaluator enforces all four check types in fixed order.
+  - [ ] Workflow state advances by exactly one transition per advance call.
+  - [ ] All compliance checks pass with deterministic test fixtures.
+```
 
 ---
 

@@ -1,0 +1,21 @@
+{
+  "schema_version": "1",
+  "timestamp": "2026-03-14T16:35:10.340327+00:00",
+  "yaml_source": "C:\\Users\\phili\\workspace\\human-governed-ai-framework\\integrations\\linear\\linear_project_creator\\runtime_phase3_runtime_implementation_project.yaml",
+  "dry_run": false,
+  "lint": {
+    "mode": "enforce",
+    "violation_count": 0,
+    "violations": []
+  },
+  "build": {
+    "project_id": "b4b4ff0b-6e27-4b2c-85a0-aeb220d9edd2",
+    "milestones_created": 3,
+    "epics_created": 3,
+    "stories_created": 13,
+    "tasks_created": 33,
+    "relations_created": 20,
+    "unresolved_blocks_count": 0,
+    "unresolved_blocks": []
+  }
+}

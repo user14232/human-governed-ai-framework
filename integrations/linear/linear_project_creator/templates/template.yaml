@@ -178,7 +178,8 @@ epics:
           # Example: "Does not cover server-side session expiry policy.
           #           Does not change the public API surface."
 
-        design_freedom: "high"                   # [OPTIONAL] Allowed values: high | restricted
+        design_freedom: "high"                   # [REQUIRED] Allowed values: high | restricted
+          # Required: linted by STORY_DESIGN_FREEDOM_REQUIRED.
           # high       — the implementation agent may propose the solution design.
           # restricted — the solution approach is pre-determined; agent must follow
           #              the architecture_context and constraints precisely.
@@ -209,6 +210,12 @@ epics:
         tasks:
           - name: "Implement X"                  # [REQUIRED]
             type: "task"                         # [OPTIONAL] task|bug|improvement|chore
+            task_type: "implementation"          # [OPTIONAL] implementation|verification
+                                                 # Declares semantic pipeline role. Applied
+                                                 # as an additional Linear label for agent
+                                                 # filtering. "verification" satisfies
+                                                 # STORY_MISSING_TEST_TASK without keyword
+                                                 # matching. Validated by TASK_TYPE_VALID.
             description: |                       # [REQUIRED]
               Detailed implementation notes and constraints.
             priority: 3                          # [OPTIONAL]
@@ -228,6 +235,8 @@ epics:
 
           - name: "Write unit tests for X"
             type: "task"
+            task_type: "verification"            # Satisfies STORY_MISSING_TEST_TASK
+                                                 # explicitly; preferred over keyword matching.
             description: "Cover all branches including error paths."
             priority: 3
             estimate: 1
@@ -235,6 +244,7 @@ epics:
 
           - name: "Fix bug in Y"
             type: "bug"
+            task_type: "implementation"
             description: |
               Repro:
               1. Do this

@@ -1,863 +1,715 @@
 project:
   name: "Phase 3 Runtime Implementation"
-  summary: "Linear execution plan for implementing the DevOS runtime in Phase 3."
+  summary: "Implement the deterministic DevOS runtime per Phase 3 contracts."
   description: |
-    This project defines the implementation work for the Phase 3 DevOS runtime.
-    Planning baseline sources:
-    - docs/phase3_runtime_realization_plan.md
-    - docs/runtime_module_architecture.md
-    - docs/modules_and_layers.md
-
-    Scope:
-    - Implement runtime modules and boundaries required by the normative contracts.
-    - Implement deterministic workflow execution, gate evaluation, and event persistence.
-    - Implement contract-compliance tests and evidence needed for SC-01 to SC-10.
-
-    Non-goals:
-    - Framework contract redesign.
-    - Autonomous agent loop execution.
-    - Distributed runtime infrastructure.
-  priority: 1
+    This project implements the DevOS runtime defined by the Phase 3 realization plan.
+    Scope includes module implementation, deterministic workflow execution, artifact lifecycle
+    enforcement, decision and event processing, and compliance evidence for SC-01 to SC-10.
+    The implementation follows batch-oriented execution, explicit data flow through artifacts,
+    and no hidden runtime state between invocations.
+  priority: 2
   state: "planned"
-  labels: ["runtime", "phase3", "implementation"]
+  labels: ["runtime", "phase-3", "deterministic"]
 
 label_definitions:
   issue_labels:
     - name: "epic"
-      description: "Top-level workstream issue."
+      description: "Top-level runtime workstream issue."
       color: "#4F46E5"
+      is_group: false
     - name: "story"
-      description: "Story-level implementation issue."
+      description: "Story-level runtime implementation issue."
       color: "#0EA5E9"
+      is_group: false
     - name: "task"
-      description: "Task-level implementation unit."
+      description: "Task-level runtime execution unit."
       color: "#10B981"
-    - name: "runtime"
-      description: "Runtime architecture scope."
-      color: "#14B8A6"
-    - name: "phase3"
-      description: "Phase 3 realization scope."
-      color: "#8B5CF6"
+      is_group: false
     - name: "implementation"
-      description: "Runtime implementation work."
-      color: "#F97316"
-    - name: "compliance"
-      description: "Contract compliance and evidence."
-      color: "#DC2626"
-    - name: "testing"
-      description: "Deterministic runtime test coverage."
-      color: "#06B6D4"
+      description: "Implementation task type."
+      color: "#2563EB"
+      is_group: false
+    - name: "verification"
+      description: "Verification task type."
+      color: "#059669"
+      is_group: false
   project_labels:
     - name: "runtime"
-      description: "Runtime architecture scope."
-      color: "#14B8A6"
-    - name: "phase3"
-      description: "Phase 3 realization scope."
-      color: "#8B5CF6"
-    - name: "implementation"
-      description: "Runtime implementation work."
-      color: "#F97316"
+      description: "DevOS runtime scope."
+      color: "#7C3AED"
+      is_group: false
+    - name: "phase-3"
+      description: "Phase 3 realization work."
+      color: "#0F766E"
+      is_group: false
+    - name: "deterministic"
+      description: "Deterministic, reproducible delivery scope."
+      color: "#DC2626"
+      is_group: false
 
 milestones:
   - name: "Runtime Core In Place"
-    description: "Core runtime modules and deterministic interfaces are implemented and callable."
+    description: "Core modules, types, and base execution engine are implemented."
   - name: "Workflow and Events Operational"
-    description: "Workflow transitions and required event emission are fully implemented."
+    description: "Workflow progression, gates, decisions, invocation, and events are operational."
   - name: "Phase 3 Compliance Evidence Complete"
-    description: "SC-01 to SC-10 evidence and Level 3 readiness checks are complete."
+    description: "All SC criteria have deterministic evidence and test coverage."
 
-# =============================================================================
-# EPICS
-# Sequencing: Core → Workflow → Compliance.
-# blocks declarations make this order machine-readable and visible in Linear.
-# =============================================================================
 epics:
-
-  # ---------------------------------------------------------------------------
-  # EPIC 1: Runtime Core Modules
-  # Must complete before Workflow epic can start: types, engines, store, and
-  # the entry point must exist before gate/event behavior can be layered on.
-  # ---------------------------------------------------------------------------
   - name: "Implement Runtime Core Modules"
     description: |
-      Implement module boundaries and deterministic behavior for the runtime core.
-      The runtime currently lacks stable typed contracts, lifecycle control, deterministic
-      storage operations, artifact enforcement, and a callable entry point. Without these
-      foundations, no operational behavior (gates, events, invocation) can be implemented
-      or tested. This epic delivers the complete core layer: shared types, framework loaders,
-      run engine, workflow engine, store, artifact system, and runtime orchestrator.
-    labels: ["runtime", "phase3", "implementation"]
+      Implement the runtime foundations defined by the module architecture: shared immutable
+      types, framework loaders, store abstractions, run lifecycle handling, workflow progression,
+      and CLI orchestration entry points. This epic establishes deterministic execution boundaries,
+      explicit interfaces, and idempotent filesystem interactions required for compliant runtime
+      behavior under batch-oriented execution constraints.
     milestone: "Runtime Core In Place"
+    priority: 2
     acceptance_criteria: |
-      - [ ] Runtime module responsibilities are implemented according to module contracts.
-      - [ ] Layer boundaries from modules_and_layers are preserved in implementation.
-      - [ ] Run state can be reconstructed from persisted artifacts and decisions only.
-      - [ ] A callable runtime entry point accepts a workflow definition and run ID
-            and returns a deterministic run result.
+      - [ ] Runtime module skeleton matches the architecture document paths and boundaries.
+      - [ ] Shared type definitions are immutable and imported without circular dependency.
+      - [ ] Run lifecycle and state progression are executable via deterministic interfaces.
+      - [ ] CLI entry points map directly to run, resume, status, check, and advance operations.
     blocks:
       - "Implement Workflow Gates Invocation Decisions and Events"
     stories:
-
-      # Story 1: Shared types and framework loaders — foundational; blocks all other stories
       - name: "Implement shared types and framework loaders"
         type: "story"
         description: |
-          Implement frozen shared runtime types and read-only framework loader modules
-          for workflow definitions, schemas, and agent contracts.
+          Implement the shared runtime value objects and read-only framework loaders for workflows,
+          schemas, and agent contracts exactly as specified in the module architecture.
         problem_statement: |
-          Runtime behavior depends on stable typed contracts, but typed runtime objects and
-          deterministic loader boundaries are not yet fully implemented.
+          Runtime modules require stable, explicit contract types and parser outputs.
+          Without shared immutable types and deterministic loader behavior, downstream runtime
+          components cannot exchange state safely or reproducibly.
         scope: |
-          Include runtime/types and runtime/framework module implementation.
-          Include one-time load behavior at run initialization.
-          Exclude workflow execution logic.
+          Add runtime type modules for run, workflow, artifact, event, decision, and gate objects.
+          Add framework loader modules for workflow, schema, and agent contracts.
+          Include parsing and typed return behavior only.
         constraints: |
-          Types remain immutable value objects.
-          Loader modules are read-only and side-effect free.
-          No hidden state across invocations.
+          Keep all shared types immutable and side-effect free.
+          Keep framework loaders read-only and deterministic.
+          Do not add hidden caches or mutable global state.
         architecture_context: |
-          Sources: docs/runtime_module_architecture.md sections 4 and 5.
-          Layer mapping: shared types and framework loaders.
+          runtime/types/* and runtime/framework/* are foundational layers used by all runtime
+          modules. They must have no dependencies on runtime engine components.
         non_goals: |
-          No gate evaluation implementation.
-          No event persistence implementation.
+          Do not implement workflow execution or artifact validation logic in this story.
+          Do not add policy interpretation beyond explicit contract parsing.
         design_freedom: "restricted"
         effort: 3
         complexity: 2
-        labels: ["runtime", "implementation"]
+        milestone: "Runtime Core In Place"
         acceptance_criteria: |
-          - [ ] Shared type modules expose required value objects and enums.
-          - [ ] Loader modules parse framework inputs into typed structures.
-          - [ ] Runtime reads framework contracts once at run initialization.
-        blocks:
-          - "Implement run engine lifecycle"
-          - "Implement workflow engine state advancement"
-          - "Implement store and artifact system behavior"
-          - "Implement runtime orchestrator and entry point"
+          - [ ] All six shared type modules compile and expose documented fields.
+          - [ ] Loader functions return typed structures with deterministic parse behavior.
+          - [ ] Unit tests verify parse success and parse failure paths.
         tasks:
           - name: "Implement frozen shared runtime value objects"
             type: "task"
-            description: "Add shared type classes for run, workflow, artifact, event, decision, and gate contracts."
-            labels: ["runtime", "implementation"]
-            done_criteria: |
-              runtime/types modules define immutable value objects for run, workflow, artifact,
-              event, decision, and gate contracts. All fields are frozen and non-nullable where
-              required by the runtime contract.
+            task_type: "implementation"
+            description: "Create immutable dataclasses and enums for run, workflow, artifact, event, decision, and gate types."
+            done_criteria: "All shared type modules are implemented with frozen value objects and import without circular dependency."
           - name: "Implement deterministic framework contract loaders"
             type: "task"
-            description: "Add workflow, schema, and agent loader modules with read-only parsing behavior."
-            labels: ["runtime", "implementation"]
-            done_criteria: |
-              runtime/framework loaders parse workflow, schema, and agent contracts into typed
-              objects without side effects. Loader modules perform one-time load at initialization
-              and return immutable results.
+            task_type: "implementation"
+            description: "Implement workflow, schema, and agent contract loaders with explicit parse errors."
+            done_criteria: "Loader modules parse valid files and raise deterministic parse errors for invalid input."
           - name: "Write unit tests for runtime type module"
             type: "task"
-            description: "Verify immutability, deterministic serialization, and read-only parse behavior."
-            labels: ["runtime", "testing"]
-            done_criteria: |
-              Unit tests verify immutability enforcement on all value objects.
-              Integration tests verify read-only loader behavior and deterministic parse outputs.
-              Test suite passes with no failures.
+            task_type: "verification"
+            description: "Add tests for type construction and loader parse behavior."
+            done_criteria: "Unit tests pass for valid and invalid cases across all shared type and loader modules."
 
-      # Story 2: Run engine lifecycle — depends on types
       - name: "Implement run engine lifecycle"
         type: "story"
         description: |
-          Implement run lifecycle control including run initialization, resume path, and
-          terminal state detection. Scope is limited to run-level lifecycle; workflow
-          transition logic is handled separately.
+          Implement run initialization, resume, and terminal handling with deterministic run_id
+          generation and explicit run context reconstruction.
         problem_statement: |
-          The runtime requires deterministic run lifecycle handling, but run initialization,
-          resume behavior, and terminal state detection are not fully implemented to contract.
+          The runtime cannot execute or recover runs without a deterministic lifecycle component
+          that controls run identity, run directory creation, and resume behavior.
         scope: |
-          Include run initialization with contract-compliant run identifier assignment.
-          Include run directory structure creation and resume path.
-          Include terminal state detection.
-          Exclude workflow transition progression logic.
+          Implement initialize_run, resume_run, and terminal declaration interfaces.
+          Integrate workflow loading and run directory setup.
+          Emit lifecycle events through the event system interface.
         constraints: |
-          Run identifier format must match the runtime contract.
-          Resume must reuse existing run identifier without modification.
-          Terminal states are declared in the workflow definition; no hardcoded states.
+          run_id format must follow RUN-<YYYYMMDD>-<suffix>.
+          Resume must not assign a new run_id.
+          No in-memory state may be required across CLI invocations.
         architecture_context: |
-          Sources: docs/phase3_runtime_realization_plan.md sections 4.1 and 5.
-          Reference: docs/runtime_module_architecture.md run_engine specification.
+          runtime/engine/run_engine.py depends on runtime/framework/workflow_loader.py,
+          runtime/store/run_store.py, runtime/events/event_system.py, and workflow engine interfaces.
         non_goals: |
-          No workflow transition execution in this story.
-          No compliance reporting outputs.
+          Do not implement gate evaluator internals in this story.
+          Do not implement full event system payload formatting here.
         design_freedom: "restricted"
         effort: 3
-        complexity: 2
-        labels: ["runtime", "implementation"]
-        acceptance_criteria: |
-          - [ ] Run engine assigns run identifiers in contract-compliant format.
-          - [ ] Run engine initializes the required run directory structure.
-          - [ ] Resume path reconstructs state from persisted evidence only.
-          - [ ] Terminal state detection returns a deterministic result.
+        complexity: 3
+        milestone: "Runtime Core In Place"
         blocks:
-          - "Implement gate evaluator and gate check sequence"
-          - "Implement invocation layer with single-shot enforcement"
+          - "Implement shared types and framework loaders"
+        acceptance_criteria: |
+          - [ ] initialize_run creates run directory and returns valid RunContext.
+          - [ ] resume_run reconstructs current state deterministically from durable evidence.
+          - [ ] Terminal declaration validates terminal states and triggers extraction hook call.
         tasks:
           - name: "Implement run lifecycle initialization logic"
             type: "task"
-            description: "Add run_id assignment, run directory setup, terminal detection, and resume entry points."
-            labels: ["runtime", "implementation"]
-            done_criteria: |
-              run_engine initializes run context with contract-compliant run_id format and creates
-              required run directory structure. Resume path reuses existing run_id and reconstructs
-              state from persisted artifacts and decisions.
+            task_type: "implementation"
+            description: "Add run creation flow with run_id generation, workflow load, and run directory setup."
+            done_criteria: "initialize_run creates expected filesystem paths and returns deterministic run context."
           - name: "Write unit tests for run lifecycle"
             type: "task"
-            description: "Verify run_id format, directory creation, resume path, and terminal detection."
-            labels: ["runtime", "testing"]
-            done_criteria: |
-              Unit tests verify run_id format compliance, correct directory creation, resume
-              reconstruction from fixtures, and terminal state detection. All cases pass.
+            task_type: "verification"
+            description: "Cover init, resume, and invalid terminal behavior."
+            done_criteria: "Run lifecycle tests pass for success and failure branches including resume reconstruction."
 
-      # Story 3: Workflow engine state advancement — depends on types
       - name: "Implement workflow engine state advancement"
         type: "story"
         description: |
-          Implement deterministic workflow transition progression with exactly one transition
-          per advance call. Scope is limited to state advancement; gate evaluation is handled
-          separately.
+          Implement transition traversal, one-step advancement behavior, and deterministic state
+          reconstruction for resume operations.
         problem_statement: |
-          The runtime requires deterministic state advancement, but workflow transition
-          progression with explicit current state updates is not yet implemented.
+          Runtime execution requires explicit transition selection, gate evaluation ordering,
+          and resumable state reconstruction from persisted run evidence.
         scope: |
-          Include transition progression logic in declared transition order.
-          Include explicit current state updates after each transition.
-          Exclude gate evaluator implementation.
+          Implement get_eligible_transitions, advance, and reconstruct_state.
+          Integrate with gate evaluator interface and event system calls.
+          Preserve transition ordering from workflow definitions.
         constraints: |
-          Each advance call executes at most one transition.
-          Transition order follows the workflow definition declaration order.
-          Current state must be updated atomically with each transition.
+          Only one successful transition may execute per advance call.
+          Transition checks must occur in declared order.
+          Reconstruction must rely only on run metrics and gate checks against artifacts.
         architecture_context: |
-          Sources: docs/phase3_runtime_realization_plan.md section 4.2.
-          Reference: docs/runtime_module_architecture.md workflow_engine specification.
+          runtime/engine/workflow_engine.py is called by run_engine and invokes gate_evaluator.
+          It must avoid hidden state and retain pure transition semantics.
         non_goals: |
-          No gate condition evaluation.
-          No agent invocation dispatch.
+          Do not implement decision processing in this story.
+          Do not implement agent invocation dispatch in this story.
         design_freedom: "restricted"
         effort: 3
-        complexity: 2
-        labels: ["runtime", "implementation"]
-        acceptance_criteria: |
-          - [ ] Workflow engine advances exactly one transition per advance call.
-          - [ ] Transition order follows workflow definition declaration order.
-          - [ ] Current state is updated deterministically after each advance.
+        complexity: 3
+        milestone: "Runtime Core In Place"
         blocks:
-          - "Implement gate evaluator and gate check sequence"
+          - "Implement run engine lifecycle"
+        acceptance_criteria: |
+          - [ ] Eligible transitions are returned in workflow definition order.
+          - [ ] advance executes at most one transition and reports blocked states explicitly.
+          - [ ] reconstruct_state follows primary and fallback reconstruction paths deterministically.
         tasks:
           - name: "Implement deterministic transition advancement logic"
             type: "task"
-            description: "Add workflow transition progression with explicit current state updates and transition ordering."
-            labels: ["runtime", "implementation"]
-            done_criteria: |
-              workflow_engine advances at most one transition per call in declared transition order.
-              Current state is updated atomically. Repeated calls from the same state produce
-              deterministic outcomes.
+            task_type: "implementation"
+            description: "Implement transition loop, gate invocation, and new state result construction."
+            done_criteria: "advance returns deterministic transitioned or blocked results for fixed input artifacts."
           - name: "Write unit tests for workflow state advancement"
             type: "task"
-            description: "Verify single-transition-per-call behavior, ordering, and deterministic outcomes."
-            labels: ["runtime", "testing"]
-            done_criteria: |
-              Unit tests assert single-advance behavior, correct transition ordering, and
-              idempotent outcomes across repeated calls from terminal states. Test suite passes.
+            task_type: "verification"
+            description: "Cover pass and fail gates and no eligible transition path."
+            done_criteria: "Workflow engine tests pass for transition success, block behavior, and reconstruction fallback."
 
-      # Story 4: Store and artifact system — depends on types
       - name: "Implement store and artifact system behavior"
         type: "story"
         description: |
-          Implement filesystem abstractions and artifact lifecycle behavior including hashing,
-          version supersession, structural validation, and immutability checks.
+          Implement filesystem store helpers and artifact lifecycle functions required for
+          deterministic storage, hashing, validation, supersession, and immutability checks.
         problem_statement: |
-          Artifact handling is central to runtime determinism, but artifact lifecycle
-          enforcement and storage abstractions are not fully implemented.
+          Runtime compliance requires strict artifact lifecycle control and deterministic I/O,
+          including atomic writes and immutable approved artifacts.
         scope: |
-          Include runtime/store and runtime/artifact_system modules.
-          Include hash computation from disk and supersession procedure.
-          Exclude semantic content validation.
+          Implement run_store and file_store primitives.
+          Implement artifact registration, structure validation, supersession, and hash reads.
+          Keep interfaces explicit and module boundaries clear.
         constraints: |
-          Hashes are computed from disk with normalized encoding rules.
-          Approved artifacts are immutable.
-          Project input artifacts remain read-only.
+          Use atomic write and rename semantics where defined.
+          Hash must be computed from disk content after normalization.
+          Approved artifacts must not be modified.
         architecture_context: |
-          Sources: docs/phase3_runtime_realization_plan.md sections 4.4 and 6.
-          Reference: docs/runtime_module_architecture.md store and artifact system sections.
+          runtime/store/* and runtime/artifacts/artifact_system.py provide shared I/O and artifact
+          lifecycle services consumed by gate evaluator, invocation layer, and decision logic.
         non_goals: |
-          No domain-specific semantic validation heuristics.
-          No external object storage integration.
+          Do not add semantic domain validation in this story.
+          Do not implement decision log writing.
         design_freedom: "restricted"
         effort: 4
         complexity: 3
-        labels: ["runtime", "implementation"]
-        acceptance_criteria: |
-          - [ ] Store modules provide deterministic filesystem operations.
-          - [ ] Artifact system enforces versioning and immutability rules.
-          - [ ] Structural validation results are produced for markdown and YAML artifacts.
+        milestone: "Runtime Core In Place"
         blocks:
-          - "Implement gate evaluator and gate check sequence"
-          - "Implement artifact decision and event integrity tests"
+          - "Implement shared types and framework loaders"
+        acceptance_criteria: |
+          - [ ] Run and file store operations are deterministic and testable.
+          - [ ] Artifact register and validate behavior enforces structural schema requirements.
+          - [ ] Supersession and immutability checks follow contract rules.
         tasks:
           - name: "Implement deterministic run store operations"
             type: "task"
-            description: "Add atomic writes, path resolution, and disk-based hash utility operations."
-            labels: ["runtime", "implementation"]
-            done_criteria: |
-              runtime/store provides atomic write and rename operations, deterministic path
-              resolution, and sha256-from-disk helpers. Encoding normalization is explicit.
+            task_type: "implementation"
+            description: "Implement create, locate, and list run directory helpers plus run metadata paths."
+            done_criteria: "run_store returns stable paths and deterministic run listings for fixed filesystem state."
           - name: "Implement artifact lifecycle enforcement functions"
             type: "task"
-            description: "Add register, validate, supersede, and approved artifact immutability checks."
-            labels: ["runtime", "implementation"]
-            done_criteria: |
-              artifact_system implements register, structural validate, supersede, and
-              approved-artifact immutability checks per runtime contract.
+            task_type: "implementation"
+            description: "Implement register, validate, supersede, immutability check, and hash retrieval."
+            done_criteria: "artifact_system enforces structure and immutability and returns explicit error conditions."
           - name: "Write unit tests for run store module"
             type: "task"
-            description: "Verify atomic operations, hash computation, supersession sequence, and immutability rejection."
-            labels: ["runtime", "testing"]
-            done_criteria: |
-              File system tests verify atomic writes with normalized encoding assumptions.
-              Compliance tests verify supersession order, hash stability, and immutability
-              rejection behavior. Test suite passes with no failures.
+            task_type: "verification"
+            description: "Add unit tests for run_store and file_store deterministic operations."
+            done_criteria: "Store tests pass for create, read, write, rename, hash, and parse failure scenarios."
 
-      # Story 5: Runtime orchestrator — depends on all other Epic 1 stories
       - name: "Implement runtime orchestrator and entry point"
         type: "story"
         description: |
-          Implement the runtime orchestrator that wires all core subsystems into a single
-          callable entry point. The orchestrator accepts a workflow definition and run
-          identifier, delegates to run engine, workflow engine, store, and artifact system,
-          and returns a deterministic run result.
+          Implement the CLI command interface and orchestrator flow that wires runtime modules
+          together for run and resume operations.
         problem_statement: |
-          All core subsystems are implemented independently, but there is no entry point
-          that connects them into a callable runtime. Without an orchestrator, the runtime
-          cannot be invoked end-to-end by an agent or developer.
+          Runtime modules need an explicit external command surface and orchestration flow
+          that preserves contract boundaries and deterministic stage execution.
         scope: |
-          Include a Python module or CLI that accepts workflow definition path and run ID.
-          Include orchestration of run engine, workflow engine, and store subsystems.
-          Include a minimal end-to-end smoke test verifying a single-workflow run.
-          Exclude gate evaluation — the orchestrator must support stub-mode gate results.
+          Add CLI commands for run, resume, status, check, and advance.
+          Wire module interactions through explicit arguments and context objects.
+          Add basic integration smoke path for command-to-module flow.
         constraints: |
-          Entry point must not contain business logic; it delegates exclusively to subsystems.
-          Stub-mode gate evaluation must produce a pass result for all gate checks.
-          Run result must be deterministic and serializable.
+          No autonomous loop command may run unbounded transitions.
+          Each advance call may process only one transition attempt.
+          No hidden singleton state may exist between command invocations.
         architecture_context: |
-          Sources: docs/runtime_module_architecture.md orchestration layer section.
-          Depends on: run_engine, workflow_engine, runtime/store, runtime/framework.
+          runtime/cli.py and orchestrator flow call run_engine and workflow_engine with explicit
+          dependencies and run context fields.
         non_goals: |
-          No gate evaluation logic in the orchestrator.
-          No event emission in this story.
-          No CLI argument parsing beyond workflow path and run ID.
-        design_freedom: "high"
-        effort: 3
+          Do not implement CI pipeline behavior here.
+          Do not implement full compliance matrix tests in this story.
+        design_freedom: "restricted"
+        effort: 2
         complexity: 3
-        labels: ["runtime", "implementation"]
+        milestone: "Runtime Core In Place"
+        blocks:
+          - "Implement run engine lifecycle"
+          - "Implement workflow engine state advancement"
         acceptance_criteria: |
-          - [ ] Entry point accepts workflow definition path and run identifier.
-          - [ ] A minimal workflow run completes deterministically end-to-end.
-          - [ ] Run result is serializable and references the run ID.
-          - [ ] Orchestrator delegates to subsystems without implementing business logic.
+          - [ ] CLI command surface maps to documented runtime commands.
+          - [ ] Orchestrator executes explicit module flow without hidden mutable state.
+          - [ ] Smoke test validates command path for a minimal workflow progression.
         tasks:
           - name: "Implement runtime entry point module"
             type: "task"
-            description: |
-              Wire run_engine, workflow_engine, store, and framework loaders into a single
-              callable module. Accept workflow path and run_id as inputs, return run result.
-            labels: ["runtime", "implementation"]
-            done_criteria: |
-              runtime/__main__.py or runtime/orchestrator.py accepts workflow_path and run_id,
-              initializes all subsystems, executes one advance cycle, and returns a
-              deterministic run result object.
+            task_type: "implementation"
+            description: "Create CLI command parsing and dispatch into runtime engine functions."
+            done_criteria: "CLI commands run, resume, status, check, and advance invoke expected module calls."
           - name: "Write integration smoke test for minimal workflow run"
             type: "task"
-            description: |
-              Implement an end-to-end test that invokes the entry point with a minimal
-              workflow fixture and asserts a deterministic terminal or intermediate state.
-            labels: ["runtime", "testing"]
-            done_criteria: |
-              Integration test invokes the runtime entry point with a minimal workflow
-              fixture in stub-gate mode. Test asserts expected run state and non-empty
-              run result. Test is reproducible across environments.
+            task_type: "verification"
+            description: "Add a minimal end-to-end command flow test using controlled fixtures."
+            done_criteria: "Smoke test passes and confirms deterministic command-to-transition behavior."
 
-  # ---------------------------------------------------------------------------
-  # EPIC 2: Workflow Gates, Invocation, Decisions, Events
-  # Depends on Epic 1 (Runtime Core) being complete.
-  # ---------------------------------------------------------------------------
   - name: "Implement Workflow Gates Invocation Decisions and Events"
     description: |
-      Implement operational runtime behavior for gate checks, invocation flow, decision
-      log processing, event emission, and extraction trigger signaling. The runtime core
-      (Epic 1) provides the type system and lifecycle foundations; this epic adds the
-      behavioral layer that enforces compliance constraints during workflow execution.
-      Without gate evaluation, decision processing, and event emission, the runtime cannot
-      satisfy any of the SC-01 through SC-10 success criteria.
-    labels: ["runtime", "phase3", "implementation"]
+      Implement the runtime control surface that enforces transition gate checks, single-shot
+      invocation semantics, deterministic decision log processing, and append-only event emission.
+      This epic converts core runtime modules into a contract-compliant execution engine with
+      auditable traces and explicit blocking reasons.
     milestone: "Workflow and Events Operational"
+    priority: 2
     acceptance_criteria: |
-      - [ ] Gate evaluator enforces the four gate check types in required order.
-      - [ ] Decision log processing reacts deterministically to approve, reject, and defer.
-      - [ ] Event system emits all required events with complete envelope fields.
-      - [ ] Full workflow run with gate evaluation produces verifiable event stream.
+      - [ ] Gate evaluator executes all required check types in fixed order.
+      - [ ] Invocation layer enforces single-shot behavior and records outputs.
+      - [ ] Decision processing emits deterministic signals for approve, reject, and defer.
+      - [ ] Event stream is append-only with complete envelope fields.
     blocks:
       - "Deliver Compliance Test Coverage and Runtime Readiness Evidence"
     stories:
-
-      # Story 1: Gate evaluator — depends on shared types, store (approval lookup)
       - name: "Implement gate evaluator and gate check sequence"
         type: "story"
         description: |
-          Implement the gate evaluator sub-component with deterministic pass or fail output
-          for input presence, artifact presence, approval, and condition checks.
+          Implement gate evaluator logic for input presence, artifact presence, approval lookup,
+          and condition checks using deterministic ordering and structured check details.
         problem_statement: |
-          Contract-compliant transition control depends on a deterministic gate evaluator,
-          but gate checks are not fully implemented as a single structured sequence.
+          Workflow transitions cannot be validated reliably without a deterministic gate
+          evaluator that applies all required checks in a fixed sequence.
         scope: |
-          Include gate check sequence implementation and aggregated gate results.
-          Include approval lookup against decision log references.
-          Exclude workflow transition execution logic.
+          Implement evaluate and individual check methods.
+          Integrate artifact reads and decision lookup calls via module interfaces.
+          Return structured GateResult objects for each transition check.
         constraints: |
-          Gate check order is fixed and cannot be skipped.
-          Approval matching uses artifact identifier plus artifact hash where required.
-          Condition checks are exact value checks.
+          Check order must be input_presence, artifact_presence, approval, then condition.
+          Approval matching must require artifact_id and artifact_hash when available.
+          Checks must not use implicit defaults for missing conditions.
         architecture_context: |
-          Sources: docs/phase3_runtime_realization_plan.md section 4.2.1.
-          Reference: docs/runtime_module_architecture.md gate evaluator specification.
+          runtime/engine/gate_evaluator.py reads artifact metadata through artifact_system and
+          reads decision entries through decision_system interfaces.
         non_goals: |
-          No probabilistic gate decision logic.
-          No inferred approval behavior.
+          Do not execute workflow transitions in this story.
+          Do not persist events directly in this module.
         design_freedom: "restricted"
-        effort: 3
-        complexity: 3
-        labels: ["runtime", "implementation"]
-        acceptance_criteria: |
-          - [ ] Gate evaluator returns per-check details and aggregate pass or fail.
-          - [ ] Approval lookup follows contract matching and timestamp ordering.
-          - [ ] Failed checks produce explicit blocking detail output.
+        effort: 4
+        complexity: 4
+        milestone: "Workflow and Events Operational"
         blocks:
-          - "Implement invocation layer with single-shot enforcement"
+          - "Implement store and artifact system behavior"
+        acceptance_criteria: |
+          - [ ] Gate check methods execute in fixed order and return deterministic check details.
+          - [ ] Approval lookup enforces artifact reference matching rules from runtime contract.
+          - [ ] Condition checks perform exact case-sensitive comparison against artifact fields.
         tasks:
           - name: "Implement gate check functions for required check types"
             type: "task"
-            description: "Add deterministic checks for inputs presence, artifact presence, approval, and conditions."
-            labels: ["runtime", "implementation"]
-            done_criteria: |
-              gate_evaluator exposes deterministic checks for inputs presence, artifact presence,
-              approval, and condition evaluation. Each check returns an explicit pass or fail result.
+            task_type: "implementation"
+            description: "Implement check_inputs_present, check_artifact_presence, check_approval, and check_conditions."
+            done_criteria: "Gate evaluator returns per-check pass or fail details and aggregate result for each transition."
           - name: "Implement approval lookup matching logic"
             type: "task"
-            description: "Add decision log reference matching by artifact identifier and hash with timestamp ordering."
-            labels: ["runtime", "implementation"]
-            done_criteria: |
-              Approval lookup matches decision_log entries using artifact_id and artifact_hash
-              rules with timestamp ordering enforcement.
+            task_type: "implementation"
+            description: "Implement decision matching by decision type, artifact id and hash, and timestamp ordering."
+            done_criteria: "Approval lookup returns pass only for entries that satisfy all required matching fields."
           - name: "Write unit tests for gate evaluator"
             type: "task"
-            description: "Cover all four check types with pass and fail fixtures and approval matching scenarios."
-            labels: ["runtime", "testing"]
-            done_criteria: |
-              Unit tests cover pass and fail cases for each of the four check types.
-              Negative and positive approval matching fixtures verify contract-compliant behavior.
-              Test suite passes with no failures.
+            task_type: "verification"
+            description: "Add test matrix coverage for pass and fail outcomes across all gate check types."
+            done_criteria: "Gate evaluator tests pass for required matrix scenarios including approval mismatch and condition mismatch."
 
-      # Story 2: Invocation layer — single-shot enforcement
       - name: "Implement invocation layer with single-shot enforcement"
         type: "story"
         description: |
-          Implement agent invocation handling with adapter dispatch and single-shot
-          enforcement. Each state may be invoked at most once unless a rework transition
-          has been explicitly activated.
+          Implement deterministic agent invocation flow including contract loading, input
+          resolution, single-shot checks, output registration, and invocation record capture.
         problem_statement: |
-          Runtime control requires explicit invocation records, but the invocation layer
-          with single-shot enforcement and adapter dispatch is not fully implemented.
+          Runtime execution requires enforceable single-shot invocation semantics and explicit
+          input and output tracking to maintain auditability and contract compliance.
         scope: |
-          Include invocation dispatch through adapter interfaces.
-          Include invocation envelope recording in run metrics.
-          Include duplicate same-state invocation rejection unless rework criteria are met.
-          Exclude decision log processing.
+          Implement invoke, check_single_shot, and invocation record construction.
+          Support human-as-agent and automated adapter dispatch.
+          Register produced artifacts via artifact system.
         constraints: |
-          Invocation inputs remain read-only.
-          Invocation envelopes are appended to run metrics; existing entries are immutable.
-          Rework activation is explicit; no autonomous retry.
+          Inputs must be treated read-only.
+          Duplicate invocation in same state must fail unless rework transition occurred.
+          Invocation records must be written in deterministic structure.
         architecture_context: |
-          Sources: docs/phase3_runtime_realization_plan.md section 4.3.
-          Reference: docs/runtime_module_architecture.md invocation layer module.
+          runtime/agents/invocation_layer.py consumes agent contracts from framework loaders and
+          emits invocation lifecycle events through event system.
         non_goals: |
-          No decision log processing in this story.
-          No autonomous execution loops.
+          Do not implement agent-specific business logic adapters.
+          Do not perform semantic quality judgement of artifact content.
         design_freedom: "restricted"
         effort: 3
-        complexity: 2
-        labels: ["runtime", "implementation"]
+        complexity: 4
+        milestone: "Workflow and Events Operational"
+        blocks:
+          - "Implement shared types and framework loaders"
+          - "Implement event system metrics writer and extraction hooks"
         acceptance_criteria: |
-          - [ ] Invocation records are persisted per runtime contract.
-          - [ ] Duplicate same-state invocations are rejected without rework transition.
-          - [ ] Invocation dispatches through adapter interfaces.
+          - [ ] Invocation enforces single-shot rule against prior invocation records.
+          - [ ] Outputs are registered with structural validation and hash capture.
+          - [ ] Invocation record schema is persisted with required fields.
         tasks:
           - name: "Implement invocation adapter dispatch path"
             type: "task"
-            description: "Add adapter-based invocation path and run metrics checks preventing duplicate state invocations."
-            labels: ["runtime", "implementation"]
-            done_criteria: |
-              invocation_layer dispatches through adapter interfaces and records invocation
-              envelopes in run metrics. Duplicate same-state invocation attempts are rejected
-              unless rework criteria are met.
+            task_type: "implementation"
+            description: "Implement invocation flow for human-as-agent mode and automated adapter mode."
+            done_criteria: "Invocation layer dispatches expected mode path and returns deterministic invocation result."
           - name: "Write unit tests for invocation layer"
             type: "task"
-            description: "Verify adapter dispatch, envelope persistence, and duplicate rejection behavior."
-            labels: ["runtime", "testing"]
-            done_criteria: |
-              Unit tests verify adapter dispatch path, invocation envelope format, and
-              same-state duplicate rejection. Rework-enabled reinvocation is tested separately.
-              Test suite passes with no failures.
+            task_type: "verification"
+            description: "Cover single-shot pass and fail, output registration, and record creation."
+            done_criteria: "Invocation tests pass for duplicate prevention and successful output registration paths."
 
-      # Story 3: Decision log processor — independent of invocation layer
       - name: "Implement decision log processor for runtime signals"
         type: "story"
         description: |
-          Implement decision log processing that reads newly appended entries and converts
-          approve, reject, and defer decisions into deterministic runtime signals.
+          Implement decision log reading, new-entry detection, validation, and signal emission
+          for gate recheck, rework trigger, and deferred hold behavior.
         problem_statement: |
-          The runtime must react to human decisions appended to the decision log, but
-          the processing component that maps decision entries to runtime signals is not
-          fully implemented.
+          Runtime flow depends on deterministic reaction to human decisions. Without robust
+          decision log processing, approval and rework paths are not contract-compliant.
         scope: |
-          Include append-only decision entry detection without modifying the source file.
-          Include mapping of approve, reject, and defer to deterministic runtime signals.
-          Include event emission triggers for decision events.
-          Exclude autonomous decision synthesis.
+          Implement load_all, get_new_entries, process_new_entries, and approval finder method.
+          Emit decision.recorded events and signal outputs for runtime control flow.
+          Keep decision log strictly read-only.
         constraints: |
-          Decision log is append-only and never written by the runtime.
-          Approved decisions must not be retroactively modified.
-          Signal mapping is declared in the workflow contract.
+          Never write to decision_log.yaml.
+          Detect new entries by explicit index or count progression.
+          Signal mapping must be deterministic for approve, reject, and defer.
         architecture_context: |
-          Sources: docs/phase3_runtime_realization_plan.md section 4.5.
-          Reference: docs/runtime_module_architecture.md decision system module.
+          runtime/decisions/decision_system.py reads decision_log artifacts and coordinates with
+          event system and gate evaluator consumers.
         non_goals: |
-          No decision synthesis from artifact content.
-          No autonomous execution loops.
+          Do not implement human decision authoring workflow.
+          Do not infer decisions from artifact content.
         design_freedom: "restricted"
         effort: 3
-        complexity: 2
-        labels: ["runtime", "implementation"]
+        complexity: 3
+        milestone: "Workflow and Events Operational"
+        blocks:
+          - "Implement gate evaluator and gate check sequence"
         acceptance_criteria: |
-          - [ ] New approve, reject, and defer decisions produce correct runtime signals.
-          - [ ] Decision log is read without modification.
-          - [ ] Decision event emissions follow the runtime contract.
+          - [ ] New decision entries are detected and validated deterministically.
+          - [ ] Decision signals map correctly for approve, reject, and defer entries.
+          - [ ] Approval finder enforces artifact id and hash matching rules.
         tasks:
           - name: "Implement deterministic decision log processing logic"
             type: "task"
-            description: "Add append-only decision entry detection and mapping to gate recheck or rework signals."
-            labels: ["runtime", "implementation"]
-            done_criteria: |
-              decision_system detects newly appended decision_log entries without modifying
-              the source file. approve, reject, and defer entries map to deterministic runtime
-              signals per contract.
+            task_type: "implementation"
+            description: "Implement decision entry loading, indexing, and signal derivation."
+            done_criteria: "Decision system returns stable new-entry and signal outputs for fixed decision log inputs."
           - name: "Write unit tests for decision log processor"
             type: "task"
-            description: "Verify detection, signal mapping, and read-only behavior for all three decision types."
-            labels: ["runtime", "testing"]
-            done_criteria: |
-              Unit tests verify approve, reject, and defer entry detection and signal mapping.
-              Read-only behavior is asserted: source file is unchanged after processing.
-              Test suite passes with no failures.
+            task_type: "verification"
+            description: "Cover approve, reject, defer, malformed entry, and no-new-entry cases."
+            done_criteria: "Decision system tests pass with deterministic signal assertions for each decision type."
 
-      # Story 4: Event system and extraction hooks
       - name: "Implement event system metrics writer and extraction hooks"
         type: "story"
         description: |
-          Implement append-only event persistence and extraction trigger signaling for terminal
-          states without automated knowledge extraction.
+          Implement append-only event emission, event envelope validation, monotonic ID assignment,
+          and terminal extraction trigger logging support.
         problem_statement: |
-          Runtime observability and compliance require complete event streams, but event envelope
-          enforcement and trigger logging are not fully implemented.
+          Runtime observability and auditability require a deterministic event stream that is
+          complete, append-only, and structurally valid for all required event types.
         scope: |
-          Include event envelope validation, monotonic event identifiers, and append-only writes.
-          Include extraction trigger checks and logging for terminal states.
-          Exclude automatic knowledge record writing.
+          Implement event emit, last_event_id, read_events, and metrics writer append logic.
+          Implement extraction trigger registry and trigger logging integration.
+          Validate event envelope fields before persistence.
         constraints: |
-          Required envelope fields must be present before persistence.
-          Event identifiers are monotonic per run.
-          Extraction hooks only log trigger signals.
+          Event IDs must be monotonic per run.
+          Writes to run_metrics must preserve append-only behavior.
+          Trigger hooks must only log trigger points and must not perform extraction.
         architecture_context: |
-          Sources: docs/phase3_runtime_realization_plan.md sections 4.6, 4.7, and 8.
-          Reference: docs/runtime_module_architecture.md event system and extraction hook sections.
+          runtime/events/event_system.py and runtime/events/metrics_writer.py are shared sinks used
+          by run_engine, workflow_engine, invocation_layer, decision_system, and artifact_system.
         non_goals: |
-          No direct modifications to knowledge index artifacts.
-          No retrospective event reconstruction.
+          Do not implement knowledge index writing.
+          Do not add non-contract event type inference.
         design_freedom: "restricted"
-        effort: 3
+        effort: 4
         complexity: 3
-        labels: ["runtime", "implementation", "testing"]
+        milestone: "Workflow and Events Operational"
+        blocks:
+          - "Implement run engine lifecycle"
         acceptance_criteria: |
-          - [ ] All required event types are emitted through event system interfaces.
-          - [ ] Event envelopes are validated before append-only persistence.
-          - [ ] Terminal state extraction triggers are logged without automated extraction.
+          - [ ] Event emit validates required envelope fields before persistence.
+          - [ ] Event IDs are monotonic and append-only checks are enforceable.
+          - [ ] Terminal extraction trigger points are logged without automated extraction actions.
         tasks:
           - name: "Implement event envelope validation logic"
             type: "task"
-            description: "Add event builder and metrics writer logic with monotonic event identifiers and append-only behavior."
-            labels: ["runtime", "implementation"]
-            done_criteria: |
-              event_system validates required event envelope fields and assigns monotonic event
-              identifiers per run. metrics writer persists events append-only and rejects
-              malformed envelopes.
+            task_type: "implementation"
+            description: "Implement event construction, mandatory field validation, and section routing."
+            done_criteria: "Event system rejects malformed envelopes and persists valid events with deterministic IDs."
           - name: "Implement extraction trigger registry"
             type: "task"
-            description: "Add trigger checks for terminal states and append deterministic trigger records to run metrics."
-            labels: ["runtime", "implementation"]
-            done_criteria: |
-              extraction_hooks define explicit trigger mappings for terminal states.
-              Trigger logging appends deterministic records to run metrics without modifying
-              knowledge index artifacts.
+            task_type: "implementation"
+            description: "Implement trigger registry and trigger logging integration for terminal states."
+            done_criteria: "Extraction trigger logging records deterministic trigger entries without performing extraction."
           - name: "Write unit tests for event system"
             type: "task"
-            description: "Verify envelope validation, monotonic identifiers, append-only persistence, and trigger logging."
-            labels: ["runtime", "testing"]
-            done_criteria: |
-              Unit tests verify envelope field validation, monotonic identifier assignment,
-              append-only rejection of malformed envelopes, and trigger record format.
-              Test suite passes with no failures.
+            task_type: "verification"
+            description: "Cover event append ordering, field validation, and trigger logging."
+            done_criteria: "Event system tests pass for monotonic IDs, append-only behavior, and trigger registration."
 
-  # ---------------------------------------------------------------------------
-  # EPIC 3: Compliance Test Coverage and Readiness Evidence
-  # Depends on Epic 2 (all operational behavior) being complete.
-  # ---------------------------------------------------------------------------
   - name: "Deliver Compliance Test Coverage and Runtime Readiness Evidence"
     description: |
-      Build deterministic test coverage and evidence artifacts required to declare
-      Phase 3 Level 3 framework-compliant runtime readiness, including explicit traceability
-      to success criteria SC-01 through SC-10, compliance prohibitions, and objective
-      verification artifacts. This epic presupposes that all operational runtime behavior
-      (Epic 2) is implemented and callable. It delivers the test matrix, CI pipeline,
-      integrity tests, and the final implementation record.
-    labels: ["runtime", "phase3", "compliance", "testing"]
+      Deliver deterministic evidence that the runtime implementation meets Phase 3 success
+      criteria, gate matrix coverage, event integrity requirements, and compliance prohibitions.
+      This epic produces the verification artifacts and implementation record required to declare
+      framework-compliant runtime maturity for Phase 3.
     milestone: "Phase 3 Compliance Evidence Complete"
+    priority: 2
     acceptance_criteria: |
-      - [ ] Test coverage maps to SC-01 through SC-10 and Section 9 metrics.
-      - [ ] Compliance prohibitions are validated with deterministic negative tests.
-      - [ ] Implementation record documents maturity level and verification evidence.
-      - [ ] All compliance tests execute reproducibly in the CI pipeline.
+      - [ ] Gate matrix and workflow transition coverage tests pass deterministically.
+      - [ ] Artifact lifecycle and event integrity prohibitions are validated by tests.
+      - [ ] CI runs the runtime test suites in deterministic batch mode.
+      - [ ] Phase 3 implementation record contains evidence for SC-01 through SC-10.
     stories:
-
-      # Story 1: Gate and workflow coverage tests
       - name: "Implement deterministic gate and workflow coverage tests"
         type: "story"
         description: |
-          Implement tests that cover workflow transitions and the gate test matrix with
-          deterministic expected outcomes.
+          Implement deterministic test suites covering gate matrix scenarios and workflow
+          transition execution paths for delivery, improvement, and release workflows.
         problem_statement: |
-          Success criteria require objective verification of transitions and gate behavior,
-          but a complete deterministic test matrix is not yet implemented.
+          Phase 3 completion requires objective evidence that gate behavior and transitions
+          are implemented correctly across contract-defined scenarios.
         scope: |
-          Include delivery workflow transition tests and gate matrix scenarios.
-          Include improvement cycle and release workflow execution coverage.
-          Exclude non-deterministic stress testing.
+          Build fixtures and tests for gate pass and fail matrix cases.
+          Add workflow transition tests for default, improvement_cycle, and release workflows.
+          Ensure tests produce reproducible outcomes.
         constraints: |
-          Tests must use explicit fixtures with stable expected outcomes.
-          Gate outcomes must be asserted per contract-defined conditions.
-          No inferred pass criteria.
+          Test data must be explicit and versioned in repository.
+          No hidden randomization or timing assumptions in assertions.
+          Coverage must map to Section 9 metrics and SC criteria.
         architecture_context: |
-          Sources: docs/phase3_runtime_realization_plan.md sections 9.2 and 10.
-          Reference: workflow definitions and runtime contract gate rules.
+          tests/unit, tests/integration, and tests/e2e validate runtime/engine and workflow
+          definitions under deterministic execution assumptions.
         non_goals: |
-          No benchmark tuning work.
-          No production deployment tests.
+          Do not create production monitoring dashboards in this story.
+          Do not include non-deterministic load testing.
         design_freedom: "restricted"
         effort: 4
         complexity: 3
-        labels: ["runtime", "testing", "compliance"]
+        milestone: "Phase 3 Compliance Evidence Complete"
+        blocks:
+          - "Implement gate evaluator and gate check sequence"
+          - "Implement workflow engine state advancement"
         acceptance_criteria: |
-          - [ ] Gate test matrix scenarios are encoded as automated tests.
-          - [ ] Delivery workflow transitions execute with expected pass/fail outcomes.
-          - [ ] Secondary workflows execute as separate runs with distinct run identifiers.
+          - [ ] All required gate matrix scenarios execute and assert expected outcomes.
+          - [ ] Delivery, improvement, and release workflow transitions have deterministic coverage.
+          - [ ] Tests map to SC-01, SC-02, SC-07, and SC-08 verification expectations.
         tasks:
           - name: "Implement gate matrix scenario fixtures"
             type: "task"
-            description: "Create deterministic input fixtures for each required gate matrix test case."
-            labels: ["testing", "compliance"]
-            done_criteria: |
-              Test fixture set covers every required gate matrix scenario with explicit expected
-              pass or fail outcomes. Fixtures are versioned and reproducible across environments.
+            task_type: "implementation"
+            description: "Create deterministic fixtures for required gate pass and fail scenarios."
+            done_criteria: "Fixture set covers all gate matrix rows with explicit input and expected output definitions."
           - name: "Implement workflow transition coverage tests"
             type: "task"
-            description: "Add automated tests for delivery, improvement, and release workflow progression."
-            labels: ["testing", "compliance"]
-            done_criteria: |
-              Automated tests execute delivery, improvement, and release workflow transitions
-              with deterministic expected states. Test reports demonstrate coverage for required
-              transition paths and terminal outcomes.
+            task_type: "implementation"
+            description: "Add transition execution tests for default, improvement_cycle, and release workflows."
+            done_criteria: "Workflow transition tests pass and verify transition order and gate behavior."
           - name: "Verify gate test suite SC criterion coverage"
             type: "task"
-            description: "Confirm that each test case maps to at least one SC-01 through SC-10 criterion."
-            labels: ["testing", "compliance"]
-            done_criteria: |
-              Each gate matrix test case and workflow transition test is annotated with its
-              SC criterion reference. Coverage gaps identified by the annotation pass are
-              resolved before the story closes.
+            task_type: "verification"
+            description: "Map tests to SC criteria and validate expected evidence completeness."
+            done_criteria: "Coverage mapping confirms deterministic evidence for required SC criteria and metrics targets."
 
-      # Story 2: CI pipeline — must exist before compliance evidence can be produced
       - name: "Configure CI pipeline for deterministic test execution"
         type: "story"
         description: |
-          Configure a CI pipeline that executes all runtime tests reproducibly in an isolated
-          environment and produces test reports as evidence artifacts. Compliance evidence
-          depends on test results from a deterministic, reproducible run environment;
-          local test execution alone is insufficient for SC evidence.
+          Configure CI execution for runtime test suites with deterministic ordering, explicit
+          environment setup, and reproducible artifact outputs.
         problem_statement: |
-          Compliance evidence requires test results from a deterministic, isolated environment,
-          but no CI pipeline exists that runs the runtime test suite reproducibly.
+          Runtime readiness evidence must be reproducible in automation; local-only test runs are
+          insufficient for reliable compliance reporting.
         scope: |
-          Include CI configuration file for the project repository.
-          Include test execution step that runs all unit and integration tests.
-          Include test report output as a named CI artifact.
-          Exclude deployment, release, or infrastructure provisioning.
+          Add CI job configuration for runtime tests and lint checks.
+          Define deterministic execution order and explicit dependency setup.
+          Capture test artifacts required for audit trails.
         constraints: |
-          CI must run in an isolated environment with pinned dependency versions.
-          Test execution must be deterministic: same inputs produce same pass/fail results.
-          Test report artifact must be retained and referenceable as evidence.
+          CI must avoid implicit environment behavior.
+          Job steps must be explicit and reproducible.
+          Pipeline must remain batch-oriented without autonomous retries.
         architecture_context: |
-          CI configuration depends on the project's test runner and dependency management.
-          Test report format must be machine-readable (e.g. JUnit XML or pytest JSON).
+          CI configuration validates runtime modules and test suites as a deterministic verification stage.
         non_goals: |
-          No deployment pipeline.
-          No performance benchmarking in CI.
-          No dynamic environment provisioning.
-        design_freedom: "high"
+          Do not implement deployment pipelines in this story.
+          Do not add production runtime scheduling.
+        design_freedom: "restricted"
         effort: 2
         complexity: 2
-        labels: ["runtime", "testing", "compliance"]
+        milestone: "Phase 3 Compliance Evidence Complete"
+        blocks:
+          - "Implement deterministic gate and workflow coverage tests"
         acceptance_criteria: |
-          - [ ] CI pipeline executes the full test suite on every push.
-          - [ ] Test reports are produced as named CI artifacts.
-          - [ ] CI run is reproducible: same commit produces same pass/fail result.
+          - [ ] CI executes runtime test suites with deterministic order and explicit setup.
+          - [ ] CI artifacts include test logs needed for compliance evidence.
+          - [ ] Pipeline behavior is reproducible across repeated runs.
         tasks:
           - name: "Write CI pipeline configuration"
             type: "task"
-            description: "Add CI config file with test execution step and test report artifact upload."
-            labels: ["testing", "compliance"]
-            done_criteria: |
-              CI configuration file is committed to the repository. Pipeline executes
-              all unit and integration tests. Test report is uploaded as a named artifact.
+            task_type: "implementation"
+            description: "Create CI configuration for runtime unit, integration, and e2e suites."
+            done_criteria: "CI configuration runs all required runtime suites with explicit setup and deterministic step order."
           - name: "Verify deterministic test execution in CI"
             type: "task"
-            description: "Trigger CI run and confirm test suite passes with the same results as local execution."
-            labels: ["testing", "compliance"]
-            done_criteria: |
-              CI run completes without failures. Pass/fail results match local test execution
-              for the same commit. Test report artifact is accessible and parseable.
+            task_type: "verification"
+            description: "Run repeated CI executions and confirm stable outcomes and logs."
+            done_criteria: "Repeated CI runs produce consistent pass or fail results and reproducible evidence artifacts."
 
-      # Story 3: Artifact and event integrity tests
       - name: "Implement artifact decision and event integrity tests"
         type: "story"
         description: |
-          Implement tests for artifact immutability, supersession, decision handling,
-          event envelope completeness, append-only guarantees, and causation chain integrity.
+          Implement tests for artifact supersession, immutability enforcement, decision processing,
+          and append-only event integrity checks across runtime compliance prohibitions.
         problem_statement: |
-          Compliance depends on immutable approved artifacts and complete append-only event logs,
-          but verification tests for these guarantees are incomplete.
+          Contract compliance depends on preventing forbidden behaviors around approved artifacts,
+          implied approvals, and event stream mutation.
         scope: |
-          Include artifact lifecycle test cases and event integrity checks.
-          Include decision approve, reject, and defer behavior tests.
-          Exclude UI-level observability tooling.
+          Add tests for artifact immutability, supersession, and hash verification.
+          Add decision and event integrity tests for append-only and causation checks.
+          Cover explicit prohibition scenarios from the realization plan.
         constraints: |
-          Event integrity checks use deterministic validation rules.
-          Artifact checks assert hash and identifier consistency.
-          Decision checks rely only on append-only log entries.
+          Tests must verify behavior using deterministic fixture data.
+          Assertions must be explicit and auditable.
+          No heuristic interpretation of compliance outcomes.
         architecture_context: |
-          Sources: docs/phase3_runtime_realization_plan.md sections 9.3, 9.4, 9.5, and 10.
-          Reference: runtime contract artifact and event requirements.
+          tests validate runtime/artifacts, runtime/decisions, and runtime/events modules against
+          Section 9.3 to 9.5 obligations and SC-03 to SC-06, SC-10.
         non_goals: |
-          No semantic artifact quality scoring.
-          No manual inspection as primary verification method.
+          Do not introduce new governance rules in tests.
+          Do not substitute event evidence for decision log requirements.
         design_freedom: "restricted"
-        effort: 4
+        effort: 3
         complexity: 3
-        labels: ["runtime", "testing", "compliance"]
+        milestone: "Phase 3 Compliance Evidence Complete"
+        blocks:
+          - "Implement decision log processor for runtime signals"
+          - "Implement event system metrics writer and extraction hooks"
+          - "Implement store and artifact system behavior"
         acceptance_criteria: |
-          - [ ] Tests verify immutability for approved artifacts and correct supersession behavior.
-          - [ ] Tests verify required event types and complete envelope fields.
-          - [ ] Tests verify append-only persistence and event causation chain linkage.
+          - [ ] Artifact immutability and supersession behavior is covered by deterministic tests.
+          - [ ] Decision processing tests cover approve, reject, and defer outcomes.
+          - [ ] Event integrity tests validate append-only behavior and causation chain navigability.
         tasks:
           - name: "Implement artifact lifecycle compliance tests"
             type: "task"
-            description: "Add tests for supersession steps, hash verification, and approved artifact immutability rejection."
-            labels: ["testing", "compliance"]
-            done_criteria: |
-              Artifact lifecycle tests verify supersession order, hash stability checks, and
-              approved artifact immutability rejection behavior. All assertions map to runtime
-              contract requirements and pass in CI.
+            task_type: "implementation"
+            description: "Add tests for approved artifact immutability and supersession procedure."
+            done_criteria: "Artifact compliance tests pass for write rejection after approval and required supersedes_id behavior."
           - name: "Implement event stream integrity tests"
             type: "task"
-            description: "Add tests for required event coverage, envelope completeness, append-only behavior, and causation links."
-            labels: ["testing", "compliance"]
-            done_criteria: |
-              Event integrity tests verify required event type coverage, complete envelopes,
-              append-only persistence, and causation linkage. Test output provides deterministic
-              evidence suitable for SC-06 and related criteria.
+            task_type: "implementation"
+            description: "Add tests for append-only event persistence and causation reference validity."
+            done_criteria: "Event integrity tests pass for monotonic IDs, no overwrite behavior, and causation chain checks."
           - name: "Verify artifact test suite SC criterion coverage"
             type: "task"
-            description: "Confirm each test case maps to a specific SC criterion and is referenced in the evidence matrix."
-            labels: ["testing", "compliance"]
-            done_criteria: |
-              Each test case is annotated with its SC criterion reference. All annotations
-              are consistent with the evidence matrix produced in the readiness story.
+            task_type: "verification"
+            description: "Map artifact and event integrity tests to SC criteria and prohibitions."
+            done_criteria: "Coverage map confirms deterministic verification evidence for SC-03, SC-04, SC-05, SC-06, and SC-10."
 
-      # Story 4: Implementation record and readiness evidence
       - name: "Produce Phase 3 implementation record and readiness evidence"
         type: "story"
         description: |
-          Produce the implementation record document mapping implemented components and
-          tests to SC-01 through SC-10 and Level 3 definition of done requirements.
+          Produce the phase3 implementation record with traceable evidence for success criteria,
+          maturity level, limitations, and completion declaration inputs.
         problem_statement: |
-          Phase completion requires explicit evidence, but implementation evidence is not
-          yet consolidated into a deterministic readiness record.
+          Phase 3 cannot be declared complete without a structured implementation record linking
+          runtime behaviors and tests to success criteria and definition-of-done checks.
         scope: |
-          Include maturity level declaration, criterion evidence references, and known limitations.
-          Include traceability from success criteria to test outcomes.
-          Exclude roadmap commitments beyond Phase 3 scope.
+          Build a criterion-to-evidence matrix for SC-01 through SC-10.
+          Publish the implementation record document.
+          Validate evidence completeness against DoD requirements.
         constraints: |
-          Evidence entries must reference concrete artifacts or test results.
-          Claims must map directly to source contracts and criteria.
-          Out-of-scope items remain explicitly excluded.
+          Evidence references must point to deterministic artifacts and test outputs.
+          No subjective scoring or inferred completion state.
+          Gaps must be explicit when evidence is missing.
         architecture_context: |
-          Sources: docs/phase3_runtime_realization_plan.md sections 10, 11, and 12.
-          Reference: docs/runtime_module_architecture.md traceability section.
+          docs/phase3_implementation_record.md consolidates evidence from runtime modules, tests,
+          and compliance outputs.
         non_goals: |
-          No new runtime feature definition.
-          No reinterpretation of contract requirements.
+          Do not redefine success criteria.
+          Do not include post-Phase-3 production roadmap work in completion evidence.
         design_freedom: "restricted"
-        effort: 3
+        effort: 2
         complexity: 2
-        labels: ["runtime", "compliance", "implementation"]
+        milestone: "Phase 3 Compliance Evidence Complete"
+        blocks:
+          - "Implement deterministic gate and workflow coverage tests"
+          - "Implement artifact decision and event integrity tests"
         acceptance_criteria: |
-          - [ ] Implementation record maps every success criterion to objective evidence.
-          - [ ] Maturity level assessment is explicit and justified.
-          - [ ] Known limitations are documented with contract-consistent rationale.
+          - [ ] Evidence matrix maps each SC criterion to concrete test or artifact proof.
+          - [ ] Implementation record includes maturity level and known limitation statement.
+          - [ ] Readiness evidence supports deterministic declaration inputs for Phase 3 completion.
         tasks:
           - name: "Create phase3 implementation evidence matrix"
             type: "task"
-            description: "Build a criterion-to-evidence mapping for SC-01 through SC-10 and definition of done checks."
-            labels: ["compliance", "implementation"]
-            done_criteria: |
-              A maintained evidence matrix maps each SC-01 through SC-10 criterion and
-              definition-of-done check to concrete artifacts or tests. Matrix entries include
-              stable references and verification status fields.
+            task_type: "implementation"
+            description: "Create a structured matrix linking SC criteria and metrics to evidence artifacts."
+            done_criteria: "Evidence matrix exists and references deterministic artifacts for each SC criterion."
           - name: "Publish phase3 implementation record document"
             type: "task"
-            description: "Write and commit the implementation record with maturity level statement and referenced evidence."
-            labels: ["compliance", "implementation"]
-            done_criteria: |
-              docs/phase3_implementation_record.md is published with maturity level declaration,
-              evidence references, and known limitations. Content is internally consistent with
-              the evidence matrix and runtime contracts.
+            task_type: "implementation"
+            description: "Write and publish the Phase 3 implementation record document."
+            done_criteria: "Implementation record is published with maturity level, evidence links, and limitations."
           - name: "Verify implementation record completeness against SC-01 to SC-10"
             type: "task"
-            description: "Cross-check each SC criterion against the record and confirm no gaps or unsubstantiated claims."
-            labels: ["compliance", "testing"]
-            done_criteria: |
-              Each SC criterion has at least one evidence entry with a stable artifact or test
-              reference. No criterion is marked as satisfied without a referenced, verifiable
-              source. Record is reviewed and consistent.
+            task_type: "verification"
+            description: "Perform completeness check of implementation record against all success criteria."
+            done_criteria: "Completeness check passes or enumerates explicit missing evidence items with status."

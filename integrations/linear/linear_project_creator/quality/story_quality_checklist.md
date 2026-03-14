@@ -31,7 +31,8 @@ A Story is considered DevOS-ready only if all checks pass.
 
 ## Design Freedom
 
-□ Value defined (high or restricted)
+□ Field is present and non-empty (required by STORY_DESIGN_FREEDOM_REQUIRED)
+□ Value is exactly "high" or "restricted" (required by STORY_DESIGN_FREEDOM)
 □ Value matches the nature of the problem
 
 ## Acceptance Criteria

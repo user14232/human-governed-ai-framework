@@ -9,6 +9,7 @@ Responsibilities:
   - After all issues are created, create issue relations for epic.blocks declarations.
   - After all issues are created, create issue relations for story.blocks declarations.
   - Accumulate and incrementally flush the mapping dict to disk.
+  - Track unresolved blocks references and creation counts in BuildStats.
   - Support dry-run mode: zero API calls, placeholder IDs returned.
 
 Mapping structure returned:
@@ -24,12 +25,14 @@ Note on label strategy:
   Issue types (epic, story, task, bug, etc.) are applied as labels so that Linear's
   issue list can be filtered by type. All type labels plus any explicit labels from
   the YAML are resolved to IDs and combined into a single labelIds list per issue.
+  TaskModel.task_type ("implementation" | "verification") is applied as an additional
+  label when set, enabling agent-side filtering by task semantic role.
 
 Note on relation strategy:
   Both epic.blocks and story.blocks are resolved in a second pass after the full
   issue tree is created. This allows cross-epic references (A in epic-1 blocks B in
-  epic-2) to be resolved correctly. Unresolvable names are logged as warnings and
-  skipped without failing the build.
+  epic-2) to be resolved correctly. Unresolvable names are logged as warnings,
+  skipped without failing the build, and recorded in BuildStats.unresolved_blocks.
 
   Order:
     1. Create all epics → stories → tasks (first pass).
@@ -41,6 +44,7 @@ from __future__ import annotations
 
 import json
 import logging
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -50,6 +54,39 @@ from models import EpicModel, ProjectModel, StoryModel, TaskModel
 logger = logging.getLogger(__name__)
 
 _DRY_RUN_PREFIX = "dry-run"
+
+
+# ---------------------------------------------------------------------------
+# Build result container
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class BuildStats:
+    """
+    Counters and diagnostics produced by a single build_project run.
+
+    Returned alongside the mapping dict so callers can write run reports
+    without re-parsing the mapping.
+
+    Attributes:
+        milestones_created: Number of milestones successfully created.
+        epics_created:      Number of epics successfully created.
+        stories_created:    Number of stories successfully created.
+        tasks_created:      Number of tasks successfully created.
+        relations_created:  Total number of 'blocks' relations created.
+        unresolved_blocks:  Human-readable strings for each blocks reference
+                            that could not be resolved at build time (e.g.
+                            "story 'A' blocks 'B' — 'B' not found in mapping").
+                            Already logged as warnings; captured here for the
+                            run report so gaps are machine-readable.
+    """
+    milestones_created: int = 0
+    epics_created: int = 0
+    stories_created: int = 0
+    tasks_created: int = 0
+    relations_created: int = 0
+    unresolved_blocks: list[str] = field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -63,7 +100,7 @@ def build_project(
     team_id: str,
     dry_run: bool,
     flush_path: Path | None = None,
-) -> dict[str, Any]:
+) -> tuple[dict[str, Any], BuildStats]:
     """
     Create all Linear objects described by *project*.
 
@@ -75,7 +112,9 @@ def build_project(
         flush_path: Path to write the partial mapping JSON after each epic.
 
     Returns:
-        Complete mapping dict.
+        Tuple of (mapping dict, BuildStats).
+        mapping contains project/milestones/epics/stories/tasks IDs.
+        BuildStats contains creation counters and unresolved blocks references.
 
     Raises:
         LinearAPIError: On any API failure (not raised in dry-run mode).
@@ -87,6 +126,7 @@ def build_project(
         "stories": {},
         "tasks": {},
     }
+    stats = BuildStats()
 
     # ------------------------------------------------------------------
     # Pre-resolve project-level label IDs (single API call, cached)
@@ -116,6 +156,7 @@ def build_project(
         ms_id = _create_milestone(ms.name, ms.description, ms.target_date, project_id, client, dry_run)
         milestone_name_to_id[ms.name] = ms_id
         mapping["milestones"][ms.name] = ms_id
+        stats.milestones_created += 1
         _log_created("milestone", ms.name, ms_id, dry_run)
 
     # ------------------------------------------------------------------
@@ -143,6 +184,7 @@ def build_project(
                 dry_run=dry_run,
             )
             mapping["epics"][epic.name] = epic_id
+            stats.epics_created += 1
             _log_created("epic", epic.name, epic_id, dry_run)
 
             for story in epic.stories:
@@ -167,12 +209,21 @@ def build_project(
                     dry_run=dry_run,
                 )
                 mapping["stories"][story.name] = story_id
+                stats.stories_created += 1
                 _log_created("story", story.name, story_id, dry_run)
 
                 for task in story.tasks:
                     task_type_label = task.type or "task"
+                    # Include task_type as an additional label when set so agents
+                    # can filter Linear issues by semantic pipeline role
+                    # ("implementation" or "verification") without parsing names.
+                    task_role_labels: tuple[str, ...] = (
+                        (task.task_type.strip().lower(),)
+                        if task.task_type and task.task_type.strip()
+                        else ()
+                    )
                     task_label_ids = _resolve_issue_labels(
-                        (task_type_label,) + task.labels,
+                        (task_type_label,) + task.labels + task_role_labels,
                         client,
                         dry_run,
                         label_meta=issue_label_meta,
@@ -189,6 +240,7 @@ def build_project(
                         dry_run=dry_run,
                     )
                     mapping["tasks"][task.name] = task_id
+                    stats.tasks_created += 1
                     _log_created("task", task.name, task_id, dry_run)
 
         except LinearAPIError:
@@ -203,15 +255,15 @@ def build_project(
     # Step 4: Create epic-level 'blocks' relations — second pass.
     # All epics are in mapping["epics"]; resolve epic.blocks references.
     # ------------------------------------------------------------------
-    _create_all_epic_relations(project, mapping["epics"], client, dry_run)
+    _create_all_epic_relations(project, mapping["epics"], client, dry_run, stats)
 
     # ------------------------------------------------------------------
     # Step 5: Create story-level 'blocks' relations — third pass.
     # All stories are in mapping["stories"]; resolve story.blocks references.
     # ------------------------------------------------------------------
-    _create_all_story_relations(project, mapping["stories"], client, dry_run)
+    _create_all_story_relations(project, mapping["stories"], client, dry_run, stats)
 
-    return mapping
+    return mapping, stats
 
 
 # ---------------------------------------------------------------------------
@@ -358,43 +410,47 @@ def _create_all_epic_relations(
     epic_name_to_id: dict[str, str],
     client: LinearClient,
     dry_run: bool,
+    stats: BuildStats,
 ) -> None:
     """
     Create 'blocks' relations in Linear for all epics that declare epic.blocks.
 
     Runs as a second pass after the full build so that all epic IDs are available.
-    Unresolvable epic names are logged as warnings and skipped.
+    Unresolvable epic names are logged as warnings, skipped, and recorded in stats.
     """
     for epic in project.epics:
         if not epic.blocks:
             continue
         blocker_id = epic_name_to_id.get(epic.name)
         if blocker_id is None:
-            logger.warning(
-                "Cannot create relations for epic '%s': ID not in mapping.",
-                epic.name,
-            )
+            msg = f"epic '{epic.name}' — ID not in mapping (build-time failure)"
+            logger.warning("Cannot create relations for %s.", msg)
+            stats.unresolved_blocks.append(msg)
             continue
         for blocked_name in epic.blocks:
             blocked_id = epic_name_to_id.get(blocked_name)
             if blocked_id is None:
+                msg = f"epic '{epic.name}' blocks '{blocked_name}' — '{blocked_name}' not found in mapping"
                 logger.warning(
                     "Epic '%s' blocks '%s', but '%s' was not found in the "
                     "epic mapping. Skipping this relation.",
                     epic.name, blocked_name, blocked_name,
                 )
+                stats.unresolved_blocks.append(msg)
                 continue
             if dry_run:
                 logger.info(
                     "[DRY-RUN] Would create relation: epic '%s' blocks epic '%s'.",
                     epic.name, blocked_name,
                 )
+                stats.relations_created += 1
             else:
                 client.create_issue_relation(
                     issue_id=blocker_id,
                     related_issue_id=blocked_id,
                     relation_type="blocks",
                 )
+                stats.relations_created += 1
 
 
 def _create_all_story_relations(
@@ -402,13 +458,14 @@ def _create_all_story_relations(
     story_name_to_id: dict[str, str],
     client: LinearClient,
     dry_run: bool,
+    stats: BuildStats,
 ) -> None:
     """
     Create 'blocks' relations in Linear for all stories that declare story.blocks.
 
     Runs as a second pass after the full build so that cross-epic references
     (story in epic-1 blocks story in epic-2) are always resolvable.
-    Unresolvable story names are logged as warnings and skipped.
+    Unresolvable story names are logged as warnings, skipped, and recorded in stats.
     """
     for epic in project.epics:
         for story in epic.stories:
@@ -416,31 +473,36 @@ def _create_all_story_relations(
                 continue
             blocker_id = story_name_to_id.get(story.name)
             if blocker_id is None:
+                msg = f"story '{story.name}' — ID not in mapping (build-time failure)"
                 logger.warning(
-                    "Cannot create relations for story '%s': ID not in mapping.",
-                    story.name,
+                    "Cannot create relations for %s.", msg,
                 )
+                stats.unresolved_blocks.append(msg)
                 continue
             for blocked_name in story.blocks:
                 blocked_id = story_name_to_id.get(blocked_name)
                 if blocked_id is None:
+                    msg = f"story '{story.name}' blocks '{blocked_name}' — '{blocked_name}' not found in mapping"
                     logger.warning(
                         "Story '%s' blocks '%s', but '%s' was not found in the "
                         "story mapping. Skipping this relation.",
                         story.name, blocked_name, blocked_name,
                     )
+                    stats.unresolved_blocks.append(msg)
                     continue
                 if dry_run:
                     logger.info(
                         "[DRY-RUN] Would create relation: '%s' blocks '%s'.",
                         story.name, blocked_name,
                     )
+                    stats.relations_created += 1
                 else:
                     client.create_issue_relation(
                         issue_id=blocker_id,
                         related_issue_id=blocked_id,
                         relation_type="blocks",
                     )
+                    stats.relations_created += 1
 
 
 # ---------------------------------------------------------------------------

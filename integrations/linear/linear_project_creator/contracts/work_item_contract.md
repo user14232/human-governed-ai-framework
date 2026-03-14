@@ -80,6 +80,9 @@ Epic acceptance criteria must describe:
 • integration expectations
 • completion conditions for the Epic
 
+Each criterion must use the `- [ ]` checkbox format so it is independently verifiable.
+Enforced by `EPIC_AC_CHECKBOX_FORMAT`.
+
 ---
 
 # Story Contract
@@ -223,6 +226,8 @@ Non-goals must be clear and explicit.
 
 Design freedom indicates how much architectural freedom the implementation agent has.
 
+**This field is required.** Enforced by `STORY_DESIGN_FREEDOM_REQUIRED`.
+
 Allowed values:
 
 ```
@@ -267,14 +272,17 @@ They must:
 • be verifiable
 • describe behaviour rather than implementation
 • define completion conditions
+• use the `- [ ]` checkbox format for each criterion
 
 Example:
 
 ```
-- Workflow YAML files are successfully parsed.
-- WorkflowDefinition structures are produced.
-- Runtime engine can access parsed workflow transitions.
+- [ ] Workflow YAML files are successfully parsed into typed structures.
+- [ ] WorkflowDefinition exposes transitions accessible to the workflow engine.
+- [ ] Unit tests cover all parser branches with deterministic fixtures.
 ```
+
+Enforced by `STORY_AC_CHECKBOX_FORMAT`.
 
 ---
 
@@ -302,6 +310,42 @@ Examples of valid tasks:
 Implement WorkflowDefinition structure
 Implement YAML workflow parser
 Add unit tests for workflow parsing
+```
+
+---
+
+## Task Type
+
+Every Task may declare a `task_type` field to express its **semantic pipeline role**.
+
+Allowed values:
+
+```
+implementation
+verification
+```
+
+`implementation` — task produces a code artifact or system change.
+
+`verification` — task produces test evidence. Setting `task_type: verification`
+satisfies the `STORY_MISSING_TEST_TASK` requirement without relying on keyword
+matching in the task name. This is the preferred, explicit mechanism.
+
+When `task_type` is set, it is applied as an additional label in Linear, enabling
+agents and CI pipelines to filter tasks by role without parsing task names.
+
+Validated by `TASK_TYPE_VALID` when present.
+
+Example:
+
+```yaml
+tasks:
+  - name: "Implement gate check sequence"
+    task_type: implementation
+    done_criteria: "gate_evaluator enforces checks in fixed order per contract."
+  - name: "Write unit tests for gate check sequence"
+    task_type: verification
+    done_criteria: "All pass/fail cases per check type covered. Test suite passes."
 ```
 
 ---
@@ -411,16 +455,35 @@ single implementation step
 
 # Test Task Obligation
 
-Every Story that changes runtime behavior must contain at least one task with a
-test-oriented name. Accepted keywords: `test`, `verify`, `validate`, `spec`, `check`.
+Every Story that changes runtime behavior must contain at least one verification task.
+Enforced by `STORY_MISSING_TEST_TASK`.
 
-This is enforced by `STORY_MISSING_TEST_TASK`.
+A task satisfies the verification requirement by either:
+
+1. **Explicit** (preferred): set `task_type: verification` on the task.
+2. **Keyword** (legacy): task name contains a keyword from: `test`, `verify`, `validate`,
+   `spec`, `check`.
+
+Use `task_type: verification` for new work. Keyword matching exists for backward
+compatibility with YAMLs that pre-date the `task_type` field.
 
 Rationale: bundling "implement X" and "tests pass" into one task produces ambiguous
 done states and makes test outcomes non-attributable. Verification must be a separate,
 independently completable unit of work.
 
-Example:
+Preferred example (explicit):
+
+```yaml
+tasks:
+  - name: "Implement workflow transition logic"
+    task_type: implementation
+    done_criteria: "workflow_engine advances one transition per call."
+  - name: "Write unit tests for workflow transitions"
+    task_type: verification
+    done_criteria: "All transition paths covered. Test suite passes with no failures."
+```
+
+Legacy example (keyword):
 
 ```yaml
 tasks:

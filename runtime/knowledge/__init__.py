@@ -1,0 +1,2 @@
+"""Knowledge extraction trigger hooks."""
+
