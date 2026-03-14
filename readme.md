@@ -1,65 +1,51 @@
-﻿<!--
+<!--
 This repository uses `readme.md` as the primary documentation file.
 `README.md` exists for ecosystem compatibility (GitHub, tooling).
 -->
 
-# human-governed-ai-framework (Minimal v1)
+# DevOS — Deterministic Runtime for AI-Assisted Engineering
 
-âš ï¸ Status: Experimental / Conceptual Framework
+> Deterministic runtime for AI-assisted engineering.
 
-This repository represents a framework-level exploration.
-APIs, roles, and artifacts MAY change.
-Not production-ready. Not stable.
+**Status:** Experimental / Conceptual — not production-ready.
 
-Primary documentation: `readme.md`
-
-This repository contains the **framework layer only**:
-
-- deterministic, auditable workflows
-- role-based single-shot agents
-- artifact-only handoffs
-- explicit human decisions
-
-For the target structure and philosophy, see: `readme.md`
+> **Read this before anything else.**
+>
+> DevOS is deliberately opinionated.
+>
+> Before evaluating features, structure, or agents, read
+> **[anti_faq.md](./anti_faq.md)**.
+>
+> It explains what DevOS **is not**,
+> which assumptions it **explicitly rejects**,
+> and why certain "obvious" shortcuts are intentionally forbidden.
 
 ---
 
-> A deterministic, auditable, human-in-the-loop agent framework for AI-assisted software and data development.
-> âš ï¸ **Read this before anything else**
->
-> This framework is deliberately opinionated.
->
-> Before evaluating features, structure, or agents, read the
-> **[ANTI_FAQ.md](./ANTI_FAQ.md)**.
->
-> It explains what this framework **is not**,  
-> which assumptions it **explicitly rejects**,  
-> and why certain â€œobviousâ€ shortcuts are intentionally forbidden.
+## Purpose
 
----
+DevOS is a **deterministic runtime for AI-assisted engineering workflows**.
 
-## ðŸ§­ Purpose
+It is a personal, project-agnostic system for building software and data systems
+with AI assistance without losing engineering control.
 
-The **Human-Governed AI Framework** is a **personal, project-agnostic framework** for building
-software and data systems with AI assistance **without losing control**.
+DevOS is explicitly **not** an autonomous system.
 
-It is explicitly **not** an autonomous system.
+It provides:
 
-Instead, it provides:
-
-- deterministic workflows  
-- explicit agent roles  
-- artifact-based handoffs  
-- versioned decisions  
-- human-in-the-loop governance  
+- deterministic workflows
+- explicit agent roles
+- artifact-based handoffs
+- versioned decisions
+- human-in-the-loop governance
 - continuous improvement **via explicit, human-approved proposals**
 
-**Projects provide domain knowledge.  
-The framework provides process, structure, and control.**
+**Projects provide domain knowledge.
+DevOS provides process, structure, and control.**
 
 ---
 
-## ðŸ§  Core Philosophy
+## Core Philosophy
 
 > **Learning without loss of control.**
 
@@ -70,31 +56,67 @@ AI agents are powerful, but unchecked autonomy leads to:
 - untraceable changes
 - accidental complexity
 
-This framework treats **control, traceability, and explicit decisions as first-class concepts**.
+DevOS treats **control, traceability, and explicit decisions as first-class system properties**.
 
 ---
 
-## ðŸš« What This Framework Is NOT
+## What DevOS Is NOT
 
-- âŒ Not an autonomous multi-agent system  
-- âŒ Not a self-modifying codebase  
-- âŒ Not a domain-specific solution  
-- âŒ Not a replacement for human judgment  
-
----
-
-## âœ… What This Framework IS
-
-- âœ… Deterministic
-- âœ… Auditable
-- âœ… Role-based
-- âœ… Artifact-driven
-- âœ… Human-governed
-- âœ… Project-independent
+- Not an autonomous multi-agent system
+- Not a self-modifying codebase
+- Not a domain-specific solution
+- Not a replacement for human judgment
 
 ---
 
-## ðŸ§± Fundamental Invariants (Non-Negotiable)
+## What DevOS IS
+
+- Deterministic
+- Auditable
+- Role-based
+- Artifact-driven
+- Human-governed
+- Project-independent
+
+---
+
+## System Overview
+
+DevOS models software delivery as a structured sequence of system primitives:
+
+```
+Run → Workflow → Agent → Artifact → Decision → Event → Knowledge
+```
+
+| Primitive | Role |
+| --- | --- |
+| **Run** | Bounded execution of one change intent |
+| **Workflow** | State machine that orchestrates a run |
+| **Agent** | Single-shot executor invoked by the workflow |
+| **Artifact** | Structured output; the only channel between agents |
+| **Decision** | Explicit human authorization recorded in `decision_log.yaml` |
+| **Event** | Append-only timeline entry for every system action |
+| **Knowledge** | Extracted, traceable records derived from artifacts |
+
+### Engineering OS Mental Model
+
+DevOS maps to the conceptual model of a traditional operating system:
+
+| OS Concept | DevOS Equivalent |
+| --- | --- |
+| Process | Run |
+| Program | Workflow |
+| Worker | Agent |
+| Filesystem | Artifacts |
+| System Log | Events |
+| System Memory | Knowledge |
+| Kernel Rules | System Invariants |
+
+Agents do not control execution. The workflow engine governs the process.
+
+---
+
+## Fundamental Invariants (Non-Negotiable)
 
 These rules apply **globally and always**:
 
@@ -109,77 +131,76 @@ These rules apply **globally and always**:
 - Human decisions are **part of the system**
 - Improvements create **proposals**, never automatic changes
 
-âž¡ï¸ See: `contracts/system_invariants.md`
+See: `contracts/system_invariants.md`
 
 ---
 
-## ðŸ§© Separation of Concerns
+## Separation of Concerns
 
 | Layer | Responsibility |
 | --- | --- |
-| **Framework** | Roles, workflows, invariants, artifact types |
+| **Framework** | Roles, workflows, invariants, artifact types (DevOS kernel rules) |
 | **Project** | Domain knowledge, rules, validation logic |
 | **Run** | Concrete execution and produced artifacts |
 
-ðŸš¨ **No domain logic in the framework**  
-ðŸš¨ **No workflow logic in projects**
+**No domain logic in the framework layer.
+No workflow logic in projects.**
 
 ---
 
-## ðŸ“¥ Required Project Inputs (Minimal Runnable Set)
+## Required Project Inputs (Minimal Runnable Set)
 
-A project **must provide the following input artifacts**.  
+A project **must provide the following input artifacts**.
 Without them, the workflow **must not start**.
 
-### ðŸ”´ Mandatory Inputs
+### Mandatory Inputs
 
-1. **`domain_scope.md`**  
+1. **`domain_scope.md`**
 
    Defines what is explicitly **in scope** and **out of scope**.
 
-1. **`domain_rules.md`**  
+1. **`domain_rules.md`**
 
    Hard domain invariants that must never be violated.
 
-1. **`source_policy.md`**  
+1. **`source_policy.md`**
 
    Defines which sources are considered truth, including priorities and conflict rules.
 
-1. **`glossary.md`**  
+1. **`glossary.md`**
 
    Ensures semantic clarity and unambiguous terminology.
 
-1. **`architecture_contract.md`**  
+1. **`architecture_contract.md`**
 
    Explicit architecture contract defining:
 
    - system boundaries
-   - layers & dependency direction
+   - layers and dependency direction
    - allowed / forbidden patterns
    - stability guarantees
 
    Guidance example (non-normative): `examples/filled/architecture_contract.example.md`
 
-âš ï¸ If any mandatory input is missing:  
-`INIT â†’ FAILED`
+If any mandatory input is missing: `INIT → FAILED`
 
-The framework validates presence only; semantic correctness and validation of domain inputs remain project-owned.
+DevOS validates presence only; semantic correctness and validation of domain inputs remain project-owned.
 
 ---
 
-## ðŸ“˜ Recommended Project Inputs (Quality Enhancers)
+## Recommended Project Inputs (Quality Enhancers)
 
 These inputs are **optional**, but strongly recommended to improve decision quality and reduce ambiguity.
 
-- **`data_model.md`**  
+- **`data_model.md`**
 
   Key entities, relationships, and semantic expectations.
 
-- **`evaluation_criteria.md`**  
+- **`evaluation_criteria.md`**
 
-  Defines what â€œgood enoughâ€ means beyond automated tests.
+  Defines what "good enough" means beyond automated tests.
 
-- **`goldstandard_knowledge.md`**  
+- **`goldstandard_knowledge.md`**
 
   Reference outputs, known-correct results, or truth sets.
 
@@ -191,7 +212,7 @@ These files **do not alter the workflow**, but significantly improve:
 
 ---
 
-## ðŸ¤– Agent Model
+## Agent Model
 
 Agents are **roles**, not persistent entities.
 They are deliberately **non-autonomous executors**:
@@ -208,7 +229,7 @@ Each agent:
 - produces defined artifacts
 - has explicit prohibitions
 
-### Core Roles (Framework)
+### Core Roles
 
 - `agent_orchestrator`
 - `agent_planner`
@@ -221,7 +242,7 @@ Each agent:
 - `agent_reviewer`
 - `agent_release_manager`
 
-### System actor (meta-role)
+### System Actor (Meta-Role)
 
 - `human_decision_authority`
 
@@ -234,7 +255,7 @@ Each role is defined as a standalone contract in `/agents`.
 
 ---
 
-## ðŸ§  Domain Sub-Agents (Project-Provided)
+## Domain Sub-Agents (Project-Provided)
 
 Projects may provide **domain-specific capability agents**.
 
@@ -251,7 +272,7 @@ They may **not**:
 - write implementation code
 - alter workflows
 
-The framework defines **capability interfaces only**, e.g.:
+DevOS defines **capability interfaces only**, e.g.:
 
 - `domain_validation`
 - `domain_explanation`
@@ -260,7 +281,7 @@ See: `contracts/capabilities.yaml`
 
 ---
 
-## ðŸ“„ Artifacts as Contracts
+## Artifacts as Contracts
 
 Every artifact defines:
 
@@ -271,7 +292,7 @@ Every artifact defines:
 
 Artifacts are the **only legal communication channel** between agents.
 
-Key framework artifacts include:
+Key artifacts include:
 
 - `change_intent.yaml`
 - `implementation_plan.yaml`
@@ -286,11 +307,11 @@ Schemas live under: `artifacts/schemas/`
 
 Artifact lifecycle vocabulary (optional guidance): `contracts/artifact_status_model.md`
 
-Artifact status (if used) is informational only and never replaces explicit workflow gates or human decisions recorded in decision_log.yaml.
+Artifact status (if used) is informational only and never replaces explicit workflow gates or human decisions recorded in `decision_log.yaml`.
 
 ---
 
-## ðŸ› Architecture Governance
+## Architecture Governance
 
 Architecture is enforced by:
 
@@ -299,39 +320,43 @@ Architecture is enforced by:
 Architecture changes are **not errors**, but must occur via:
 
 - `architecture_change_proposal.md`
-- versioned contracts (v1 â†’ v2)
+- versioned contracts (v1 → v2)
 
 ---
 
-## ðŸ” Workflow Model
+## Workflow Model
 
 ### Primary Delivery Cycle (State Machine)
 
+```
 INIT
-â†’ PLANNING
-â†’ ARCH_CHECK
-â†’ TEST_DESIGN
-â†’ BRANCH_READY
-â†’ IMPLEMENTING
-â†’ TESTING
-â†’ REVIEWING
-â†’ ACCEPTED | ACCEPTED_WITH_DEBT | FAILED
+→ PLANNING
+→ ARCH_CHECK
+→ TEST_DESIGN
+→ BRANCH_READY
+→ IMPLEMENTING
+→ TESTING
+→ REVIEWING
+→ ACCEPTED | ACCEPTED_WITH_DEBT | FAILED
+```
 
 Visualization (non-normative, derived from YAML): `docs/workflow_state_machine.md`
 
 ### Secondary Improvement Cycle (Asynchronous)
 
+```
 OBSERVE
-â†’ REFLECT
-â†’ PROPOSE
-â†’ HUMAN_DECISION
-â†’ (optional) new_change_intent
+→ REFLECT
+→ PROPOSE
+→ HUMAN_DECISION
+→ (optional) new_change_intent
+```
 
 Visualization (non-normative, derived from YAML): `docs/workflow_state_machine.md`
 
 ---
 
-## ðŸ§ª Human-in-the-Loop by Design
+## Human-in-the-Loop by Design
 
 Humans:
 
@@ -352,9 +377,9 @@ There is **no automatic override path**.
 
 ---
 
-## ðŸ›  Execution Environment
+## Execution Environment
 
-The framework is intentionally **tool-agnostic**.
+DevOS is intentionally **tool-agnostic**.
 
 Cursor is currently used as:
 
@@ -362,18 +387,32 @@ Cursor is currently used as:
 - orchestration surface
 - artifact editor
 
-**Understand first â†’ automate later.**
+**Understand first → automate later.**
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
+
+The repository is organized into five conceptual layers:
 
 ```
 human-governed-ai-framework/
-├─ readme.md                              # Primary documentation (start here)
-├─ anti_faq.md                            # Read before evaluating the framework
 │
-├─ contracts/                             # All normative framework specifications
+│  Layer 1 — Vision
+├─ readme.md                              # Primary documentation (start here)
+├─ anti_faq.md                            # Read before evaluating DevOS
+│
+│  Layer 2 — Architecture
+├─ docs/
+│   ├─ DEV_OS_product_vision.md           # DevOS product vision
+│   ├─ devos_architecture.md              # System architecture reference
+│   ├─ workflow_state_machine.md          # State machine visualization (non-normative)
+│   ├─ v1_readiness_assessment.md         # Readiness assessment
+│   └─ governance/
+│       └─ anti_patterns_and_non-goals.md # Anti-patterns, failure modes, non-goals
+│
+│  Layer 3 — Contracts (DevOS Kernel Rules)
+├─ contracts/
 │   ├─ README.md                          # Navigation guide for runtime implementers
 │   ├─ runtime_contract.md                # Primary runtime spec (run lifecycle, gates, events)
 │   ├─ system_invariants.md               # Non-negotiable invariants
@@ -385,6 +424,7 @@ human-governed-ai-framework/
 │   ├─ capabilities.yaml                  # Capability interface definitions
 │   └─ artifact_status_model.md           # Optional lifecycle vocabulary for artifacts
 │
+│  Layer 4 — System Primitives
 ├─ workflow/
 │   ├─ default_workflow.yaml              # Delivery state machine (INIT → terminal)
 │   ├─ release_workflow.yaml              # Release lifecycle (opt-in)
@@ -411,15 +451,10 @@ human-governed-ai-framework/
 │       ├─ *.schema.json
 │       └─ *.schema.md
 │
-├─ docs/
-│   ├─ event_model.md                     # Typed event model
-│   ├─ knowledge_query_contract.md        # Knowledge layer contract
-│   ├─ workflow_state_machine.md          # State machine visualization (non-normative)
-│   ├─ v1_readiness_assessment.md         # Framework readiness assessment
-│   ├─ DEV_OS_product_vision.md           # Product vision background
-│   └─ governance/
-│       └─ anti_patterns_and_non-goals.md
+│  Layer 5 — Observability & Knowledge
+│  (docs/event_model.md, docs/knowledge_query_contract.md)
 │
+│  Examples
 └─ examples/
     ├─ filled/
     │   ├─ architecture_contract.example.md
@@ -432,61 +467,62 @@ human-governed-ai-framework/
 
 ---
 
-## ðŸ§  Guiding Principle
+## Guiding Principle
 
-> **The framework defines how work is done.**  
-> **Projects define what work is done.**  
+> **DevOS defines how work is done.**
+> **Projects define what work is done.**
 > **Agents execute. The orchestrator coordinates. Humans decide.**
 
 ---
 
-## ðŸ—‚ v1 Scope
+## v1 Scope
 
 The following components are **fully normative and implemented in v1**:
 
 | Component | Status |
 | --- | --- |
-| Delivery workflow (`INIT` â†’ `REVIEWING` â†’ terminal) | âœ… v1 normative |
-| `agent_orchestrator`, `agent_planner`, `agent_architecture_guardian` | âœ… v1 normative |
-| `agent_test_designer`, `agent_test_author`, `agent_test_runner` | âœ… v1 normative |
-| `agent_branch_manager`, `agent_implementer`, `agent_reviewer` | âœ… v1 normative |
-| `human_decision_authority` | âœ… v1 normative |
-| Improvement cycle | âœ… v1 normative |
-| `agent_reflector`, `agent_improvement_designer` | âœ… v1 normative |
-| `contracts/runtime_contract.md` | âœ… v1 normative |
+| Delivery workflow (`INIT` → `REVIEWING` → terminal) | v1 normative |
+| `agent_orchestrator`, `agent_planner`, `agent_architecture_guardian` | v1 normative |
+| `agent_test_designer`, `agent_test_author`, `agent_test_runner` | v1 normative |
+| `agent_branch_manager`, `agent_implementer`, `agent_reviewer` | v1 normative |
+| `human_decision_authority` | v1 normative |
+| Improvement cycle | v1 normative |
+| `agent_reflector`, `agent_improvement_designer` | v1 normative |
+| `contracts/runtime_contract.md` | v1 normative |
 
 The following components were **added in v1.1** (all now normative):
 
 | Component | Status |
 | --- | --- |
-| Release workflow (`workflow/release_workflow.yaml`) | âœ… v1.1 normative |
-| Event model (`docs/event_model.md`, `artifacts/schemas/event_envelope.schema.json`) | âœ… v1.1 normative |
-| Knowledge layer (`knowledge_record`, `knowledge_index`, `docs/knowledge_query_contract.md`) | âœ… v1.1 normative |
-| Capability integration contract (`contracts/capability_integration_contract.md`, `capability_registry.schema.yaml`) | âœ… v1.1 normative |
-| Framework versioning policy (`contracts/framework_versioning_policy.md`) | âœ… v1.1 normative |
-| Migration contract (`contracts/migration_contract.md`, `migration_record.schema.yaml`) | âœ… v1.1 normative |
-| Framework self-validation (`contracts/framework_validation_contract.md`) | âœ… v1.1 normative |
+| Release workflow (`workflow/release_workflow.yaml`) | v1.1 normative |
+| Event model (`docs/event_model.md`, `artifacts/schemas/event_envelope.schema.json`) | v1.1 normative |
+| Knowledge layer (`knowledge_record`, `knowledge_index`, `docs/knowledge_query_contract.md`) | v1.1 normative |
+| Capability integration contract (`contracts/capability_integration_contract.md`, `capability_registry.schema.yaml`) | v1.1 normative |
+| Versioning policy (`contracts/framework_versioning_policy.md`) | v1.1 normative |
+| Migration contract (`contracts/migration_contract.md`, `migration_record.schema.yaml`) | v1.1 normative |
+| System self-validation (`contracts/framework_validation_contract.md`) | v1.1 normative |
 
 ---
 
-## ðŸ“Œ Status
+## Status
 
-This repository represents the **framework layer only**.  
+This repository represents the **framework layer (DevOS kernel rules)** and the **DevOS system architecture**.
 It is intentionally minimal, explicit, and conservative by design.
 
 See `contracts/runtime_contract.md` for the normative runtime execution contract.
 
 Key normative references:
-- `contracts/runtime_contract.md` â€” run lifecycle, gate checks, invocation, rework, events
-- `docs/event_model.md` â€” canonical typed event model
-- `docs/knowledge_query_contract.md` â€” knowledge layer contract
-- `contracts/framework_validation_contract.md` â€” framework self-consistency criteria
-- `contracts/framework_versioning_policy.md` â€” version evolution and breaking change policy
-- `contracts/migration_contract.md` â€” major version migration process
-- `contracts/capability_integration_contract.md` â€” project capability integration rules
+- `contracts/runtime_contract.md` — run lifecycle, gate checks, invocation, rework, events
+- `docs/event_model.md` — canonical typed event model
+- `docs/knowledge_query_contract.md` — knowledge layer contract
+- `contracts/framework_validation_contract.md` — system self-consistency criteria
+- `contracts/framework_versioning_policy.md` — version evolution and breaking change policy
+- `contracts/migration_contract.md` — major version migration process
+- `contracts/capability_integration_contract.md` — project capability integration rules
 
 ## Change log
 
 | Version | Date | Change |
 | --- | --- | --- |
 | v1 | 2026-03-12 | Corrected decision_log.yaml location reference to point to per-run normative path. Updated repository structure and v1.1 component status. Added key normative references section. |
+| v1.1 | 2026-03-14 | Architecture alignment refactor. Re-titled as DevOS. Added System Overview and OS Mental Model sections. Updated repository structure to reflect documentation layers. |

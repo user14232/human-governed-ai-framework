@@ -1,7 +1,10 @@
 # contracts/
 
-Normative framework specifications. These documents bind runtime implementations, agent roles,
-artifact schemas, and project configurations.
+DevOS kernel rules. These documents are the normative specification that binds runtime
+implementations, agent roles, artifact schemas, and project configurations.
+
+No runtime may override these contracts. No agent may bypass them. They define the
+invariant behavior of the DevOS system.
 
 ## For runtime implementers — start here
 
@@ -19,7 +22,7 @@ artifact schemas, and project configurations.
 | [`capabilities.yaml`](./capabilities.yaml) | Capability interface definitions projects may implement |
 | [`capability_integration_contract.md`](./capability_integration_contract.md) | How capabilities integrate into the workflow |
 
-## Framework evolution
+## System evolution
 
 | Document | Purpose |
 | --- | --- |

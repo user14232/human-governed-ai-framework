@@ -1,8 +1,8 @@
-# Anti-FAQ  
+# DevOS Anti-FAQ
 
 ## Häufige Fragen – bewusst falsch verstanden
 
-Dieses Dokument beantwortet Fragen,  
+Dieses Dokument beantwortet Fragen zu **DevOS**,  
 die **immer wieder gestellt werden**,  
 aber auf **falschen Annahmen** beruhen.
 
@@ -219,7 +219,7 @@ ist meistens im Audit ein Albtraum.
 
 ## Schlussgedanke
 
-> **Dieses Framework ist nicht darauf ausgelegt,  
+> **DevOS ist nicht darauf ausgelegt,  
 > zu beeindrucken.  
 > Es ist darauf ausgelegt,  
 > standzuhalten.**

@@ -116,16 +116,17 @@ This separation prevents AI from unintentionally altering system behavior or byp
 DevOS operates through three layers.
 
 ```text
-Framework
+Framework Layer  (DevOS kernel rules)
     ↓
-Workflows
+Workflows        (orchestration)
     ↓
-Runs
+Runs             (execution)
 ```
 
-### Framework
+### Framework Layer
 
-The framework defines the normative structure of the system.
+The framework layer defines the normative structure of the system.
+It acts as the DevOS kernel — the set of rules that all workflows and runs must comply with.
 
 It includes:
 
@@ -135,7 +136,7 @@ It includes:
 * system invariants
 * governance rules
 
-The framework describes **how DevOS operates**.
+The framework layer describes **how DevOS operates**.
 
 ---
 
@@ -208,7 +209,7 @@ IDE / AI coding assistant
         ↓
 DevOS runtime
         ↓
-DevOS framework
+DevOS framework layer  (kernel rules)
 ```
 
 AI editors accelerate coding.

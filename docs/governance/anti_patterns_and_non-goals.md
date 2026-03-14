@@ -1,8 +1,8 @@
 ﻿# Phase 2 Abschluss â€“ Anti-Patterns, Failure Modes & bewusste Nicht-Ziele
 
-**Status:** Framework-intern, normativ  
+**Status:** DevOS-intern, normativ  
 **Ziel:** Phase 2 (Governance & Trennung) explizit abschlieÃŸen  
-**Leser:** Humans, alle Framework-Rollen
+**Leser:** Humans, alle DevOS-Rollen
 
 ---
 
@@ -121,7 +121,7 @@ Human Gates sind.
 
 ## 3. Failure Modes (erwartete, erlaubte FehlzustÃ¤nde)
 
-Failure ist **kein Fehler im Framework**, sondern ein **valider Zustand**.
+Failure ist **kein Fehler im DevOS-System**, sondern ein **valider Zustand**.
 
 ### FM-01: INIT â†’ FAILED (Missing Inputs)
 
@@ -199,7 +199,7 @@ Failure ist **kein Fehler im Framework**, sondern ein **valider Zustand**.
 
 ---
 
-## 4. Was dieses Framework bewusst NICHT kann
+## 4. Was DevOS bewusst NICHT kann
 
 Diese Punkte sind **keine LÃ¼cken**, sondern **Design-Entscheidungen**.
 
