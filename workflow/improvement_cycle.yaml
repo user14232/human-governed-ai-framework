@@ -1,4 +1,4 @@
-﻿version: v1
+version: v1
 id: improvement_cycle
 
 responsibility: >
@@ -68,11 +68,11 @@ optional_activities_at_observe:
     governed_by: docs/knowledge_query_contract.md
 
 assumptions_and_tradeoffs:
-  - The improvement cycle is optional and can be run out-of-band.
-  - Proposals may lead to a new `change_intent.yaml`, but only via explicit human decision.
-  - `run_metrics.json` is required as input to OBSERVE. Delivery runs that are intended to feed
-    into the improvement cycle must therefore treat `run_metrics.json` as required (not optional).
-  - The improvement cycle run has its own `run_id` separate from any delivery run.
+  - "The improvement cycle is optional and can be run out-of-band."
+  - "Proposals may lead to a new `change_intent.yaml`, but only via explicit human decision."
+  - "`run_metrics.json` is required as input to OBSERVE. Delivery runs that are intended to feed
+    into the improvement cycle must therefore treat `run_metrics.json` as required (not optional)."
+  - "The improvement cycle run has its own `run_id` separate from any delivery run."
 
 change_log:
   - version: v1
