@@ -1,4 +1,4 @@
-﻿# Schema: `explanation.md` (v1)
+# Schema: `explanation.md` (v1)
 
 ## Schema metadata
 
@@ -49,7 +49,7 @@ the provided domain inputs; no new domain facts may be created.
 
 - Human-readable explanation.
 - Each statement that derives from a domain input must include an inline reference in the form
-  `[rule_id_or_section]` or `(glossary: term)`.
+`[rule_id_or_section]` or `(glossary: term)`.
 
 ### 4) Limitations
 
@@ -60,3 +60,4 @@ the provided domain inputs; no new domain facts may be created.
 
 - Every factual claim must be traceable to a cited section or term in the consulted inputs.
 - Must not create new domain facts, new rules, or new glossary terms.
+

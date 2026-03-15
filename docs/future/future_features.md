@@ -1,3 +1,7 @@
+> **DEPRECATED — This document is superseded by `docs/roadmap/integration_ecosystem_vision.md`.**
+> Content has been rewritten in English and moved to the canonical roadmap location.
+> This file is retained for archive reference only. Do not update it.
+
 # Zukünftige Erweiterungen – Integrations- und Ecosystem-Vision
 
 **Dokumenttyp:** Architektur-Notiz / Future Extension

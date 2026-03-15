@@ -1,289 +1,181 @@
-﻿# Phase 2 Abschluss â€“ Anti-Patterns, Failure Modes & bewusste Nicht-Ziele
+# DevOS – Anti-Patterns, Failure Modes, and Non-Goals
 
-**Status:** DevOS-intern, normativ  
-**Ziel:** Phase 2 (Governance & Trennung) explizit abschlieÃŸen  
-**Leser:** Humans, alle DevOS-Rollen
-
----
-
-## 1. Zweck dieses Dokuments
-
-Dieses Dokument definiert **explizit**, welche Nutzungsarten, Erwartungen und
-Verhaltensweisen **nicht zulÃ¤ssig**, **nicht unterstÃ¼tzt** oder **bewusst ausgeschlossen**
-sind.
-
-Es dient drei Zwecken:
-
-1. Vermeidung impliziter Annahmen
-2. Schutz vor schleichender Autonomisierung
-3. Klare Abgrenzung von Phase 3+ Features
-
-> **Prinzip:**  
-> Ein Framework ist erst dann stabil, wenn es klar sagen kann,  
-> **was es nicht tut â€“ selbst wenn es kÃ¶nnte.**
+**Document type**: Governance reference
+**Status**: Normative — applies to all DevOS implementations and extensions
+**Date**: 2026-03-15
 
 ---
 
-## 2. Anti-Patterns (verbotene Nutzungsweisen)
+## 1. Purpose
 
-Diese Anti-Patterns sind **konzeptionell verboten**, auch wenn sie technisch mÃ¶glich wÃ¤ren.
+This document defines explicitly what DevOS must not do, what it must not become, and which behaviors are forbidden regardless of technical feasibility.
 
-### AP-01: â€žDer Agent weiÃŸ schon, was gemeint istâ€œ
-
-**Beschreibung:**  
-Agenten interpretieren unvollstÃ¤ndige, mehrdeutige oder implizite Anforderungen
-ohne explizite Artefakte.
-
-**Warum verboten:**
-
-- zerstÃ¶rt Determinismus
-- verschiebt Verantwortung vom Menschen zum System
-- macht Entscheidungen nicht auditierbar
-
-**GegenmaÃŸnahme:**
-
-- fehlende Informationen â†’ Stop
-- AmbiguitÃ¤t â†’ explizite Annahme im Artefakt oder Human Decision
+A governance kernel is only trustworthy if it can state clearly what it will never do — even when it could.
 
 ---
 
-### AP-02: Impliziter Fortschritt ohne Artefakt
+## 2. What DevOS Must Never Become
 
-**Beschreibung:**  
-Ein Workflow-Schritt wird fortgesetzt, obwohl ein erforderliches Artefakt
-oder eine Genehmigung fehlt.
+These are permanent boundaries. They are not missing features or future candidates. They are deliberate, non-negotiable limits.
 
-**Warum verboten:**
+### DevOS must never become an AI platform
 
-- unterlÃ¤uft Governance
-- erzeugt â€žPhantom-Entscheidungenâ€œ
-- bricht Audit-Trail
+DevOS is a governance kernel. It does not build, host, or manage AI infrastructure. It does not manage model deployments, inference endpoints, or AI provider accounts. All AI execution happens in external systems behind the `AgentAdapter` protocol.
 
-**GegenmaÃŸnahme:**
+**Violation signal**: Any code path inside the runtime that invokes an LLM directly, manages model state, or routes AI traffic.
 
-- harte Gates
-- Orchestrator darf nur PrÃ¤senz + Entscheidung prÃ¼fen, nichts inferieren
+### DevOS must never become a planning system
 
----
+DevOS does not define what should be built. It does not prioritize work items, create epics, or manage backlogs. Planning is the responsibility of external planning tools. DevOS consumes the output of planning tools as `change_intent.yaml`. It has no knowledge of the planning system that produced it.
 
-### AP-03: â€žFriendly Agentâ€œ-Verhalten
+**Violation signal**: Any DevOS component that queries a planning system, modifies work items, or makes scheduling decisions.
 
-**Beschreibung:**  
-Ein Agent kompensiert fehlende Inputs durch Annahmen,
-Heuristiken oder â€žBest Practicesâ€œ.
+### DevOS must never become an autonomous agent framework
 
-**Warum verboten:**
+DevOS does not drive autonomous AI loops. It defines contracts for agents but does not implement agent reasoning. The CLI advances exactly one workflow transition per invocation. There is no run-until-done command.
 
-- Agent wird zum impliziten Entscheider
-- Entscheidungen sind nicht mehr lokalisierbar
+**Violation signal**: Any command or code path that drives a workflow to completion without human intervention at each gate.
 
-**GegenmaÃŸnahme:**
+### DevOS must never become a distributed AI infrastructure
 
-- Agenten dÃ¼rfen nur transformieren, nicht vervollstÃ¤ndigen
-- Unklarheit â†’ explizit dokumentieren oder stoppen
+DevOS is a single-process local CLI tool. It has no server component, no distributed runtime, and no external service dependency. It must operate fully from the local filesystem.
 
----
+**Violation signal**: Any requirement for a running service, database, or cloud API to execute a run.
 
-### AP-04: ArchitekturÃ¤nderung als Implementation Detail
+### DevOS must never infer approvals
 
-**Beschreibung:**  
-Architekturregeln werden â€žnebenbeiâ€œ durch Code, Tests oder Konfiguration geÃ¤ndert.
+All approvals require explicit `decision_log.yaml` entries. The kernel never infers an approval from artifact content, timing, or prior decisions. No artifact advances past a gate without a matching, explicit decision log entry.
 
-**Warum verboten:**
-
-- Architektur driftet unsichtbar
-- Review verliert Referenzpunkt
-
-**GegenmaÃŸnahme:**
-
-- einzige legale Ã„nderung: `architecture_change_proposal.md`
-- ohne Decision â†’ kein Fortschritt
+**Violation signal**: Any gate check logic that approves a transition without reading a matching decision log entry.
 
 ---
 
-### AP-05: Automatisierte Entscheidungen ohne Human Record
+## 3. Anti-Patterns (Forbidden Behaviors)
 
-**Beschreibung:**  
-Tools, Skripte oder Agenten treffen Entscheidungen, die eigentlich
-Human Gates sind.
+These behaviors are forbidden in DevOS implementations, even when technically possible.
 
-**Warum verboten:**
+### AP-01: Implicit progress without artifacts
 
-- Governance wird simuliert, nicht gelebt
-- Verantwortung ist nicht mehr zuordenbar
+A workflow transition proceeds without a required artifact being present and validated.
 
-**GegenmaÃŸnahme:**
+**Why forbidden**: Violates the artifact-first principle. Produces phantom decisions. Breaks the audit trail.
 
-- alle Entscheidungen â†’ `decision_log.yaml`
-- keine impliziten Approvals
+**Correct behavior**: Gate failure is hard. No fallback, no inference, no automatic retry.
 
 ---
 
-## 3. Failure Modes (erwartete, erlaubte FehlzustÃ¤nde)
+### AP-02: Agents interpreting incomplete requirements
 
-Failure ist **kein Fehler im DevOS-System**, sondern ein **valider Zustand**.
+An agent proceeds with ambiguous or incomplete input by making assumptions without recording them as explicit artifact content.
 
-### FM-01: INIT â†’ FAILED (Missing Inputs)
+**Why forbidden**: Destroys determinism. Shifts responsibility from the human to the system. Makes decisions non-auditable.
 
-**Bedeutung:**
-
-- Projekt ist nicht startfÃ¤hig
-- Framework schÃ¼tzt sich selbst
-
-**Erwartetes Verhalten:**
-
-- kein Fallback
-- kein â€žBest Guessâ€œ
-- klarer Abbruch
+**Correct behavior**: Ambiguity must be resolved before an agent is invoked. If an agent cannot produce a valid artifact from the given inputs, it must stop and the gate must block.
 
 ---
 
-### FM-02: Plan existiert, aber keine Freigabe
+### AP-03: Architecture changes as implementation details
 
-**Bedeutung:**
+Architecture rules are modified implicitly through code, configuration, or tests without an explicit `architecture_change_proposal.md` and approval.
 
-- Mensch hat noch nicht entschieden
+**Why forbidden**: Architecture drifts invisibly. Review loses its reference point. Decisions are not traceable.
 
-**Erwartetes Verhalten:**
-
-- Stillstand
-- keine Eskalation
-- kein Zeitdruck durch System
+**Correct behavior**: The only legal path for an architecture change is: produce `architecture_change_proposal.md` → get explicit approval in `decision_log.yaml` → produce `arch_review_record.md` with `outcome: PASS`.
 
 ---
 
-### FM-03: Review = FAILED
+### AP-04: Automated decisions without human record
 
-**Bedeutung:**
+Scripts, tools, or agents make decisions that are designated as human gates, without writing an entry to `decision_log.yaml`.
 
-- Ã„nderung ist nicht akzeptabel
+**Why forbidden**: Governance is simulated, not enforced. Accountability is not assignable.
 
-**Erwartetes Verhalten:**
-
-- Workflow endet (terminaler Zustand)
-- kein automatisches Retry
-- neue Iteration nur via Orchestrator + neue `run_id` + neue Artefakte (siehe `contracts/runtime_contract.md` Abschnitt 8.1)
+**Correct behavior**: All decisions must be recorded in `decision_log.yaml`. No approval or rejection is valid unless it appears there with the required fields.
 
 ---
 
-### FM-04: Architekturkonflikt ohne Entscheidung
+### AP-05: External tool state as workflow state
 
-**Bedeutung:**
+External tools (GitHub Issues, Linear, CI systems) are treated as the source of truth for DevOS run state.
 
-- Plan kollidiert mit Contract
-- Entscheidung fehlt
+**Why forbidden**: Violates the filesystem-first principle. Creates hidden dependencies. Makes runs non-reproducible.
 
-**Erwartetes Verhalten:**
-
-- `agent_architecture_guardian` produziert `arch_review_record.md` mit outcome `CHANGE_REQUIRED`
-- Blockade bei `ARCH_CHECK`
-- `architecture_change_proposal.md` wird produziert und muss explizit genehmigt werden
-- kein Workaround
-- nach Genehmigung: neue Version `arch_review_record.md` mit outcome `PASS` erforderlich
+**Correct behavior**: The run directory at `runs/<run_id>/` is always the authoritative state. External tools are mirrors, not sources.
 
 ---
 
-### FM-05: Reject oder Defer bei Approval-Gate
+### AP-06: Semantic validation inside the kernel
 
-**Bedeutung:**
+The runtime kernel validates artifact content meaning, not just structure.
 
-- Mensch hat Artefakt abgelehnt oder zurÃ¼ckgestellt
+**Why forbidden**: The kernel must remain tool-agnostic and domain-agnostic. Semantic validation is project-level concern.
 
-**Erwartetes Verhalten:**
-
-- Workflow ist blockiert am aktuellen Gate
-- Bei `reject`: neue Version des Artefakts produzieren, neue Genehmigung einholen
-- Bei `defer`: Stillstand bis explizite Entscheidung vorliegt
-- kein automatisches Eskalieren
-- Versionierung gemÃ¤ÃŸ `contracts/runtime_contract.md` Abschnitt 3
+**Correct behavior**: The artifact system validates structure only — required fields, heading presence, outcome value format. Content semantics are the responsibility of the project capability layer.
 
 ---
 
-## 4. Was DevOS bewusst NICHT kann
+## 4. Expected Failure Modes
 
-Diese Punkte sind **keine LÃ¼cken**, sondern **Design-Entscheidungen**.
+These are valid operational states. They are not bugs. The system is working correctly when these occur.
 
-### N-01: Keine autonome Zieldefinition
+### FM-01: INIT → FAILED (missing inputs)
 
-Das Framework:
+The run cannot start because required inputs are absent.
 
-- definiert keine Ziele
-- priorisiert nichts selbst
-- erkennt keine â€žOpportunitÃ¤tenâ€œ
-
-ðŸ‘‰ Ziele kommen **immer** von Menschen.
+**Expected behavior**: Hard stop. No fallback. No best-guess execution. Clear error output indicating which inputs are missing.
 
 ---
 
-### N-02: Keine implizite Optimierung
+### FM-02: Gate blocked — missing approval
 
-Das Framework:
+A workflow state cannot advance because the required `decision_log.yaml` entry is absent.
 
-- optimiert keine PlÃ¤ne
-- vereinfacht keine Architektur
-- â€žverbessertâ€œ nichts ohne Auftrag
-
-ðŸ‘‰ Verbesserung ist ein **eigener Prozess** (Improvement Cycle).
+**Expected behavior**: The run is in a valid blocked state. It waits indefinitely. No automated escalation, no time pressure from the system.
 
 ---
 
-### N-03: Keine Selbstheilung
+### FM-03: REVIEWING → FAILED
 
-Das Framework:
+The review artifact carries `outcome: REJECT`.
 
-- repariert keine Fehler
-- korrigiert keine Artefakte
-- â€žlerntâ€œ nicht im Hintergrund
-
-ðŸ‘‰ Fehler werden **sichtbar gemacht**, nicht verborgen.
+**Expected behavior**: The run terminates. The run directory is preserved as an audit record. No automatic rework. A new run with a new `run_id` is required for any retry.
 
 ---
 
-### N-04: Keine Projekt-Intelligenz
+### FM-04: ARCH_CHECK blocked — CHANGE_REQUIRED
 
-Das Framework:
+The `arch_review_record.md` carries `outcome: CHANGE_REQUIRED`.
 
-- versteht keine Domain
-- interpretiert keine Regeln
-- bewertet keine fachliche QualitÃ¤t
-
-ðŸ‘‰ Fachlichkeit ist **Projektverantwortung**.
+**Expected behavior**: The run is blocked at `ARCH_CHECK`. An `architecture_change_proposal.md` must be produced and approved. A new `arch_review_record.md` with `outcome: PASS` is required before the run can proceed.
 
 ---
 
-### N-05: Keine implizite Skalierung
+### FM-05: Gate blocked — artifact reject
 
-Mehr Projekte:
+A human decision entry in `decision_log.yaml` carries `decision: reject`.
 
-- erzeugen keine neuen AbkÃ¼rzungen
-- erzeugen keine Shared State Logik
-- verÃ¤ndern das Framework nicht automatisch
-
-ðŸ‘‰ Skalierung erfolgt **explizit oder gar nicht**.
+**Expected behavior**: The workflow is blocked. A new version of the artifact must be produced. The new version must be validated and re-approved. No automatic escalation.
 
 ---
 
-## 5. Phase-2-Abschlusskriterium (Definition of Done)
+## 5. Permanent Non-Goals
 
-Phase 2 gilt als **abgeschlossen**, wenn:
+These are design decisions, not capability gaps.
 
-- jedes Stoppen erklÃ¤rbar ist
-- jedes Weitergehen belegbar ist
-- jedes â€žNeinâ€œ ein Artefakt hat
-- jedes â€žWarum nicht?â€œ auf dieses Dokument verweist
-
-> **Wenn sich das Framework unbequem anfÃ¼hlt,  
-> aber fair â€“ dann ist Phase 2 erreicht.**
+| Non-goal | Rationale |
+| --- | --- |
+| Autonomous goal definition | DevOS never defines goals. All intent comes from external planning systems and human-authored `change_intent.yaml`. |
+| Implicit optimization | DevOS never improves plans, simplifies architecture, or "helps" without explicit instruction. Improvement is a separate, explicit workflow. |
+| Self-healing | DevOS surfaces failures visibly. It does not repair artifacts, retry failures, or correct errors. |
+| Domain intelligence | DevOS does not understand the project's domain. It validates structure, not meaning. |
+| Implicit scaling | Additional projects do not change the framework. No shared state across runs. No shortcuts for experienced users. |
+| Heuristic confidence scoring | All gate checks are binary pass/fail. No probability scores, no soft gates, no fuzzy approvals. |
 
 ---
 
-## 6. Ãœbergang zu Phase 3 (nicht automatisch)
+## Further Reading
 
-Phase 3 darf **erst** beginnen, wenn:
-
-- mindestens ein realer Run gescheitert ist
-- mindestens ein menschlicher Entscheid bewusst verzÃ¶gert wurde
-- kein Anti-Pattern nur â€žtheoretischâ€œ ist
-
-Phase 3 beginnt **nicht** durch Features,  
-sondern durch **bewiesene StabilitÃ¤t unter Druck**.
+- `docs/vision/product_vision.md` — DevOS scope and positioning
+- `docs/vision/system_architecture.md` — Four-layer architecture model
+- `docs/architecture/integration_model.md` — Artifact-first integration rules
+- `docs/runtime/runtime_execution_model.md` — MVP runtime scope and explicit exclusions

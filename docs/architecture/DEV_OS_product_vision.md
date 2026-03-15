@@ -1,10 +1,13 @@
-# DevOS – Product Vision
+# DevOS – Architectural Vision
+
+> **Note**: The canonical MVP product vision is at `docs/vision/product_vision.md`. The system architecture overview is at `docs/vision/system_architecture.md`. This document provides the broader conceptual vision and design rationale.
 
 ## 1. Vision
 
-DevOS is a **deterministic engineering system for AI-assisted software development**.
+DevOS is a **workflow governance kernel for AI-assisted engineering**.
 
-It introduces structure, governance, and traceability around AI-driven development processes.
+It introduces structure, governance, and traceability around AI-driven development processes. DevOS sits between planning systems and AI execution systems. It orchestrates work but does not perform reasoning itself.
+
 Instead of relying on autonomous agents that operate without constraints, DevOS integrates AI reasoning into **explicit workflows governed by artifacts, decisions, and system rules**.
 
 The goal is to make AI-assisted engineering:
@@ -13,7 +16,7 @@ The goal is to make AI-assisted engineering:
 * inspectable
 * architecturally consistent
 * governed by explicit rules
-* scalable across projects and teams
+* traceable across planning, execution, and decisions
 
 DevOS treats software development as a **structured system of workflows rather than a sequence of informal AI interactions**.
 
@@ -113,7 +116,19 @@ This separation prevents AI from unintentionally altering system behavior or byp
 
 # 5. System Structure
 
-DevOS operates through three layers.
+DevOS operates across four layers. The governance kernel is the second.
+
+```text
+Planning Layer   (external: epics / stories / tasks → change_intent.yaml)
+    ↓
+DevOS Governance Kernel  (run lifecycle / workflow / gates / artifacts / decisions)
+    ↓
+Agent Execution Layer    (external: AI reasoning / code generation)
+    ↓
+Tooling Layer            (external: Git / testing / linting / scanning)
+```
+
+Within the governance kernel, the internal layer structure is:
 
 ```text
 Framework Layer  (DevOS kernel rules)
@@ -198,23 +213,24 @@ The system retains control through deterministic rules and decision gates.
 
 # 7. DevOS in the AI Tool Ecosystem
 
-DevOS does not attempt to replace AI coding tools or IDEs.
+DevOS does not attempt to replace AI coding tools, IDEs, or planning systems.
 
-Instead, it provides a **governance and workflow layer above them**.
-
-For example:
+Instead, it provides a **governance and workflow layer between them**.
 
 ```text
-IDE / AI coding assistant
+Planning systems (Linear / gstack / GitHub Issues)
         ↓
-DevOS runtime
+  change_intent.yaml
         ↓
-DevOS framework layer  (kernel rules)
+DevOS governance kernel
+  (workflow / gates / artifacts / decisions)
+        ↓
+Agent execution layer (Cursor / gstack / local LLMs)
+        ↓
+Tooling layer (Git / Pytest / Ruff / Semgrep)
 ```
 
-AI editors accelerate coding.
-
-DevOS ensures that AI-assisted development remains **structured and governed**.
+AI editors accelerate coding. Planning tools organize work. DevOS ensures that AI-assisted development remains **structured, governed, and traceable** across all layers.
 
 ---
 
@@ -244,19 +260,26 @@ This provides a working foundation while preserving the architectural principles
 
 ---
 
-# 9. Long-Term Vision
+# 9. Long-Term Vision (Roadmap)
 
-In the long term, DevOS aims to become a **workflow operating system for AI-assisted engineering**.
+> **Roadmap** — The capabilities in this section are not part of the MVP runtime. For a full inventory of parked features, see `docs/roadmap/future_features.md`.
 
-Potential capabilities include:
+In the long term, DevOS aims to become a **workflow governance kernel and personal AI development toolkit** at the center of a structured AI-assisted engineering practice.
 
-* structured engineering workflows for different development activities
-* persistent knowledge derived from artifacts and decisions
+Potential future capabilities include:
+
+* concrete `AgentAdapter` implementations for gstack, Cursor, and local LLM backends
+* LLM provider abstraction layer with local and cloud model support (see `docs/architecture/llm_strategy.md`)
+* persistent knowledge extraction from artifacts and decisions
 * queryable engineering history across runs
 * architecture evolution tracking
-* improved collaboration between humans and AI systems
+* external tool adapters for planning systems and code hosting platforms
+* capability plugin system for extended gate validation
+* automated improvement cycle triggering
 
-DevOS envisions a development environment where AI reasoning operates inside **structured institutional processes rather than informal prompts**.
+These are extensions built on top of the DevOS governance kernel. The kernel itself remains minimal and stable.
+
+DevOS envisions a development environment where AI reasoning operates inside **structured, governed workflows rather than informal prompts**.
 
 ---
 

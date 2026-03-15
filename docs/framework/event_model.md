@@ -1,4 +1,4 @@
-﻿# Event model (v1)
+# Event model (v1)
 
 ## Responsibility
 
@@ -20,6 +20,23 @@ This document defines: event types, required fields, producer contracts, and per
 - **Outputs**: Normative rules that bind all compliant runtime implementations.
 - Events are persisted to `run_metrics.json` (machine-readable) and/or `orchestrator_log.md`
   (human-readable). See `contracts/runtime_contract.md` Section 5.2 and `artifacts/schemas/run_metrics.schema.json`.
+
+## Role as Integration Signal
+
+The event log is the **canonical system log** for a DevOS run. Every significant runtime action has a corresponding event.
+
+The event log serves two roles:
+
+1. **Internal audit trail** — complete, append-only record of everything that happened in a run
+2. **External integration surface** — external systems (dashboards, notification adapters, external state mirrors) read the event log to react to run state changes
+
+External integrations must read the event log — they must not inspect run state by other means. The event log is the correct and only integration surface for event-driven consumers.
+
+**Key rule**: The event log is read-only for external systems. No external system may write to or delete from the event log.
+
+See `docs/architecture/integration_model.md` for the integration architecture.
+
+---
 
 ## Non-negotiables
 

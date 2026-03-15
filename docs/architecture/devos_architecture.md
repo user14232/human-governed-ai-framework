@@ -1,11 +1,11 @@
-# DevOS — System Architecture
+# DevOS — Runtime Architecture Reference
 
 **Status:** Non-normative reference document
 **Normative source:** `contracts/`
 
-This document describes the system architecture of DevOS. It consolidates the architecture
-narrative from the engineering specifications in `docs/phase3_runtime_realization_plan.md`
-and `docs/runtime_module_architecture.md` into a single reference document.
+> For the system-level architecture overview covering all four layers (planning, governance kernel, agent execution, tooling), see `docs/vision/system_architecture.md`. This document focuses on the runtime module architecture of the DevOS governance kernel.
+
+DevOS is a **workflow governance kernel for AI-assisted engineering**. This document describes the internal module architecture of that kernel. It consolidates the architecture narrative from `docs/archive/phase3_runtime_realization_plan.md` and `docs/runtime/runtime_module_architecture.md` into a single reference document.
 
 This document is **non-normative**. The normative runtime rules remain in `contracts/`.
 
@@ -73,7 +73,7 @@ Each element serves a specific role:
 | **Artifact** | Structured output; sole communication channel between system components |
 | **Decision** | Explicit human authorization; recorded append-only in `decision_log.yaml` |
 | **Event** | Append-only timeline record of every system action |
-| **Knowledge** | Extracted, traceable records derived from artifacts after run completion |
+| **Knowledge** | Extracted, traceable records derived from artifacts after run completion — **future feature, not part of MVP runtime** |
 
 **Key constraint:** Agents do not control execution. The workflow engine governs all
 state transitions. Gate validation must pass before any transition proceeds.
@@ -221,7 +221,7 @@ Core execution logic.
 | `runtime/agents/` | Agent invocation adapter (`AgentAdapter` protocol) |
 | `runtime/decisions/` | Decision system; returns typed signals, never writes directly |
 | `runtime/events/` | Append-only event system with monotonic counter |
-| `runtime/knowledge/` | Static extraction hook registry |
+| `runtime/knowledge/` | Extraction trigger-event emitter (MVP: emits events only; full extraction is a future feature) |
 
 ### Layer 6 — CLI (`runtime/cli.py`)
 
@@ -288,8 +288,16 @@ Derived from `docs/runtime_module_architecture.md`:
 
 ## Further Reading
 
-- `docs/phase3_runtime_realization_plan.md` — normative engineering specification for the runtime implementation
-- `docs/runtime_module_architecture.md` — full Python-style interface signatures for all 8 major modules
-- `docs/workflow_state_machine.md` — Mermaid visualization of all three workflow state machines
-- `docs/event_model.md` — canonical typed event model with full payload schemas
-- `docs/knowledge_query_contract.md` — knowledge layer extraction and query contract
+- `docs/vision/product_vision.md` — MVP scope, principles, and explicit non-goals
+- `docs/vision/system_architecture.md` — Four-layer system architecture overview
+- `docs/architecture/development_pipeline.md` — Full planning-to-execution pipeline
+- `docs/architecture/agent_contracts.md` — Agent contract model and external implementations
+- `docs/architecture/integration_model.md` — Artifact-first integration philosophy
+- `docs/architecture/llm_strategy.md` — LLM independence and provider abstraction
+- `docs/archive/phase3_runtime_realization_plan.md` — normative engineering specification for the runtime implementation
+- `docs/runtime/runtime_module_architecture.md` — full Python-style interface signatures for all 8 major modules
+- `docs/runtime/runtime_execution_model.md` — MVP runtime scope and future extension points
+- `docs/framework/workflow_state_machine.md` — Mermaid visualization of all three workflow state machines
+- `docs/framework/event_model.md` — canonical typed event model with full payload schemas
+- `docs/framework/knowledge_query_contract.md` — knowledge layer extraction and query contract (future capability)
+- `docs/roadmap/future_features.md` — capabilities parked outside the MVP runtime

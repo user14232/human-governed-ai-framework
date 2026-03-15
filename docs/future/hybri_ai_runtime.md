@@ -1,3 +1,7 @@
+> **DEPRECATED — This document is superseded by `docs/roadmap/hybrid_ai_runtime.md`.**
+> Content has been rewritten in English and moved to the canonical roadmap location.
+> This file is retained for archive reference only. Do not update it.
+
 # future_feature.md
 
 ## Hybrid AI Runtime (Local Models + Cloud Models)

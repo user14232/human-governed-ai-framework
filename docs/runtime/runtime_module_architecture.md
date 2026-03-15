@@ -4,7 +4,9 @@
 **Version**: v1  
 **Date**: 2026-03-12  
 **Status**: Active  
-**Derived from**: `docs/phase3_runtime_realization_plan.md` v1  
+**Derived from**: `docs/archive/phase3_runtime_realization_plan.md` v1
+
+> **MVP scope**: This document defines the full module architecture. The active MVP runtime covers sections 4–8 (run_engine, workflow_engine, gate_evaluator, artifact_system, decision_system, event_system, CLI). Section 7.8 (knowledge extraction hooks) is active in the MVP as an event-emitting stub only — no extraction is performed. Capabilities, autonomous loops, and semantic validation are future extension points documented in `docs/roadmap/future_features.md`.  
 
 ---
 
@@ -1123,6 +1125,8 @@ def verify_append_only(run_metrics_path: Path, prior_hash: ArtifactHash) -> None
 
 ### 7.8 Knowledge Extraction Hooks (`runtime/knowledge/extraction_hooks.py`)
 
+> **MVP status**: Active as trigger-event emitter only. No knowledge records are created and no extraction is performed. Full knowledge extraction is a future feature — see `docs/roadmap/future_features.md §1`.
+
 **Responsibility**: Detect normative extraction trigger points at terminal states and
 log them as entries in `run_metrics.json`. No extraction is performed.
 
@@ -1268,6 +1272,8 @@ capability and is out of scope for the runtime.
 
 This keeps the runtime independent of project domain knowledge.
 
+> **Future extension point**: The `domain_validation` capability and capability registry execution are parked as post-MVP features. See `docs/roadmap/future_features.md §3`.
+
 ### D-05: CLI advances one transition per invocation
 
 The CLI does not drive an autonomous loop. Each `advance` command attempts one
@@ -1288,6 +1294,8 @@ agents are implemented.
 
 **Consequence**: The framework and runtime remain tool-agnostic, as required by
 `contracts/system_invariants.md` (tool-agnostic invariant).
+
+> **Future extension point**: Concrete `AgentAdapter` implementations (LLM adapters, subprocess agents, HTTP agents) are project-level concerns and not part of the MVP runtime. See `docs/roadmap/future_features.md §5`.
 
 ### D-07: No in-memory state survives between CLI invocations
 

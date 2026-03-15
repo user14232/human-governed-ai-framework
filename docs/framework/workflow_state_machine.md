@@ -1,4 +1,8 @@
-﻿# Workflow state machine (visualization, non-normative)
+# Workflow state machine (visualization, non-normative)
+
+**Document type**: Visualization reference
+**Status**: Non-normative — YAML definitions are the source of truth
+**Date**: 2026-03-15
 
 This document provides a **visualization** of the workflow state machines defined by:
 
@@ -7,6 +11,21 @@ This document provides a **visualization** of the workflow state machines define
 - `workflow/release_workflow.yaml` (opt-in release lifecycle)
 
 It is **derivative** and **non-normative**. The YAML files remain the source of truth.
+
+---
+
+## Deterministic Execution Model
+
+All workflow state machines in DevOS are strictly deterministic:
+
+- Every transition requires explicit gate conditions to pass. No transition is implicit or inferred.
+- Every gate check is a hard check. No fallback, no partial pass.
+- Every approval requires an explicit `decision_log.yaml` entry. No automated approvals.
+- Every terminal state is final. Failed runs require a new run.
+
+Agents do not control workflow progression. The kernel evaluates gate conditions and advances state. Agents produce artifacts; the kernel decides whether those artifacts satisfy the gate requirements.
+
+---
 
 ## Primary delivery cycle (`workflow/default_workflow.yaml`)
 
