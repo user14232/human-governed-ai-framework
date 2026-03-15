@@ -1,0 +1,434 @@
+{
+  "run_metadata": {},
+  "events": [
+    {
+      "event_id": "EVT-RUN202603150005-0001",
+      "event_type": "run.started",
+      "run_id": "RUN-20260315-0005",
+      "timestamp": "2026-03-15T07:53:49.661780+00:00",
+      "producer": "runtime",
+      "workflow_state": "INIT",
+      "causation_event_id": null,
+      "correlation_id": "RUN-20260315-0005",
+      "payload": {
+        "workflow_id": "default_workflow",
+        "change_intent_id": "unknown",
+        "project_inputs": []
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603150005-0002",
+      "event_type": "workflow.transition_checked",
+      "run_id": "RUN-20260315-0005",
+      "timestamp": "2026-03-15T07:53:49.683781+00:00",
+      "producer": "runtime",
+      "workflow_state": "INIT",
+      "causation_event_id": "EVT-RUN202603150005-0001",
+      "correlation_id": "RUN-20260315-0005",
+      "payload": {
+        "from_state": "INIT",
+        "to_state": "PLANNING",
+        "result": "pass",
+        "checks": [
+          {
+            "check_type": "input_presence",
+            "subject": "domain_scope.md",
+            "result": "pass",
+            "detail": null
+          },
+          {
+            "check_type": "input_presence",
+            "subject": "domain_rules.md",
+            "result": "pass",
+            "detail": null
+          },
+          {
+            "check_type": "input_presence",
+            "subject": "source_policy.md",
+            "result": "pass",
+            "detail": null
+          },
+          {
+            "check_type": "input_presence",
+            "subject": "glossary.md",
+            "result": "pass",
+            "detail": null
+          },
+          {
+            "check_type": "input_presence",
+            "subject": "architecture_contract.md",
+            "result": "pass",
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603150005-0003",
+      "event_type": "workflow.transition_completed",
+      "run_id": "RUN-20260315-0005",
+      "timestamp": "2026-03-15T07:53:49.689087+00:00",
+      "producer": "runtime",
+      "workflow_state": "INIT",
+      "causation_event_id": "EVT-RUN202603150005-0002",
+      "correlation_id": "RUN-20260315-0005",
+      "payload": {
+        "from_state": "INIT",
+        "to_state": "PLANNING",
+        "result": "pass"
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603150005-0004",
+      "event_type": "workflow.transition_checked",
+      "run_id": "RUN-20260315-0005",
+      "timestamp": "2026-03-15T07:53:49.713646+00:00",
+      "producer": "runtime",
+      "workflow_state": "PLANNING",
+      "causation_event_id": "EVT-RUN202603150005-0003",
+      "correlation_id": "RUN-20260315-0005",
+      "payload": {
+        "from_state": "PLANNING",
+        "to_state": "ARCH_CHECK",
+        "result": "pass",
+        "checks": [
+          {
+            "check_type": "artifact_presence",
+            "subject": "change_intent.yaml",
+            "result": "pass",
+            "detail": null
+          },
+          {
+            "check_type": "artifact_presence",
+            "subject": "implementation_plan.yaml",
+            "result": "pass",
+            "detail": null
+          },
+          {
+            "check_type": "artifact_presence",
+            "subject": "design_tradeoffs.md",
+            "result": "pass",
+            "detail": null
+          },
+          {
+            "check_type": "artifact_presence",
+            "subject": "decision_log.yaml",
+            "result": "pass",
+            "detail": null
+          },
+          {
+            "check_type": "approval",
+            "subject": "implementation_plan.yaml",
+            "result": "pass",
+            "detail": null
+          },
+          {
+            "check_type": "approval",
+            "subject": "design_tradeoffs.md",
+            "result": "pass",
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603150005-0005",
+      "event_type": "workflow.transition_completed",
+      "run_id": "RUN-20260315-0005",
+      "timestamp": "2026-03-15T07:53:49.718462+00:00",
+      "producer": "runtime",
+      "workflow_state": "PLANNING",
+      "causation_event_id": "EVT-RUN202603150005-0004",
+      "correlation_id": "RUN-20260315-0005",
+      "payload": {
+        "from_state": "PLANNING",
+        "to_state": "ARCH_CHECK",
+        "result": "pass"
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603150005-0006",
+      "event_type": "workflow.transition_checked",
+      "run_id": "RUN-20260315-0005",
+      "timestamp": "2026-03-15T07:53:49.733633+00:00",
+      "producer": "runtime",
+      "workflow_state": "ARCH_CHECK",
+      "causation_event_id": "EVT-RUN202603150005-0005",
+      "correlation_id": "RUN-20260315-0005",
+      "payload": {
+        "from_state": "ARCH_CHECK",
+        "to_state": "TEST_DESIGN",
+        "result": "pass",
+        "checks": [
+          {
+            "check_type": "artifact_presence",
+            "subject": "arch_review_record.md",
+            "result": "pass",
+            "detail": null
+          },
+          {
+            "check_type": "condition",
+            "subject": "arch_review_outcome",
+            "result": "pass",
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603150005-0007",
+      "event_type": "workflow.transition_completed",
+      "run_id": "RUN-20260315-0005",
+      "timestamp": "2026-03-15T07:53:49.738266+00:00",
+      "producer": "runtime",
+      "workflow_state": "ARCH_CHECK",
+      "causation_event_id": "EVT-RUN202603150005-0006",
+      "correlation_id": "RUN-20260315-0005",
+      "payload": {
+        "from_state": "ARCH_CHECK",
+        "to_state": "TEST_DESIGN",
+        "result": "pass"
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603150005-0008",
+      "event_type": "workflow.transition_checked",
+      "run_id": "RUN-20260315-0005",
+      "timestamp": "2026-03-15T07:53:49.759128+00:00",
+      "producer": "runtime",
+      "workflow_state": "TEST_DESIGN",
+      "causation_event_id": "EVT-RUN202603150005-0007",
+      "correlation_id": "RUN-20260315-0005",
+      "payload": {
+        "from_state": "TEST_DESIGN",
+        "to_state": "BRANCH_READY",
+        "result": "pass",
+        "checks": [
+          {
+            "check_type": "artifact_presence",
+            "subject": "test_design.yaml",
+            "result": "pass",
+            "detail": null
+          },
+          {
+            "check_type": "artifact_presence",
+            "subject": "decision_log.yaml",
+            "result": "pass",
+            "detail": null
+          },
+          {
+            "check_type": "approval",
+            "subject": "test_design.yaml",
+            "result": "pass",
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603150005-0009",
+      "event_type": "workflow.transition_completed",
+      "run_id": "RUN-20260315-0005",
+      "timestamp": "2026-03-15T07:53:49.764367+00:00",
+      "producer": "runtime",
+      "workflow_state": "TEST_DESIGN",
+      "causation_event_id": "EVT-RUN202603150005-0008",
+      "correlation_id": "RUN-20260315-0005",
+      "payload": {
+        "from_state": "TEST_DESIGN",
+        "to_state": "BRANCH_READY",
+        "result": "pass"
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603150005-0010",
+      "event_type": "workflow.transition_checked",
+      "run_id": "RUN-20260315-0005",
+      "timestamp": "2026-03-15T07:53:49.771370+00:00",
+      "producer": "runtime",
+      "workflow_state": "BRANCH_READY",
+      "causation_event_id": "EVT-RUN202603150005-0009",
+      "correlation_id": "RUN-20260315-0005",
+      "payload": {
+        "from_state": "BRANCH_READY",
+        "to_state": "IMPLEMENTING",
+        "result": "pass",
+        "checks": [
+          {
+            "check_type": "artifact_presence",
+            "subject": "branch_status.md",
+            "result": "pass",
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603150005-0011",
+      "event_type": "workflow.transition_completed",
+      "run_id": "RUN-20260315-0005",
+      "timestamp": "2026-03-15T07:53:49.776441+00:00",
+      "producer": "runtime",
+      "workflow_state": "BRANCH_READY",
+      "causation_event_id": "EVT-RUN202603150005-0010",
+      "correlation_id": "RUN-20260315-0005",
+      "payload": {
+        "from_state": "BRANCH_READY",
+        "to_state": "IMPLEMENTING",
+        "result": "pass"
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603150005-0012",
+      "event_type": "workflow.transition_checked",
+      "run_id": "RUN-20260315-0005",
+      "timestamp": "2026-03-15T07:53:49.784885+00:00",
+      "producer": "runtime",
+      "workflow_state": "IMPLEMENTING",
+      "causation_event_id": "EVT-RUN202603150005-0011",
+      "correlation_id": "RUN-20260315-0005",
+      "payload": {
+        "from_state": "IMPLEMENTING",
+        "to_state": "TESTING",
+        "result": "pass",
+        "checks": []
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603150005-0013",
+      "event_type": "workflow.transition_completed",
+      "run_id": "RUN-20260315-0005",
+      "timestamp": "2026-03-15T07:53:49.789747+00:00",
+      "producer": "runtime",
+      "workflow_state": "IMPLEMENTING",
+      "causation_event_id": "EVT-RUN202603150005-0012",
+      "correlation_id": "RUN-20260315-0005",
+      "payload": {
+        "from_state": "IMPLEMENTING",
+        "to_state": "TESTING",
+        "result": "pass"
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603150005-0014",
+      "event_type": "workflow.transition_checked",
+      "run_id": "RUN-20260315-0005",
+      "timestamp": "2026-03-15T07:53:49.796841+00:00",
+      "producer": "runtime",
+      "workflow_state": "TESTING",
+      "causation_event_id": "EVT-RUN202603150005-0013",
+      "correlation_id": "RUN-20260315-0005",
+      "payload": {
+        "from_state": "TESTING",
+        "to_state": "REVIEWING",
+        "result": "pass",
+        "checks": [
+          {
+            "check_type": "artifact_presence",
+            "subject": "test_report.json",
+            "result": "pass",
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603150005-0015",
+      "event_type": "workflow.transition_completed",
+      "run_id": "RUN-20260315-0005",
+      "timestamp": "2026-03-15T07:53:49.802653+00:00",
+      "producer": "runtime",
+      "workflow_state": "TESTING",
+      "causation_event_id": "EVT-RUN202603150005-0014",
+      "correlation_id": "RUN-20260315-0005",
+      "payload": {
+        "from_state": "TESTING",
+        "to_state": "REVIEWING",
+        "result": "pass"
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603150005-0016",
+      "event_type": "workflow.transition_checked",
+      "run_id": "RUN-20260315-0005",
+      "timestamp": "2026-03-15T07:53:49.830265+00:00",
+      "producer": "runtime",
+      "workflow_state": "REVIEWING",
+      "causation_event_id": "EVT-RUN202603150005-0015",
+      "correlation_id": "RUN-20260315-0005",
+      "payload": {
+        "from_state": "REVIEWING",
+        "to_state": "ACCEPTED",
+        "result": "pass",
+        "checks": [
+          {
+            "check_type": "artifact_presence",
+            "subject": "review_result.md",
+            "result": "pass",
+            "detail": null
+          },
+          {
+            "check_type": "condition",
+            "subject": "review_outcome",
+            "result": "pass",
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603150005-0017",
+      "event_type": "workflow.transition_completed",
+      "run_id": "RUN-20260315-0005",
+      "timestamp": "2026-03-15T07:53:49.836026+00:00",
+      "producer": "runtime",
+      "workflow_state": "REVIEWING",
+      "causation_event_id": "EVT-RUN202603150005-0016",
+      "correlation_id": "RUN-20260315-0005",
+      "payload": {
+        "from_state": "REVIEWING",
+        "to_state": "ACCEPTED",
+        "result": "pass"
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603150005-0018",
+      "event_type": "run.completed",
+      "run_id": "RUN-20260315-0005",
+      "timestamp": "2026-03-15T07:53:49.841555+00:00",
+      "producer": "runtime",
+      "workflow_state": "ACCEPTED",
+      "causation_event_id": null,
+      "correlation_id": "RUN-20260315-0005",
+      "payload": {
+        "terminal_state": "ACCEPTED",
+        "duration_seconds": 0.0
+      }
+    },
+    {
+      "event_id": "EVT-RUN202603150005-0019",
+      "event_type": "knowledge.extraction_triggered",
+      "run_id": "RUN-20260315-0005",
+      "timestamp": "2026-03-15T07:53:49.846709+00:00",
+      "producer": "runtime",
+      "workflow_state": "ACCEPTED",
+      "causation_event_id": "EVT-RUN202603150005-0018",
+      "correlation_id": "RUN-20260315-0005",
+      "payload": {
+        "trigger_point": "delivery_run_accepted",
+        "workflow_location": "default_workflow.yaml ACCEPTED",
+        "responsible_roles": [
+          "agent_reflector",
+          "human"
+        ],
+        "source_artifacts": [
+          "review_result.md",
+          "decision_log.yaml",
+          "design_tradeoffs.md"
+        ],
+        "kind": "knowledge_extraction_trigger"
+      }
+    }
+  ],
+  "invocation_records": []
+}

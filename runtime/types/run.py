@@ -16,6 +16,7 @@ class RunContext:
     artifacts_dir: Path
     workflow_def: WorkflowDefinition
     current_state: str
+    project_inputs_root: Path | None = None
 
 
 @dataclass(frozen=True)

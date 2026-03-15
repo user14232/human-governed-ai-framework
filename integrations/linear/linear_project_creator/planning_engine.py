@@ -2,7 +2,7 @@
 Backward-compatible planning engine alias.
 """
 
-from devos.planning.planning_engine import (  # noqa: F401
+from integrations.planning.planning_engine import (  # noqa: F401
     DEFAULT_PROJECT_PLAN_PATH,
     PlanValidationError,
     PlanningEngine,

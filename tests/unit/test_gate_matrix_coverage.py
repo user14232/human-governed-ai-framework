@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import tempfile
 import unittest
@@ -16,13 +16,13 @@ class GateMatrixCoverageTest(unittest.TestCase):
         self.evaluator = GateEvaluator()
         self.schemas = {
             "implementation_plan": load_schema(
-                self.repo_root / "artifacts" / "schemas" / "implementation_plan.schema.yaml"
+                self.repo_root / "framework" / "artifacts" / "schemas" / "implementation_plan.schema.yaml"
             ),
             "arch_review_record": load_schema(
-                self.repo_root / "artifacts" / "schemas" / "arch_review_record.schema.md"
+                self.repo_root / "framework" / "artifacts" / "schemas" / "arch_review_record.schema.md"
             ),
             "review_result": load_schema(
-                self.repo_root / "artifacts" / "schemas" / "review_result.schema.md"
+                self.repo_root / "framework" / "artifacts" / "schemas" / "review_result.schema.md"
             ),
         }
 
@@ -41,7 +41,7 @@ class GateMatrixCoverageTest(unittest.TestCase):
             )
             result = self.evaluator.evaluate(
                 transition=transition,
-                project_root=project_root,
+                project_inputs_root=project_root,
                 artifacts_dir=artifacts_dir,
                 decision_log_path=decision_log_path,
                 schemas=self.schemas,
@@ -64,7 +64,7 @@ class GateMatrixCoverageTest(unittest.TestCase):
             )
             result = self.evaluator.evaluate(
                 transition=transition,
-                project_root=project_root,
+                project_inputs_root=project_root,
                 artifacts_dir=artifacts_dir,
                 decision_log_path=decision_log_path,
                 schemas=self.schemas,
@@ -87,7 +87,7 @@ class GateMatrixCoverageTest(unittest.TestCase):
             )
             result = self.evaluator.evaluate(
                 transition=transition,
-                project_root=project_root,
+                project_inputs_root=project_root,
                 artifacts_dir=artifacts_dir,
                 decision_log_path=decision_log_path,
                 schemas=self.schemas,
@@ -127,7 +127,7 @@ class GateMatrixCoverageTest(unittest.TestCase):
             )
             result = self.evaluator.evaluate(
                 transition=transition,
-                project_root=project_root,
+                project_inputs_root=project_root,
                 artifacts_dir=artifacts_dir,
                 decision_log_path=decision_log_path,
                 schemas=self.schemas,
@@ -150,7 +150,7 @@ class GateMatrixCoverageTest(unittest.TestCase):
             )
             result = self.evaluator.evaluate(
                 transition=transition,
-                project_root=project_root,
+                project_inputs_root=project_root,
                 artifacts_dir=artifacts_dir,
                 decision_log_path=decision_log_path,
                 schemas=self.schemas,
@@ -173,7 +173,7 @@ class GateMatrixCoverageTest(unittest.TestCase):
             )
             result = self.evaluator.evaluate(
                 transition=transition,
-                project_root=project_root,
+                project_inputs_root=project_root,
                 artifacts_dir=artifacts_dir,
                 decision_log_path=decision_log_path,
                 schemas=self.schemas,
@@ -196,7 +196,7 @@ class GateMatrixCoverageTest(unittest.TestCase):
             )
             result = self.evaluator.evaluate(
                 transition=transition,
-                project_root=project_root,
+                project_inputs_root=project_root,
                 artifacts_dir=artifacts_dir,
                 decision_log_path=decision_log_path,
                 schemas=self.schemas,
@@ -219,7 +219,7 @@ class GateMatrixCoverageTest(unittest.TestCase):
             )
             result = self.evaluator.evaluate(
                 transition=transition,
-                project_root=project_root,
+                project_inputs_root=project_root,
                 artifacts_dir=artifacts_dir,
                 decision_log_path=decision_log_path,
                 schemas=self.schemas,
@@ -242,7 +242,7 @@ class GateMatrixCoverageTest(unittest.TestCase):
             )
             result = self.evaluator.evaluate(
                 transition=transition,
-                project_root=project_root,
+                project_inputs_root=project_root,
                 artifacts_dir=artifacts_dir,
                 decision_log_path=decision_log_path,
                 schemas=self.schemas,
@@ -284,7 +284,7 @@ class GateMatrixCoverageTest(unittest.TestCase):
             )
             result = self.evaluator.evaluate(
                 transition=transition,
-                project_root=project_root,
+                project_inputs_root=project_root,
                 artifacts_dir=artifacts_dir,
                 decision_log_path=decision_log_path,
                 schemas=self.schemas,

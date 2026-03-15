@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import tempfile
@@ -26,12 +26,12 @@ class FakeEvaluator:
     def evaluate(  # type: ignore[override]
         self,
         transition: Transition,
-        project_root: Path,
+        project_inputs_root: Path,
         artifacts_dir: Path,
         decision_log_path: Path,
         schemas: dict[str, ArtifactSchema],
     ) -> GateResult:
-        _ = (project_root, artifacts_dir, decision_log_path, schemas)
+        _ = (project_inputs_root, artifacts_dir, decision_log_path, schemas)
         self.calls.append(f"{transition.from_state}->{transition.to_state}")
         result = self.results.get(f"{transition.from_state}->{transition.to_state}", CheckResult.FAIL)
         return GateResult(transition=transition, result=result, checks=())
@@ -376,7 +376,7 @@ class WorkflowEngineTest(unittest.TestCase):
 
             schemas = {
                 "improvement_proposal": load_schema(
-                    self.repo_root / "artifacts" / "schemas" / "improvement_proposal.schema.md"
+                    self.repo_root / "framework" / "artifacts" / "schemas" / "improvement_proposal.schema.md"
                 )
             }
 

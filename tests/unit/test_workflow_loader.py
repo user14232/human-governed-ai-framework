@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import tempfile
 import unittest
@@ -12,7 +12,7 @@ class WorkflowLoaderTest(unittest.TestCase):
         self.repo_root = Path(__file__).resolve().parents[2]
 
     def test_load_default_workflow(self) -> None:
-        workflow = load_workflow(self.repo_root / "workflow" / "default_workflow.yaml")
+        workflow = load_workflow(self.repo_root / "framework" / "workflows" / "default_workflow.yaml")
         self.assertEqual(workflow.workflow_id, "default_workflow")
         self.assertGreater(len(workflow.states), 0)
         self.assertGreater(len(workflow.transitions), 0)

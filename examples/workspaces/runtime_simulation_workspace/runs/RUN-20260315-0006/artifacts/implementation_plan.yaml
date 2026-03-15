@@ -1,0 +1,23 @@
+id: PLAN-MANUAL-E2E-001
+supersedes_id: null
+created_at: '2026-03-15T00:00:00+00:00'
+inputs:
+  change_intent_id: CI-feature_feature_spec_artifact
+  architecture_contract_ref: architecture_contract.md
+plan_items:
+- id: TASK-feature_feature_spec_artifact-001
+  title: Implement feature artifact and integration hooks
+  description: Create feature_spec artifact and integrate it into planning flow.
+  dependencies: []
+  outputs:
+  - feature_spec artifact
+  - implementation_summary.md
+  - test_design.yaml
+  constraints:
+  - 'Must integrate with the existing planning layer
+
+    Must not break current project_plan schema'
+non_goals:
+- No workflow definition changes.
+risks:
+- Potential schema drift if artifact contracts change.

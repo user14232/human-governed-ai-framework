@@ -8,7 +8,7 @@ This document maps each success criterion (SC-01..SC-10) to concrete repository 
 ## Input Contract
 
 - Runtime source modules under `runtime/`.
-- Workflow contracts under `workflow/`.
+- Workflow contracts under `framework/workflows/`.
 - Deterministic tests under `tests/unit/` and `tests/integration/`.
 - CI verification pipeline under `.gitlab-ci.yml`.
 
@@ -42,7 +42,7 @@ This document maps each success criterion (SC-01..SC-10) to concrete repository 
 | SC-05 Decision system reads decision_log deterministically | Verified | `runtime/decisions/decision_system.py` | `tests/unit/test_decision_system.py` | Approve/reject/defer processing |
 | SC-06 Event system is append-only and complete | Verified | `runtime/events/event_system.py`, `runtime/events/metrics_writer.py` | `tests/unit/test_event_system.py`, `tests/integration/test_runtime_required_events.py` | Monotonic + append-only + required runtime events |
 | SC-07 Resume and recovery are deterministic | Verified | `runtime/engine/workflow_engine.py`, `runtime/engine/run_engine.py` | `tests/unit/test_workflow_engine.py`, `tests/unit/test_run_engine_lifecycle.py` | Reconstruction from metrics + deterministic fallback branching |
-| SC-08 Improvement and release workflows are executable | Verified | `workflow/improvement_cycle.yaml`, `workflow/release_workflow.yaml`, `runtime/engine/workflow_engine.py` | `tests/unit/test_workflow_transition_coverage.py`, `tests/integration/test_secondary_workflows_e2e.py` | Deterministic end-to-end advancement to terminal states in both secondary workflows |
+| SC-08 Improvement and release workflows are executable | Verified | `framework/workflows/improvement_cycle.yaml`, `framework/workflows/release_workflow.yaml`, `runtime/engine/workflow_engine.py` | `tests/unit/test_workflow_transition_coverage.py`, `tests/integration/test_secondary_workflows_e2e.py` | Deterministic end-to-end advancement to terminal states in both secondary workflows |
 | SC-09 Knowledge extraction trigger points are signaled | Verified | `runtime/knowledge/extraction_hooks.py` | `tests/unit/test_event_system.py` (`test_extraction_trigger_logging_hook`) | Trigger event emission |
 | SC-10 Rework path is operational | Verified | `runtime/decisions/decision_system.py`, `runtime/agents/invocation_layer.py` | `tests/unit/test_decision_system.py`, `tests/unit/test_invocation_layer.py` | Reject/defer signals and rework allowance |
 

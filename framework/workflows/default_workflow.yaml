@@ -1,4 +1,4 @@
-﻿version: v1
+version: v1
 id: default_workflow
 
 responsibility: >
@@ -6,6 +6,9 @@ responsibility: >
   This file defines sequencing and required artifacts only. It does not contain domain logic.
 
 inputs:
+  # project_mandatory lists filenames only. The runtime resolves their location via
+  # project_inputs_root (see contracts/runtime_contract.md Section 2.2).
+  # Canonical path: <project_root>/.devOS/project_inputs/<filename>
   project_mandatory:
     - domain_scope.md
     - domain_rules.md

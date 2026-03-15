@@ -131,7 +131,7 @@ These rules apply **globally and always**:
 - Human decisions are **part of the system**
 - Improvements create **proposals**, never automatic changes
 
-See: `contracts/system_invariants.md`
+See: `framework/contracts/system_invariants.md`
 
 ---
 
@@ -152,6 +152,20 @@ No workflow logic in projects.**
 
 A project **must provide the following input artifacts**.
 Without them, the workflow **must not start**.
+
+### Canonical Location
+
+Place mandatory inputs under:
+
+```
+<project_root>/.devOS/project_inputs/
+```
+
+The runtime resolves this directory automatically. If `.devOS/project_inputs/` exists, it is used.
+If not, the project root is used as a legacy fallback (migration aid only).
+Use `--project-inputs-root` on the CLI to override explicitly.
+
+Templates: `examples/templates/mandatory/` — copy to `.devOS/project_inputs/` and fill in.
 
 ### Mandatory Inputs
 
@@ -251,7 +265,7 @@ Each agent:
 - `agent_reflector`
 - `agent_improvement_designer`
 
-Each role is defined as a standalone contract in `/agents`.
+Each role is defined as a standalone contract in `framework/agents/`.
 
 ---
 
@@ -277,7 +291,7 @@ DevOS defines **capability interfaces only**, e.g.:
 - `domain_validation`
 - `domain_explanation`
 
-See: `contracts/capabilities.yaml`
+See: `framework/contracts/capabilities.yaml`
 
 ---
 
@@ -303,9 +317,9 @@ Key artifacts include:
 - `run_metrics.json`
 - `decision_log.yaml` (approval/decision record)
 
-Schemas live under: `artifacts/schemas/`
+Schemas live under: `framework/artifacts/schemas/`
 
-Artifact lifecycle vocabulary (optional guidance): `contracts/artifact_status_model.md`
+Artifact lifecycle vocabulary (optional guidance): `framework/contracts/artifact_status_model.md`
 
 Artifact status (if used) is informational only and never replaces explicit workflow gates or human decisions recorded in `decision_log.yaml`.
 
@@ -340,7 +354,7 @@ INIT
 → ACCEPTED | ACCEPTED_WITH_DEBT | FAILED
 ```
 
-Visualization (non-normative, derived from YAML): `docs/workflow_state_machine.md`
+Visualization (non-normative, derived from YAML): `docs/framework/workflow_state_machine.md`
 
 ### Secondary Improvement Cycle (Asynchronous)
 
@@ -352,7 +366,7 @@ OBSERVE
 → (optional) new_change_intent
 ```
 
-Visualization (non-normative, derived from YAML): `docs/workflow_state_machine.md`
+Visualization (non-normative, derived from YAML): `docs/framework/workflow_state_machine.md`
 
 ---
 
@@ -367,11 +381,11 @@ Humans:
 
 All approvals/decisions are recorded explicitly (append-only) in:
 
-- `runs/<run_id>/decision_log.yaml` (schema: `artifacts/schemas/decision_log.schema.yaml`)
+- `runs/<run_id>/decision_log.yaml` (schema: `framework/artifacts/schemas/decision_log.schema.yaml`)
 
 The file `examples/filled/decision_log.example.yaml` in this repository is an example only.
 The normative per-run location is `runs/<run_id>/decision_log.yaml`
-(see `contracts/runtime_contract.md` Section 2.3).
+(see `framework/contracts/runtime_contract.md` Section 2.3).
 
 There is **no automatic override path**.
 
@@ -395,7 +409,7 @@ Cursor is currently used as:
 
 DevOS also includes a deterministic planning package for repository-owned work breakdowns:
 
-- package: `devos/planning/`
+- package: `integrations/planning/`
 - canonical artifact: `.devOS/planning/project_plan.yaml`
 - compatibility fallback: `.devos/planning/project_plan.yaml`
 - gate behavior: parse + lint before any optional external sync
@@ -411,62 +425,65 @@ those systems the source of truth.
 The repository is organized into five conceptual layers:
 
 ```
-human-governed-ai-framework/
+devos/
 │
-│  Layer 1 — Vision
+│  Root
 ├─ readme.md                              # Primary documentation (start here)
 ├─ anti_faq.md                            # Read before evaluating DevOS
 │
-│  Layer 2 — Architecture
-├─ docs/
-│   ├─ DEV_OS_product_vision.md           # DevOS product vision
-│   ├─ devos_architecture.md              # System architecture reference
-│   ├─ workflow_state_machine.md          # State machine visualization (non-normative)
-│   ├─ v1_readiness_assessment.md         # Readiness assessment
-│   └─ governance/
-│       └─ anti_patterns_and_non-goals.md # Anti-patterns, failure modes, non-goals
+│  Framework (DevOS normative specification)
+├─ framework/
+│   ├─ docs/
+│   │   ├─ DEV_OS_product_vision.md       # DevOS product vision
+│   │   ├─ devos_architecture.md          # System architecture reference
+│   │   ├─ workflow_state_machine.md      # State machine visualization (non-normative)
+│   │   └─ governance/
+│   │       └─ anti_patterns_and_non-goals.md
+│   │
+│   ├─ contracts/
+│   │   ├─ README.md                      # Navigation guide for runtime implementers
+│   │   ├─ runtime_contract.md            # Primary runtime spec
+│   │   ├─ system_invariants.md           # Non-negotiable invariants
+│   │   ├─ framework_validation_contract.md
+│   │   ├─ framework_versioning_policy.md
+│   │   ├─ migration_contract.md
+│   │   ├─ capability_integration_contract.md
+│   │   ├─ domain_input_contracts.md
+│   │   ├─ capabilities.yaml
+│   │   └─ artifact_status_model.md
+│   │
+│   ├─ workflows/
+│   │   ├─ default_workflow.yaml          # Delivery state machine (INIT → terminal)
+│   │   ├─ release_workflow.yaml          # Release lifecycle (opt-in)
+│   │   └─ improvement_cycle.yaml         # Improvement cycle (OBSERVE → HUMAN_DECISION)
+│   │
+│   ├─ agents/
+│   │   ├─ agent_orchestrator.md
+│   │   ├─ agent_planner.md
+│   │   └─ ... (all agent contracts)
+│   │
+│   └─ artifacts/
+│       └─ schemas/                       # All artifact contracts (schemas)
+│           ├─ *.schema.yaml
+│           ├─ *.schema.json
+│           └─ *.schema.md
 │
-│  Layer 3 — Contracts (DevOS Kernel Rules)
-├─ contracts/
-│   ├─ README.md                          # Navigation guide for runtime implementers
-│   ├─ runtime_contract.md                # Primary runtime spec (run lifecycle, gates, events)
-│   ├─ system_invariants.md               # Non-negotiable invariants
-│   ├─ framework_validation_contract.md   # 35 self-consistency criteria
-│   ├─ framework_versioning_policy.md     # Version scheme and change classification
-│   ├─ migration_contract.md              # Major version migration process
-│   ├─ capability_integration_contract.md # How project capabilities integrate
-│   ├─ domain_input_contracts.md          # Required project inputs contract
-│   ├─ capabilities.yaml                  # Capability interface definitions
-│   └─ artifact_status_model.md           # Optional lifecycle vocabulary for artifacts
+│  Runtime (execution engine implementation)
+├─ runtime/
+│   ├─ cli.py
+│   ├─ engine/
+│   ├─ events/
+│   ├─ store/
+│   ├─ agents/
+│   ├─ artifacts/
+│   ├─ decisions/
+│   ├─ framework/
+│   ├─ knowledge/
+│   └─ types/
 │
-│  Layer 4 — System Primitives
-├─ workflow/
-│   ├─ default_workflow.yaml              # Delivery state machine (INIT → terminal)
-│   ├─ release_workflow.yaml              # Release lifecycle (opt-in)
-│   └─ improvement_cycle.yaml             # Improvement cycle (OBSERVE → HUMAN_DECISION)
-│
-├─ agents/
-│   ├─ agent_orchestrator.md
-│   ├─ agent_planner.md
-│   ├─ agent_architecture_guardian.md
-│   ├─ agent_test_designer.md
-│   ├─ agent_test_author.md
-│   ├─ agent_test_runner.md
-│   ├─ agent_branch_manager.md
-│   ├─ agent_implementer.md
-│   ├─ agent_reviewer.md
-│   ├─ agent_release_manager.md
-│   ├─ agent_reflector.md
-│   ├─ agent_improvement_designer.md
-│   └─ human_decision_authority.md
-│
-├─ artifacts/
-│   └─ schemas/                           # All artifact contracts (schemas)
-│       ├─ *.schema.yaml
-│       ├─ *.schema.json
-│       └─ *.schema.md
-│
-├─ devos/
+│  Integrations (connectors)
+├─ integrations/
+│   ├─ linear/                            # Linear project creator
 │   └─ planning/                          # Deterministic planning package (pre-workflow)
 │       ├─ cli.py
 │       ├─ planning_engine.py
@@ -476,17 +493,20 @@ human-governed-ai-framework/
 │       └─ work_item_provider.py
 │
 │  Layer 5 — Observability & Knowledge
-│  (docs/event_model.md, docs/knowledge_query_contract.md)
+│  (docs/framework/event_model.md, docs/framework/knowledge_query_contract.md)
 │
-│  Examples
+│  Examples (DevOS workspaces)
 └─ examples/
     ├─ filled/
     │   ├─ architecture_contract.example.md
-    │   ├─ decision_log.example.yaml       # Example only; normative: runs/<run_id>/decision_log.yaml
-    │   └─ run_example/                   # Complete end-to-end delivery run example
-    └─ templates/
-        ├─ mandatory/                     # Project input templates (must provide)
-        └─ optional/                      # Project input templates (optional)
+    │   ├─ decision_log.example.yaml
+    │   └─ run_example/
+    ├─ templates/
+    │   ├─ mandatory/                     # Project input templates (must provide)
+    │   └─ optional/                      # Project input templates (optional)
+    └─ workspaces/
+        ├─ manual_runtime_exploration/    # Manual exploration workspace
+        └─ runtime_simulation_workspace/  # Simulation workspace (with runs/)
 ```
 
 ---
@@ -512,19 +532,19 @@ The following components are **fully normative and implemented in v1**:
 | `human_decision_authority` | v1 normative |
 | Improvement cycle | v1 normative |
 | `agent_reflector`, `agent_improvement_designer` | v1 normative |
-| `contracts/runtime_contract.md` | v1 normative |
+| `framework/contracts/runtime_contract.md` | v1 normative |
 
 The following components were **added in v1.1** (all now normative):
 
 | Component | Status |
 | --- | --- |
-| Release workflow (`workflow/release_workflow.yaml`) | v1.1 normative |
-| Event model (`docs/event_model.md`, `artifacts/schemas/event_envelope.schema.json`) | v1.1 normative |
-| Knowledge layer (`knowledge_record`, `knowledge_index`, `docs/knowledge_query_contract.md`) | v1.1 normative |
-| Capability integration contract (`contracts/capability_integration_contract.md`, `capability_registry.schema.yaml`) | v1.1 normative |
-| Versioning policy (`contracts/framework_versioning_policy.md`) | v1.1 normative |
-| Migration contract (`contracts/migration_contract.md`, `migration_record.schema.yaml`) | v1.1 normative |
-| System self-validation (`contracts/framework_validation_contract.md`) | v1.1 normative |
+| Release workflow (`framework/workflows/release_workflow.yaml`) | v1.1 normative |
+| Event model (`docs/framework/event_model.md`, `framework/artifacts/schemas/event_envelope.schema.json`) | v1.1 normative |
+| Knowledge layer (`knowledge_record`, `knowledge_index`, `docs/framework/knowledge_query_contract.md`) | v1.1 normative |
+| Capability integration contract (`framework/contracts/capability_integration_contract.md`, `capability_registry.schema.yaml`) | v1.1 normative |
+| Versioning policy (`framework/contracts/framework_versioning_policy.md`) | v1.1 normative |
+| Migration contract (`framework/contracts/migration_contract.md`, `migration_record.schema.yaml`) | v1.1 normative |
+| System self-validation (`framework/contracts/framework_validation_contract.md`) | v1.1 normative |
 
 ---
 
@@ -533,16 +553,16 @@ The following components were **added in v1.1** (all now normative):
 This repository represents the **framework layer (DevOS kernel rules)** and the **DevOS system architecture**.
 It is intentionally minimal, explicit, and conservative by design.
 
-See `contracts/runtime_contract.md` for the normative runtime execution contract.
+See `framework/contracts/runtime_contract.md` for the normative runtime execution contract.
 
 Key normative references:
-- `contracts/runtime_contract.md` — run lifecycle, gate checks, invocation, rework, events
-- `docs/event_model.md` — canonical typed event model
-- `docs/knowledge_query_contract.md` — knowledge layer contract
-- `contracts/framework_validation_contract.md` — system self-consistency criteria
-- `contracts/framework_versioning_policy.md` — version evolution and breaking change policy
-- `contracts/migration_contract.md` — major version migration process
-- `contracts/capability_integration_contract.md` — project capability integration rules
+- `framework/contracts/runtime_contract.md` — run lifecycle, gate checks, invocation, rework, events
+- `docs/framework/event_model.md` — canonical typed event model
+- `docs/framework/knowledge_query_contract.md` — knowledge layer contract
+- `framework/contracts/framework_validation_contract.md` — system self-consistency criteria
+- `framework/contracts/framework_versioning_policy.md` — version evolution and breaking change policy
+- `framework/contracts/migration_contract.md` — major version migration process
+- `framework/contracts/capability_integration_contract.md` — project capability integration rules
 
 ## Change log
 
@@ -550,4 +570,5 @@ Key normative references:
 | --- | --- | --- |
 | v1 | 2026-03-12 | Corrected decision_log.yaml location reference to point to per-run normative path. Updated repository structure and v1.1 component status. Added key normative references section. |
 | v1.1 | 2026-03-14 | Architecture alignment refactor. Re-titled as DevOS. Added System Overview and OS Mental Model sections. Updated repository structure to reflect documentation layers. |
-| v1.2 | 2026-03-14 | Added explicit Planning Layer documentation (`devos/planning`) with deterministic input/output contracts and canonical `.devOS` artifact path. |
+| v1.2 | 2026-03-14 | Added explicit Planning Layer documentation (`integrations/planning`) with deterministic input/output contracts and canonical `.devOS` artifact path. |
+| v1.3 | 2026-03-15 | Defined canonical project inputs namespace `.devOS/project_inputs/` with explicit resolution fallback chain. Updated CLI and runtime contract accordingly. |

@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import tempfile
 import unittest
@@ -81,12 +81,12 @@ class GateEvaluatorTest(unittest.TestCase):
             )
             schemas = {
                 "implementation_plan": load_schema(
-                    self.repo_root / "artifacts" / "schemas" / "implementation_plan.schema.yaml"
+                    self.repo_root / "framework" / "artifacts" / "schemas" / "implementation_plan.schema.yaml"
                 )
             }
             gate = self.evaluator.evaluate(
                 transition=transition,
-                project_root=root,
+                project_inputs_root=root,
                 artifacts_dir=artifacts,
                 decision_log_path=artifacts.parent / "decision_log.yaml",
                 schemas=schemas,
@@ -149,7 +149,7 @@ class GateEvaluatorTest(unittest.TestCase):
             )
             schemas = {
                 "implementation_plan": load_schema(
-                    self.repo_root / "artifacts" / "schemas" / "implementation_plan.schema.yaml"
+                    self.repo_root / "framework" / "artifacts" / "schemas" / "implementation_plan.schema.yaml"
                 )
             }
             details = self.evaluator.check_approval(
@@ -176,7 +176,7 @@ class GateEvaluatorTest(unittest.TestCase):
             )
             schemas = {
                 "review_result": load_schema(
-                    self.repo_root / "artifacts" / "schemas" / "review_result.schema.md"
+                    self.repo_root / "framework" / "artifacts" / "schemas" / "review_result.schema.md"
                 )
             }
             details = self.evaluator.check_conditions(
@@ -228,7 +228,7 @@ class GateEvaluatorTest(unittest.TestCase):
             )
             schemas = {
                 "release_metadata": load_schema(
-                    self.repo_root / "artifacts" / "schemas" / "release_metadata.schema.json"
+                    self.repo_root / "framework" / "artifacts" / "schemas" / "release_metadata.schema.json"
                 )
             }
             details = self.evaluator.check_conditions(
@@ -238,6 +238,42 @@ class GateEvaluatorTest(unittest.TestCase):
                 decision_log_path=artifacts.parent / "decision_log.yaml",
             )
             self.assertEqual(details[0].result, CheckResult.PASS)
+
+    def test_check_inputs_present_passes_with_canonical_namespace(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            inputs_dir = root / ".devOS" / "project_inputs"
+            inputs_dir.mkdir(parents=True, exist_ok=True)
+            for name in (
+                "domain_scope.md",
+                "domain_rules.md",
+                "source_policy.md",
+                "glossary.md",
+                "architecture_contract.md",
+            ):
+                (inputs_dir / name).write_text("ok", encoding="utf-8")
+
+            details = self.evaluator.check_inputs_present(
+                project_inputs_root=inputs_dir,
+                required_inputs=["domain_scope.md", "glossary.md"],
+                expected_presence=True,
+            )
+            self.assertTrue(all(d.result == CheckResult.PASS for d in details))
+
+    def test_check_inputs_present_fails_when_file_missing_from_inputs_root(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            inputs_dir = root / ".devOS" / "project_inputs"
+            inputs_dir.mkdir(parents=True, exist_ok=True)
+            # File exists in project root but NOT in canonical inputs_dir.
+            (root / "domain_scope.md").write_text("at root", encoding="utf-8")
+
+            details = self.evaluator.check_inputs_present(
+                project_inputs_root=inputs_dir,
+                required_inputs=["domain_scope.md"],
+                expected_presence=True,
+            )
+            self.assertEqual(details[0].result, CheckResult.FAIL)
 
     def test_note_condition_is_ignored(self) -> None:
         with tempfile.TemporaryDirectory() as td:

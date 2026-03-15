@@ -1,0 +1,21 @@
+{
+  "run_metadata": {},
+  "events": [
+    {
+      "event_id": "EVT-RUN202603150002-0001",
+      "event_type": "run.started",
+      "run_id": "RUN-20260315-0002",
+      "timestamp": "2026-03-15T07:44:07.705859+00:00",
+      "producer": "runtime",
+      "workflow_state": "INIT",
+      "causation_event_id": null,
+      "correlation_id": "RUN-20260315-0002",
+      "payload": {
+        "workflow_id": "default_workflow",
+        "change_intent_id": "unknown",
+        "project_inputs": []
+      }
+    }
+  ],
+  "invocation_records": []
+}

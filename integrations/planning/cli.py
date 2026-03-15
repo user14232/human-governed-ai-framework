@@ -13,12 +13,12 @@ import json
 import logging
 from pathlib import Path
 
-from devos.planning.planning_engine import (
+from integrations.planning.planning_engine import (
     DEFAULT_PROJECT_PLAN_PATH,
     PlanValidationError,
     PlanningEngine,
 )
-from devos.planning.work_item_linter import LintViolation
+from integrations.planning.work_item_linter import LintViolation
 from integrations.linear.config import load_config
 from integrations.linear.linear_client import LinearAPIError, LinearClient
 from integrations.linear.linear_provider import LinearProvider

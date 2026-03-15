@@ -1,4 +1,4 @@
-﻿# Runtime contract (v1)
+# Runtime contract (v1)
 
 ## Responsibility
 
@@ -25,17 +25,17 @@ It defines what a runtime **must** do, must not do, and must not decide on its o
 - A runtime that modifies project input artifacts is not compliant.
 - A runtime that allows looping within a single workflow state without a transition is not compliant.
 - A runtime that applies improvement proposals automatically is not compliant.
-- A runtime that omits any required event emission (see `docs/event_model.md` Section 2.1) is not compliant.
+- A runtime that omits any required event emission (see `docs/framework/event_model.md` Section 2.1) is not compliant.
 
 ## References to related normative documents
 
 | Document | Governs |
 | --- | --- |
-| `workflow/default_workflow.yaml` | Delivery workflow states, transitions, gate conditions |
-| `workflow/improvement_cycle.yaml` | Improvement cycle states and transitions |
-| `agents/*.md` | Single-shot agent role contracts and I/O |
-| `artifacts/schemas/` | Artifact structure, field requirements, owner/reader contracts |
-| `docs/event_model.md` | Canonical event types, payloads, and persistence rules |
+| `framework/workflows/default_workflow.yaml` | Delivery workflow states, transitions, gate conditions |
+| `framework/workflows/improvement_cycle.yaml` | Improvement cycle states and transitions |
+| `framework/agents/*.md` | Single-shot agent role contracts and I/O |
+| `framework/artifacts/schemas/` | Artifact structure, field requirements, owner/reader contracts |
+| `docs/framework/event_model.md` | Canonical event types, payloads, and persistence rules |
 | `system_invariants.md` | Non-negotiable framework invariants |
 
 ---
@@ -57,8 +57,8 @@ Every execution of the delivery workflow constitutes a **run**.
 ### 1.2 Run scope
 
 - A run corresponds to exactly one `change_intent.yaml`.
-- A run covers exactly one execution of `workflow/default_workflow.yaml`.
-- The improvement cycle (`workflow/improvement_cycle.yaml`) is a **separate run** with its own
+- A run covers exactly one execution of `framework/workflows/default_workflow.yaml`.
+- The improvement cycle (`framework/workflows/improvement_cycle.yaml`) is a **separate run** with its own
   `run_id` and artifact namespace.
 - Release activities (post-ACCEPTED) are outside the delivery workflow state machine.
 
@@ -97,6 +97,30 @@ runs/
 Project inputs (`domain_scope.md`, `domain_rules.md`, `source_policy.md`, `glossary.md`,
 `architecture_contract.md`) live **outside** the run directory.
 They are read-only inputs shared across runs and must not be modified by the runtime.
+
+#### Canonical location
+
+The **canonical location** for mandatory project inputs is:
+
+```
+<project_root>/.devOS/project_inputs/
+```
+
+The runtime resolves `project_inputs_root` using the following deterministic fallback chain:
+
+1. **Explicit argument**: `--project-inputs-root` CLI flag, or `project_inputs_root` parameter
+   passed directly to `RunEngine.initialize_run()` / `resume_run()`.
+2. **Canonical namespace**: `<project_root>/.devOS/project_inputs/` — used if the directory exists.
+3. **Legacy fallback**: `<project_root>` — used only if neither 1 nor 2 applies.
+
+The resolved root is stored in `RunContext.project_inputs_root` and used exclusively for all
+`input_presence` gate checks. It is set once at run initialization and never changes within a run.
+
+The legacy fallback (project root) is a migration aid. Once all project inputs are relocated to
+`.devOS/project_inputs/`, the fallback should not be relied upon.
+
+Templates for mandatory inputs are provided under `examples/templates/mandatory/`.
+Copy them to `.devOS/project_inputs/` and fill in project-specific content before starting a run.
 
 ### 2.3 Decision log scope
 
@@ -367,3 +391,4 @@ When `agent_architecture_guardian` produces an `arch_review_record.md` with
 | Version | Date | Change |
 | --- | --- | --- |
 | v1 | 2026-03-12 | Added event emission as a non-negotiable rule. Clarified Markdown field reading procedure in Section 6.1 and 6.2. Added references to related normative documents table. |
+| v1.1 | 2026-03-15 | Section 2.2: defined canonical `project_inputs_root` resolution chain (explicit arg → `.devOS/project_inputs/` → legacy root fallback). Added `RunContext.project_inputs_root` as explicit runtime contract field. |

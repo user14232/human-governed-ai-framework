@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import tempfile
 import unittest
@@ -28,7 +28,7 @@ class ArtifactSystemTest(unittest.TestCase):
 
     def test_validate_markdown_structure_success(self) -> None:
         schema = load_schema(
-            self.repo_root / "artifacts" / "schemas" / "implementation_summary.schema.md"
+            self.repo_root / "framework" / "artifacts" / "schemas" / "implementation_summary.schema.md"
         )
         with tempfile.TemporaryDirectory() as td:
             path = Path(td) / "implementation_summary.md"
@@ -48,7 +48,7 @@ class ArtifactSystemTest(unittest.TestCase):
             self.assertTrue(result.valid)
 
     def test_validate_markdown_structure_failure(self) -> None:
-        schema = load_schema(self.repo_root / "artifacts" / "schemas" / "review_result.schema.md")
+        schema = load_schema(self.repo_root / "framework" / "artifacts" / "schemas" / "review_result.schema.md")
         with tempfile.TemporaryDirectory() as td:
             path = Path(td) / "review_result.md"
             path.write_text(
@@ -65,7 +65,7 @@ class ArtifactSystemTest(unittest.TestCase):
 
     def test_register_yaml_artifact(self) -> None:
         schema = load_schema(
-            self.repo_root / "artifacts" / "schemas" / "implementation_plan.schema.yaml"
+            self.repo_root / "framework" / "artifacts" / "schemas" / "implementation_plan.schema.yaml"
         )
         schemas = {"implementation_plan": schema}
         with tempfile.TemporaryDirectory() as td:
@@ -107,7 +107,7 @@ class ArtifactSystemTest(unittest.TestCase):
 
     def test_register_rejects_invalid_structure(self) -> None:
         schema = load_schema(
-            self.repo_root / "artifacts" / "schemas" / "implementation_plan.schema.yaml"
+            self.repo_root / "framework" / "artifacts" / "schemas" / "implementation_plan.schema.yaml"
         )
         schemas = {"implementation_plan": schema}
         with tempfile.TemporaryDirectory() as td:
@@ -128,7 +128,7 @@ class ArtifactSystemTest(unittest.TestCase):
 
     def test_register_rejects_empty_required_list_fields(self) -> None:
         schema = load_schema(
-            self.repo_root / "artifacts" / "schemas" / "implementation_plan.schema.yaml"
+            self.repo_root / "framework" / "artifacts" / "schemas" / "implementation_plan.schema.yaml"
         )
         schemas = {"implementation_plan": schema}
         with tempfile.TemporaryDirectory() as td:

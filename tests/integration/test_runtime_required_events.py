@@ -123,7 +123,7 @@ class RuntimeRequiredEventsIntegrationTest(unittest.TestCase):
             )
             schemas = {
                 "implementation_summary": load_schema(
-                    self.repo_root / "artifacts" / "schemas" / "implementation_summary.schema.md"
+                    self.repo_root / "framework" / "artifacts" / "schemas" / "implementation_summary.schema.md"
                 )
             }
 
@@ -147,11 +147,11 @@ class RuntimeRequiredEventsIntegrationTest(unittest.TestCase):
         (root / "workflow").mkdir(parents=True, exist_ok=True)
         (root / "artifacts" / "schemas").mkdir(parents=True, exist_ok=True)
         (root / "workflow" / "default_workflow.yaml").write_text(
-            (self.repo_root / "workflow" / "default_workflow.yaml").read_text(encoding="utf-8"),
+            (self.repo_root / "framework" / "workflows" / "default_workflow.yaml").read_text(encoding="utf-8"),
             encoding="utf-8",
         )
         (root / "artifacts" / "schemas" / "implementation_plan.schema.yaml").write_text(
-            (self.repo_root / "artifacts" / "schemas" / "implementation_plan.schema.yaml").read_text(
+            (self.repo_root / "framework" / "artifacts" / "schemas" / "implementation_plan.schema.yaml").read_text(
                 encoding="utf-8"
             ),
             encoding="utf-8",

@@ -21,6 +21,23 @@ from runtime.store.run_store import (
 from runtime.types.run import RunContext, TERMINAL_STATES
 
 
+_CANONICAL_INPUTS_SUBDIR = Path(".devOS") / "project_inputs"
+
+
+def _resolve_project_inputs_root(project_root: Path, explicit: Path | None) -> Path:
+    """Resolve project_inputs_root using the explicit fallback chain:
+    1. explicit argument (if provided)
+    2. .devOS/project_inputs under project_root
+    3. project_root itself (legacy fallback)
+    """
+    if explicit is not None:
+        return explicit.resolve()
+    canonical = project_root / _CANONICAL_INPUTS_SUBDIR
+    if canonical.is_dir():
+        return canonical.resolve()
+    return project_root.resolve()
+
+
 class MissingInputError(FileNotFoundError):
     """Raised when required input files are missing."""
 
@@ -42,6 +59,7 @@ class RunEngine:
         project_root: Path,
         change_intent_path: Path,
         workflow_name: str = "default_workflow",
+        project_inputs_root: Path | None = None,
     ) -> RunContext:
         if not change_intent_path.is_file():
             raise MissingInputError(f"Missing change intent file: {change_intent_path}")
@@ -55,6 +73,8 @@ class RunEngine:
         copyfile(change_intent_path, artifacts_dir / "change_intent.yaml")
         metrics_path = run_metrics_path(run_dir)
 
+        resolved_inputs_root = _resolve_project_inputs_root(project_root, project_inputs_root)
+
         initial_state = workflow_def.states[0]
         ctx = RunContext(
             run_id=run_id,
@@ -63,6 +83,7 @@ class RunEngine:
             artifacts_dir=artifacts_dir.resolve(),
             workflow_def=workflow_def,
             current_state=initial_state,
+            project_inputs_root=resolved_inputs_root,
         )
         self._events.emit(
             run_metrics_path=metrics_path,
@@ -84,6 +105,7 @@ class RunEngine:
         project_root: Path,
         run_id: str,
         workflow_name: str = "default_workflow",
+        project_inputs_root: Path | None = None,
     ) -> RunContext:
         run_dir = run_directory(project_root, run_id)
         artifacts_dir = run_dir / "artifacts"
@@ -104,6 +126,8 @@ class RunEngine:
         except WorkflowStateReconstructionError as exc:
             raise StateReconstructionError(str(exc)) from exc
 
+        resolved_inputs_root = _resolve_project_inputs_root(project_root, project_inputs_root)
+
         ctx = RunContext(
             run_id=run_id,
             project_root=project_root.resolve(),
@@ -111,6 +135,7 @@ class RunEngine:
             artifacts_dir=artifacts_dir.resolve(),
             workflow_def=workflow_def,
             current_state=state,
+            project_inputs_root=resolved_inputs_root,
         )
         self._events.emit(
             run_metrics_path=run_metrics_path(run_dir),

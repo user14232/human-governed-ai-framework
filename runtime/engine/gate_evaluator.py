@@ -35,7 +35,7 @@ class GateEvaluator:
     def evaluate(
         self,
         transition: Transition,
-        project_root: Path,
+        project_inputs_root: Path,
         artifacts_dir: Path,
         decision_log_path: Path,
         schemas: dict[str, ArtifactSchema],
@@ -46,7 +46,7 @@ class GateEvaluator:
         if transition.requires.inputs_present is not None:
             checks.extend(
                 self.check_inputs_present(
-                    project_root=project_root,
+                    project_inputs_root=project_inputs_root,
                     required_inputs=list(REQUIRED_PROJECT_INPUTS),
                     expected_presence=transition.requires.inputs_present,
                 )
@@ -85,13 +85,13 @@ class GateEvaluator:
 
     def check_inputs_present(
         self,
-        project_root: Path,
+        project_inputs_root: Path,
         required_inputs: list[str],
         expected_presence: bool = True,
     ) -> list[GateCheckDetail]:
         details: list[GateCheckDetail] = []
         for input_name in required_inputs:
-            exists = (project_root / input_name).is_file()
+            exists = (project_inputs_root / input_name).is_file()
             passed = exists if expected_presence else not exists
             detail = None
             if not passed:

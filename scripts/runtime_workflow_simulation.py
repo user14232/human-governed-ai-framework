@@ -55,10 +55,12 @@ def run_simulation(config: SimulationConfig) -> dict[str, Any]:
     decision_system = DecisionSystem(event_system=events)
 
     change_intent_path = config.workspace_root / "change_intent.yaml"
+    project_inputs_dir = config.workspace_root / ".devOS" / "project_inputs"
     ctx = run_engine.initialize_run(
         project_root=config.workspace_root,
         change_intent_path=change_intent_path,
         workflow_name=config.workflow_name,
+        project_inputs_root=project_inputs_dir,
     )
     schemas = load_all_schemas(config.workspace_root / "artifacts" / "schemas")
 
@@ -131,16 +133,17 @@ def _prepare_workspace(template_project_root: Path, workspace_root: Path, workfl
     (workspace_root / "workflow").mkdir(parents=True, exist_ok=True)
     (workspace_root / "artifacts" / "schemas").mkdir(parents=True, exist_ok=True)
 
-    workflow_src = template_project_root / "workflow" / f"{workflow_name}.yaml"
+    workflow_src = template_project_root / "framework" / "workflows" / f"{workflow_name}.yaml"
     workflow_dst = workspace_root / "workflow" / f"{workflow_name}.yaml"
     shutil.copyfile(workflow_src, workflow_dst)
 
-    schema_src_dir = template_project_root / "artifacts" / "schemas"
+    schema_src_dir = template_project_root / "framework" / "artifacts" / "schemas"
     for pattern in ("*.schema.yaml", "*.schema.yml", "*.schema.json", "*.schema.md"):
         for src in sorted(schema_src_dir.glob(pattern), key=lambda p: p.name):
             shutil.copyfile(src, workspace_root / "artifacts" / "schemas" / src.name)
 
-    _write_project_inputs(workspace_root)
+    project_inputs_dir = workspace_root / ".devOS" / "project_inputs"
+    _write_project_inputs(project_inputs_dir)
     (workspace_root / "change_intent.yaml").write_text(
         yaml.safe_dump(
             {
@@ -155,7 +158,8 @@ def _prepare_workspace(template_project_root: Path, workspace_root: Path, workfl
     )
 
 
-def _write_project_inputs(workspace_root: Path) -> None:
+def _write_project_inputs(project_inputs_dir: Path) -> None:
+    project_inputs_dir.mkdir(parents=True, exist_ok=True)
     payload = "content: deterministic simulation input\n"
     for name in (
         "domain_scope.md",
@@ -164,7 +168,7 @@ def _write_project_inputs(workspace_root: Path) -> None:
         "glossary.md",
         "architecture_contract.md",
     ):
-        (workspace_root / name).write_text(payload, encoding="utf-8")
+        (project_inputs_dir / name).write_text(payload, encoding="utf-8")
 
 
 def _advance_once(ctx: RunContext, evaluator: GateEvaluator, schemas: dict[str, ArtifactSchema]) -> AdvanceResult:

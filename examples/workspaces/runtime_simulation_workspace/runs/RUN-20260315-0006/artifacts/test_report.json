@@ -1,0 +1,23 @@
+{
+  "run_id": "RUN-20260315-0006",
+  "created_at": "2026-03-15T00:00:00+00:00",
+  "inputs": {
+    "test_design_id": "TD-MANUAL-E2E-001"
+  },
+  "environment": {
+    "os": "windows",
+    "tool_versions": {
+      "python": "3.x"
+    }
+  },
+  "selection": {
+    "mode": "all",
+    "definition": "manual e2e full workflow"
+  },
+  "results": {
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "failures": []
+  }
+}

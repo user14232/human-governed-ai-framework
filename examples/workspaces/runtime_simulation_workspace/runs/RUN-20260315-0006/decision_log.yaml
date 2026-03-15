@@ -1,0 +1,35 @@
+schema_version: v1
+decisions:
+- decision_id: DEC-MANUAL-E2E-0001
+  timestamp: '2026-03-15T00:11:00+00:00'
+  human_identity: manual.e2e.script
+  decision: approve
+  scope: gate_approval:implementation_plan.yaml
+  references:
+  - artifact: implementation_plan.yaml
+    artifact_id: PLAN-MANUAL-E2E-001
+    artifact_hash: e065ae1badaf1b011bd8e79a119c3480e3f198f4feb21261f4917dd10e0f305c
+  rationale: Deterministic manual e2e approval.
+  supersedes_decision_id: null
+- decision_id: DEC-MANUAL-E2E-0002
+  timestamp: '2026-03-15T00:12:00+00:00'
+  human_identity: manual.e2e.script
+  decision: approve
+  scope: gate_approval:design_tradeoffs.md
+  references:
+  - artifact: design_tradeoffs.md
+    artifact_id: DT-MANUAL-E2E-001
+    artifact_hash: c92b78409362208cfd08a04352ffde097b9135bb90761d65bfc33fccdb4203cb
+  rationale: Deterministic manual e2e approval.
+  supersedes_decision_id: null
+- decision_id: DEC-MANUAL-E2E-0003
+  timestamp: '2026-03-15T00:13:00+00:00'
+  human_identity: manual.e2e.script
+  decision: approve
+  scope: gate_approval:test_design.yaml
+  references:
+  - artifact: test_design.yaml
+    artifact_id: TD-MANUAL-E2E-001
+    artifact_hash: 216e77d4011b788ae9c46de4bda795740c30f93598663ae562483b5d8058e16b
+  rationale: Deterministic manual e2e approval.
+  supersedes_decision_id: null

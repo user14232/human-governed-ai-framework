@@ -1,0 +1,30 @@
+id: CI-feature_feature_spec_artifact
+created_at: '2026-03-15T00:00:00+00:00'
+requested_by: manual.e2e.script
+summary: Introduce feature_spec artifact. Feature discussions currently occur in chat
+  but there is no structured artifact capturing the agreed feature definition. This
+  leads to unclear planning input.
+scope:
+  in_scope: &id001
+  - Introduce a feature_spec artifact
+  - Store feature definitions before planning begins
+  out_of_scope:
+  - Do not change runtime workflow definitions.
+  - Do not alter unrelated planning stories.
+constraints:
+  must_haves:
+  - integrate with the existing planning layer
+  must_not:
+  - break current project_plan schema
+acceptance_criteria: *id001
+references:
+- name: planning_artifact
+  location: .devOS\planning\project_plan.yaml
+- name: planning_project
+  location: Example DevOS Plan
+- name: feature_definition
+  location: feature:feature_feature_spec_artifact
+- name: derived_epic
+  location: EPIC-feature_feature_spec_artifact
+- name: derived_story
+  location: STORY-feature_feature_spec_artifact

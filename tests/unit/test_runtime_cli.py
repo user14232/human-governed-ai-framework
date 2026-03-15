@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import tempfile
 import unittest
@@ -20,12 +20,12 @@ class PassEvaluator:
     def evaluate(  # type: ignore[override]
         self,
         transition: Transition,
-        project_root: Path,
+        project_inputs_root: Path,
         artifacts_dir: Path,
         decision_log_path: Path,
         schemas: dict[str, ArtifactSchema],
     ) -> GateResult:
-        _ = (project_root, artifacts_dir, decision_log_path, schemas)
+        _ = (project_inputs_root, artifacts_dir, decision_log_path, schemas)
         self.calls += 1
         return GateResult(transition=transition, result=CheckResult.PASS, checks=())
 
@@ -39,7 +39,7 @@ class RuntimeCliTest(unittest.TestCase):
             root = Path(td)
             (root / "workflow").mkdir(parents=True, exist_ok=True)
             (root / "workflow" / "default_workflow.yaml").write_text(
-                (self.repo_root / "workflow" / "default_workflow.yaml").read_text(encoding="utf-8"),
+                (self.repo_root / "framework" / "workflows" / "default_workflow.yaml").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
             (root / "artifacts" / "schemas").mkdir(parents=True, exist_ok=True)
@@ -82,12 +82,12 @@ class RuntimeCliTest(unittest.TestCase):
             root = Path(td)
             (root / "workflow").mkdir(parents=True, exist_ok=True)
             (root / "workflow" / "default_workflow.yaml").write_text(
-                (self.repo_root / "workflow" / "default_workflow.yaml").read_text(encoding="utf-8"),
+                (self.repo_root / "framework" / "workflows" / "default_workflow.yaml").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
             (root / "artifacts" / "schemas").mkdir(parents=True, exist_ok=True)
             (root / "artifacts" / "schemas" / "implementation_plan.schema.yaml").write_text(
-                (self.repo_root / "artifacts" / "schemas" / "implementation_plan.schema.yaml").read_text(
+                (self.repo_root / "framework" / "artifacts" / "schemas" / "implementation_plan.schema.yaml").read_text(
                     encoding="utf-8"
                 ),
                 encoding="utf-8",
@@ -120,6 +120,41 @@ class RuntimeCliTest(unittest.TestCase):
                     ]
                 )
             self.assertEqual(exit_code, 0)
+
+
+    def test_main_run_accepts_project_inputs_root_flag(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "workflow").mkdir(parents=True, exist_ok=True)
+            (root / "workflow" / "default_workflow.yaml").write_text(
+                (self.repo_root / "framework" / "workflows" / "default_workflow.yaml").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            change_intent = root / "change_intent.yaml"
+            change_intent.write_text("id: CI-run-flag\n", encoding="utf-8")
+            inputs_dir = root / "custom_inputs"
+            inputs_dir.mkdir(parents=True, exist_ok=True)
+
+            buf = StringIO()
+            with redirect_stdout(buf):
+                exit_code = main(
+                    [
+                        "run",
+                        "--project",
+                        str(root),
+                        "--change-intent",
+                        str(change_intent),
+                        "--workflow",
+                        "default_workflow",
+                        "--project-inputs-root",
+                        str(inputs_dir),
+                    ]
+                )
+            self.assertEqual(exit_code, 0)
+            import json
+            result = json.loads(buf.getvalue())
+            self.assertIn("run_id", result)
+            self.assertEqual(result["state"], "INIT")
 
 
 if __name__ == "__main__":

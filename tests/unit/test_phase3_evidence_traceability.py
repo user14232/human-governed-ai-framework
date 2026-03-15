@@ -8,7 +8,7 @@ from pathlib import Path
 class Phase3EvidenceTraceabilityTest(unittest.TestCase):
     def setUp(self) -> None:
         self.repo_root = Path(__file__).resolve().parents[2]
-        self.record_path = self.repo_root / "docs" / "phase3_implementation_record.md"
+        self.record_path = self.repo_root / "framework" / "docs" / "phase3_implementation_record.md"
 
     def test_sc_matrix_paths_exist_and_status_is_explicit(self) -> None:
         text = self.record_path.read_text(encoding="utf-8")

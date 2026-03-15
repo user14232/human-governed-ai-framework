@@ -7,9 +7,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from devos.planning.planning_engine import DEFAULT_PROJECT_PLAN_PATH, PlanningEngine
-from devos.planning.planning_models import EpicModel, ProjectModel, StoryModel, TaskModel
-from devos.planning.work_item_provider import WorkItemProvider
+from integrations.planning.planning_engine import DEFAULT_PROJECT_PLAN_PATH, PlanningEngine
+from integrations.planning.planning_models import EpicModel, ProjectModel, StoryModel, TaskModel
+from integrations.planning.work_item_provider import WorkItemProvider
 
 from .linear_client import LinearClient
 from .project_builder import BuildStats, build_project

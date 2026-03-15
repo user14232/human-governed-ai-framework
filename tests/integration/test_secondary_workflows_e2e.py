@@ -293,12 +293,12 @@ class SecondaryWorkflowsEndToEndIntegrationTest(unittest.TestCase):
         (project_root / "artifacts" / "schemas").mkdir(parents=True, exist_ok=True)
         for workflow_name in workflows:
             copyfile(
-                self.repo_root / "workflow" / f"{workflow_name}.yaml",
+                self.repo_root / "framework" / "workflows" / f"{workflow_name}.yaml",
                 project_root / "workflow" / f"{workflow_name}.yaml",
             )
         for schema_file in schema_files:
             copyfile(
-                self.repo_root / "artifacts" / "schemas" / schema_file,
+                self.repo_root / "framework" / "artifacts" / "schemas" / schema_file,
                 project_root / "artifacts" / "schemas" / schema_file,
             )
         (project_root / "change_intent.yaml").write_text("id: CI-1\n", encoding="utf-8")

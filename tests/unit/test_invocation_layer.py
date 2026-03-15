@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import tempfile
@@ -262,7 +262,7 @@ class InvocationLayerTest(unittest.TestCase):
             repo_root = Path(__file__).resolve().parents[2]
             schemas = {
                 "implementation_summary": load_schema(
-                    repo_root / "artifacts" / "schemas" / "implementation_summary.schema.md"
+                    repo_root / "framework" / "artifacts" / "schemas" / "implementation_summary.schema.md"
                 )
             }
             layer = AgentInvocationLayer(artifact_system=ArtifactSystem())
@@ -290,7 +290,7 @@ class InvocationLayerTest(unittest.TestCase):
             repo_root = Path(__file__).resolve().parents[2]
             schemas = {
                 "implementation_summary": load_schema(
-                    repo_root / "artifacts" / "schemas" / "implementation_summary.schema.md"
+                    repo_root / "framework" / "artifacts" / "schemas" / "implementation_summary.schema.md"
                 )
             }
             layer = AgentInvocationLayer(artifact_system=ArtifactSystem())

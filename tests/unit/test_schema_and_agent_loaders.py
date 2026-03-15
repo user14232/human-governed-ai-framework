@@ -16,20 +16,20 @@ class SchemaAndAgentLoaderTest(unittest.TestCase):
 
     def test_load_schema_yaml(self) -> None:
         schema = load_schema(
-            self.repo_root / "artifacts" / "schemas" / "implementation_plan.schema.yaml"
+            self.repo_root / "framework" / "artifacts" / "schemas" / "implementation_plan.schema.yaml"
         )
         self.assertEqual(schema.artifact_type, "implementation_plan")
         self.assertEqual(schema.file_format, "yaml")
         self.assertIn("id", schema.required_fields)
 
     def test_load_schema_markdown(self) -> None:
-        schema = load_schema(self.repo_root / "artifacts" / "schemas" / "review_result.schema.md")
+        schema = load_schema(self.repo_root / "framework" / "artifacts" / "schemas" / "review_result.schema.md")
         self.assertEqual(schema.file_format, "markdown")
         self.assertIn("Summary", schema.required_sections)
         self.assertIn("outcome", schema.required_fields)
 
     def test_load_all_schemas(self) -> None:
-        schemas = load_all_schemas(self.repo_root / "artifacts" / "schemas")
+        schemas = load_all_schemas(self.repo_root / "framework" / "artifacts" / "schemas")
         self.assertIn("implementation_plan", schemas)
         self.assertIn("review_result", schemas)
 
@@ -41,13 +41,13 @@ class SchemaAndAgentLoaderTest(unittest.TestCase):
                 load_schema(bad)
 
     def test_load_single_agent_contract(self) -> None:
-        contract = load_agent_contract(self.repo_root / "agents" / "agent_implementer.md")
+        contract = load_agent_contract(self.repo_root / "framework" / "agents" / "agent_implementer.md")
         self.assertEqual(contract.role_id, "agent_implementer")
         self.assertIn("implementation_plan.yaml", contract.input_artifacts)
         self.assertIn("implementation_summary.md", contract.output_artifacts)
 
     def test_load_all_agent_contracts(self) -> None:
-        contracts = load_all_agent_contracts(self.repo_root / "agents")
+        contracts = load_all_agent_contracts(self.repo_root / "framework" / "agents")
         self.assertIn("agent_implementer", contracts)
         self.assertIn("human_decision_authority", contracts)
 

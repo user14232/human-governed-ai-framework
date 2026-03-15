@@ -27,7 +27,7 @@ class GateEvaluator(Protocol):
     def evaluate(
         self,
         transition: Transition,
-        project_root: Path,
+        project_inputs_root: Path,
         artifacts_dir: Path,
         decision_log_path: Path,
         schemas: dict[str, ArtifactSchema],
@@ -75,7 +75,7 @@ class WorkflowEngine:
         for transition in eligible:
             gate_result = evaluator.evaluate(
                 transition=transition,
-                project_root=ctx.project_root,
+                project_inputs_root=ctx.project_inputs_root or ctx.project_root,
                 artifacts_dir=ctx.artifacts_dir,
                 decision_log_path=decision_log_path,
                 schemas=schemas,
@@ -173,6 +173,8 @@ class WorkflowEngine:
         # artifacts_dir.parent -> run_dir, artifacts_dir.parent.parent -> runs,
         # artifacts_dir.parent.parent.parent -> project_root.
         project_root = artifacts_dir.parent.parent.parent
+        _devos_canonical = project_root / ".devOS" / "project_inputs"
+        project_inputs_root = _devos_canonical if _devos_canonical.is_dir() else project_root
         max_hops = max(len(self._workflow.transitions), 1)
         hops = 0
         while hops < max_hops:
@@ -184,7 +186,7 @@ class WorkflowEngine:
             for transition in eligible:
                 gate_result = evaluator.evaluate(
                     transition=transition,
-                    project_root=project_root,
+                    project_inputs_root=project_inputs_root,
                     artifacts_dir=artifacts_dir,
                     decision_log_path=decision_log_path,
                     schemas=schemas,

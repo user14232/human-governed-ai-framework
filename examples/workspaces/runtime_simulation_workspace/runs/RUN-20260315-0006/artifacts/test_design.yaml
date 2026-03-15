@@ -1,0 +1,22 @@
+id: TD-MANUAL-E2E-001
+created_at: '2026-03-15T00:00:00+00:00'
+inputs:
+  implementation_plan_id: PLAN-MANUAL-E2E-001
+  domain_rules_ref: domain_rules.md
+test_cases:
+- id: TC-E2E-001
+  title: Verify deterministic planning and runtime contracts
+  purpose: Execute deterministic checks for planning decomposition and workflow gates.
+  maps_to:
+    plan_items:
+    - TASK-feature_feature_spec_artifact-001
+    domain_rules:
+    - DR-001
+  type: e2e
+  steps:
+  - materialize required gate artifacts
+  - advance workflow state by state
+  - verify terminal acceptance
+  expected_result: Run reaches ACCEPTED without blocked transitions.
+coverage_notes:
+- Covers all delivery workflow gates in default_workflow.

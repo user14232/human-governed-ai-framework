@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import tempfile
 import unittest
@@ -15,7 +15,7 @@ class WorkflowTransitionCoverageTest(unittest.TestCase):
         self.repo_root = Path(__file__).resolve().parents[2]
 
     def test_default_workflow_transition_order_is_deterministic(self) -> None:
-        workflow = load_workflow(self.repo_root / "workflow" / "default_workflow.yaml")
+        workflow = load_workflow(self.repo_root / "framework" / "workflows" / "default_workflow.yaml")
         sequence = [(t.from_state, t.to_state) for t in workflow.transitions]
         self.assertEqual(
             sequence,
@@ -35,7 +35,7 @@ class WorkflowTransitionCoverageTest(unittest.TestCase):
         )
 
     def test_improvement_cycle_transition_order_is_deterministic(self) -> None:
-        workflow = load_workflow(self.repo_root / "workflow" / "improvement_cycle.yaml")
+        workflow = load_workflow(self.repo_root / "framework" / "workflows" / "improvement_cycle.yaml")
         sequence = [(t.from_state, t.to_state) for t in workflow.transitions]
         self.assertEqual(
             sequence,
@@ -47,7 +47,7 @@ class WorkflowTransitionCoverageTest(unittest.TestCase):
         )
 
     def test_release_workflow_transition_order_is_deterministic(self) -> None:
-        workflow = load_workflow(self.repo_root / "workflow" / "release_workflow.yaml")
+        workflow = load_workflow(self.repo_root / "framework" / "workflows" / "release_workflow.yaml")
         sequence = [(t.from_state, t.to_state) for t in workflow.transitions]
         self.assertEqual(
             sequence,
@@ -61,7 +61,7 @@ class WorkflowTransitionCoverageTest(unittest.TestCase):
         )
 
     def test_default_init_to_planning_transition_is_executable(self) -> None:
-        workflow = load_workflow(self.repo_root / "workflow" / "default_workflow.yaml")
+        workflow = load_workflow(self.repo_root / "framework" / "workflows" / "default_workflow.yaml")
         transition = next(t for t in workflow.transitions if (t.from_state, t.to_state) == ("INIT", "PLANNING"))
         evaluator = GateEvaluator()
         with tempfile.TemporaryDirectory() as td:
@@ -78,7 +78,7 @@ class WorkflowTransitionCoverageTest(unittest.TestCase):
             artifacts.mkdir(parents=True, exist_ok=True)
             result = evaluator.evaluate(
                 transition=transition,
-                project_root=root,
+                project_inputs_root=root,
                 artifacts_dir=artifacts,
                 decision_log_path=artifacts.parent / "decision_log.yaml",
                 schemas={},
@@ -86,7 +86,7 @@ class WorkflowTransitionCoverageTest(unittest.TestCase):
             self.assertEqual(result.result, CheckResult.PASS)
 
     def test_improvement_observe_to_reflect_transition_is_executable(self) -> None:
-        workflow = load_workflow(self.repo_root / "workflow" / "improvement_cycle.yaml")
+        workflow = load_workflow(self.repo_root / "framework" / "workflows" / "improvement_cycle.yaml")
         transition = next(t for t in workflow.transitions if (t.from_state, t.to_state) == ("OBSERVE", "REFLECT"))
         evaluator = GateEvaluator()
         with tempfile.TemporaryDirectory() as td:
@@ -101,19 +101,19 @@ class WorkflowTransitionCoverageTest(unittest.TestCase):
             )
             result = evaluator.evaluate(
                 transition=transition,
-                project_root=root,
+                project_inputs_root=root,
                 artifacts_dir=artifacts,
                 decision_log_path=artifacts.parent / "decision_log.yaml",
                 schemas={
                     "review_result": load_schema(
-                        self.repo_root / "artifacts" / "schemas" / "review_result.schema.md"
+                        self.repo_root / "framework" / "artifacts" / "schemas" / "review_result.schema.md"
                     )
                 },
             )
             self.assertEqual(result.result, CheckResult.PASS)
 
     def test_release_init_to_preparing_transition_is_executable(self) -> None:
-        workflow = load_workflow(self.repo_root / "workflow" / "release_workflow.yaml")
+        workflow = load_workflow(self.repo_root / "framework" / "workflows" / "release_workflow.yaml")
         transition = next(
             t for t in workflow.transitions if (t.from_state, t.to_state) == ("RELEASE_INIT", "RELEASE_PREPARING")
         )
@@ -132,19 +132,19 @@ class WorkflowTransitionCoverageTest(unittest.TestCase):
             )
             result = evaluator.evaluate(
                 transition=transition,
-                project_root=root,
+                project_inputs_root=root,
                 artifacts_dir=artifacts,
                 decision_log_path=artifacts.parent / "decision_log.yaml",
                 schemas={
                     "review_result": load_schema(
-                        self.repo_root / "artifacts" / "schemas" / "review_result.schema.md"
+                        self.repo_root / "framework" / "artifacts" / "schemas" / "review_result.schema.md"
                     )
                 },
             )
             self.assertEqual(result.result, CheckResult.PASS)
 
     def test_release_review_to_failed_reject_condition_is_executable(self) -> None:
-        workflow = load_workflow(self.repo_root / "workflow" / "release_workflow.yaml")
+        workflow = load_workflow(self.repo_root / "framework" / "workflows" / "release_workflow.yaml")
         transition = next(
             t for t in workflow.transitions if (t.from_state, t.to_state) == ("RELEASE_REVIEW", "RELEASE_FAILED")
         )
@@ -188,12 +188,12 @@ class WorkflowTransitionCoverageTest(unittest.TestCase):
             )
             result = evaluator.evaluate(
                 transition=transition,
-                project_root=root,
+                project_inputs_root=root,
                 artifacts_dir=artifacts,
                 decision_log_path=artifacts / "decision_log.yaml",
                 schemas={
                     "release_metadata": load_schema(
-                        self.repo_root / "artifacts" / "schemas" / "release_metadata.schema.json"
+                        self.repo_root / "framework" / "artifacts" / "schemas" / "release_metadata.schema.json"
                     )
                 },
             )
