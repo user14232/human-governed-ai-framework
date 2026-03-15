@@ -1222,8 +1222,8 @@ devos advance --project <dir> --run-id <run_id>
 | `advance` | Attempt one transition from the current state. Blocks if gate fails. |
 
 The CLI does not drive the full execution loop autonomously. Each `advance` call
-performs one transition attempt. A human or wrapper script calls `advance` iteratively.
-This enforces the human-in-the-loop model by preventing unbounded autonomous execution.
+performs one transition attempt. A human operator or wrapper script calls `advance` iteratively.
+This prevents unbounded autonomous execution without preventing fully automated runs — when no gate requires a human decision, a wrapper script can iterate without human presence.
 
 ---
 

@@ -40,6 +40,8 @@ ACCEPTED                           ← terminal state, run complete
 
 Every stage in this pipeline has explicit inputs, explicit outputs, and a defined responsibility. Nothing passes between stages except through artifacts.
 
+**All artifacts are produced by agents or automated tools.** Humans interact with DevOS only through governance decisions recorded in `decision_log.yaml`. Humans never produce workflow artifacts.
+
 ---
 
 ## 2. Stage 1 — Idea and Planning
@@ -201,7 +203,7 @@ The reviewer assesses the full change: implementation quality, test coverage, ar
 
 ## 6. Stage 5 — Decision and Terminal State
 
-The run reaches a terminal state based on the review outcome and final human decision.
+The run reaches a terminal state based on the review outcome. If the final gate requires a governance decision, the `human_decision_authority` provides an approval or rejection entry in `decision_log.yaml`. If no approval is configured as a gate requirement, the terminal state is reached from the artifact outcome alone.
 
 | Terminal state | Meaning |
 | --- | --- |
@@ -242,7 +244,23 @@ Supporting artifacts (produced conditionally):
 
 ## 8. Human Decision Points
 
-The `human_decision_authority` actor intervenes at explicit decision gates.
+### Human Decision Authority
+
+`human_decision_authority` is the governance actor in a DevOS run.
+
+**Responsibilities:**
+- Provide an approval or rejection entry in `decision_log.yaml` when a gate is configured to require a decision
+- Review run output when desired
+- Intervene when governance input is required
+
+**Non-responsibilities:**
+- Producing workflow artifacts
+- Executing agent roles
+- Driving workflow execution
+
+Humans are **governance participants**, not workflow workers. Their sole channel of interaction with DevOS is the `decision_log.yaml` file. They never write, modify, or produce workflow artifacts.
+
+### Decision gate mechanism
 
 Decision gates require a matching approval entry in `decision_log.yaml` before the workflow can advance. The entry must contain:
 
@@ -251,7 +269,9 @@ Decision gates require a matching approval entry in `decision_log.yaml` before t
 - `decision` — `approve` or `reject`
 - `timestamp` — ISO 8601
 
-The kernel never infers approvals. No artifact advances past a gate without a matching decision log entry.
+The kernel never infers approvals. No artifact advances past a configured approval gate without a matching decision log entry.
+
+**Human interaction is optional.** When no gate in a run is configured to require an approval decision, the run can complete without any human input. DevOS can operate fully autonomously when all gate conditions are satisfiable from artifact outcomes alone.
 
 ---
 
@@ -270,7 +290,7 @@ OBSERVE → REFLECT → PROPOSE → HUMAN_DECISION
 (optional) new change_intent.yaml for next delivery run
 ```
 
-The improvement cycle is a separate workflow with a separate `run_id`. It must be initiated explicitly by a human. It is not triggered automatically. See `docs/roadmap/future_features.md` for the future automation design.
+The improvement cycle is a separate workflow with a separate `run_id`. It must be initiated explicitly — either by a human operator or by an automated trigger. It is not triggered automatically by the MVP runtime. See `docs/roadmap/future_features.md` for the future automation design.
 
 ---
 

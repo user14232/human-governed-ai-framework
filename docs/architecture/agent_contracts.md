@@ -85,7 +85,19 @@ These roles run before a DevOS workflow is initialized.
 
 ### System Actor
 
-`human_decision_authority` is not an automated agent. It is the explicit governance actor that writes entries to `decision_log.yaml`. All human approvals must flow through this channel.
+`human_decision_authority` is not an automated agent. It is the explicit governance actor in a DevOS run.
+
+**Responsibilities:**
+- Write approval or rejection entries to `decision_log.yaml` when a gate requires a governance decision
+- Review run output when desired
+- Provide governance input when required
+
+**Non-responsibilities:**
+- Producing workflow artifacts
+- Executing agent roles
+- Driving workflow execution
+
+All human interaction with DevOS must flow through this channel. `human_decision_authority` is a governance participant, not a workflow worker.
 
 ---
 
@@ -110,10 +122,12 @@ The protocol supports two invocation modes:
 
 | Mode | Description | Current status |
 | --- | --- | --- |
-| `InvocationMode.MANUAL` | Human performs the agent role and produces artifacts manually | MVP mode; all agents operate this way |
+| `InvocationMode.MANUAL` | Adapter signals that an external actor must produce the artifact. In development use, a human operator may fill this role directly. | MVP mode; used when no automated adapter is configured |
 | `InvocationMode.AUTOMATED` | Adapter invokes an external system automatically | Code path exists; no concrete adapters built |
 
-In `MANUAL` mode, the CLI prompts for artifact production. The human performs the reasoning and writes the artifact to the correct path. The kernel then validates the artifact at the next gate.
+In `MANUAL` mode, the CLI signals that the artifact for the current stage has not yet been produced. An operator — typically an AI agent invoked outside the CLI, or a human operator in a development context — produces the artifact and writes it to the correct path. The kernel then validates the artifact at the next gate.
+
+`MANUAL` mode is a bootstrap and development-phase invocation mode. In production operation, agent roles are fulfilled by automated implementations (AI agents, scripted tools). The `human_decision_authority` governance role is separate from agent invocation: it operates through `decision_log.yaml` only and never produces workflow artifacts.
 
 ---
 
@@ -146,8 +160,10 @@ Any of these is a valid implementation of a DevOS agent contract:
 
 - **gstack agents** — AI-backed agents that receive structured inputs and produce structured outputs
 - **local LLM agents** — adapter calls Ollama or vLLM, prompts the model with the contract context, parses output into artifact
-- **human agents** — human reads the contract, consumes input artifacts, writes the output artifact manually
 - **scripts** — deterministic programs that transform input artifacts into output artifacts
+- **human operator (development mode)** — a human reads the contract, consumes input artifacts, and writes the output artifact directly; this is a development and bootstrap mode only, not intended for production operation
+
+In all cases, the artifact is produced by the agent implementation, not by the `human_decision_authority` governance actor. The governance actor interacts only through `decision_log.yaml`.
 
 DevOS contracts define the interface. External systems implement it.
 
@@ -207,6 +223,8 @@ The following rules apply to all agent contracts and all agent implementations:
 4. **Agents must not modify other agents' output artifacts.** Each artifact is immutable after production and approval.
 5. **Agents must not broaden scope** beyond what is specified in `change_intent.yaml`.
 6. **All assumptions must be explicit** and recorded inside the produced artifact.
+7. **Agents are used only for cognitive tasks.** All workflow orchestration, validation, and state management is deterministic runtime logic. Agents do not control workflow execution, system state, or runtime governance.
+8. **Humans do not produce workflow artifacts.** The `human_decision_authority` governance actor interacts with DevOS only through `decision_log.yaml`. Any artifact produced by a human operator acting in a development-mode agent role is produced in that operator's capacity as an agent implementation, not as a governance actor.
 
 ---
 

@@ -193,7 +193,7 @@ The MVP runtime contains no LLM invocation. This is intentional.
 | Local model integration | Not built; future feature |
 | Model routing | Not built; future feature |
 
-All agent roles in the MVP are executed manually. A human reads the agent contract, consumes the input artifacts, and writes the output artifact.
+In the MVP, no concrete automated adapters are built. Agent roles are fulfilled manually in a development context: an operator reads the agent contract, consumes the input artifacts, and writes the output artifact. This is a bootstrap mode only. In production operation, all agent roles are fulfilled by automated implementations (AI agents, scripted tools). The governance role (`human_decision_authority`) remains separate and operates only through `decision_log.yaml`.
 
 ---
 

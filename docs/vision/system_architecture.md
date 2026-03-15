@@ -194,7 +194,7 @@ DevOS Governance Kernel
     (run lifecycle / workflow transitions / artifact validation / decision logging)
          ↓
 Agent Execution Layer
-    (gstack agents / local LLM agents / human agents / scripts)
+    (gstack agents / local LLM agents / scripted tools / automated adapters)
          ↓
 Artifact output
          ↓
@@ -272,9 +272,11 @@ External systems implement these contracts. Examples of possible implementations
 - Cursor agents
 - gstack agents
 - Local LLM-backed agents
-- Manual human execution
+- Scripted or deterministic tools
 
 DevOS invokes agents through an `AgentAdapter` protocol. This protocol isolates the invocation mechanism from the engine. The kernel does not know how an agent is implemented.
+
+**All artifacts are produced by agents or automated tools.** Agents perform the cognitive work; the DevOS runtime governs the process. The human governance actor (`human_decision_authority`) interacts only through the decision log and does not produce workflow artifacts.
 
 **Contract location**: `framework/agents/`
 
@@ -364,10 +366,57 @@ The three concerns that DevOS explicitly separates:
 | Concern | Owner | DevOS role |
 | --- | --- | --- |
 | Planning | External planning tools | Consumes output as `change_intent.yaml` |
-| Reasoning / execution | External agents and tools | Invokes through contracts and adapters |
-| Governance | DevOS kernel | Owns entirely |
+| Reasoning / execution | External agents and automated tools | Invokes through contracts and adapters |
+| Governance | DevOS kernel + human decision authority | Kernel owns execution governance; humans provide decisions when required |
 
 This separation allows DevOS to remain independent from any planning tool, any AI provider, and any specific agent implementation.
+
+---
+
+## 5a. Execution Responsibility Model
+
+DevOS enforces a strict three-way division of execution responsibility:
+
+### Agent Usage Principle
+
+Agents are used only for cognitive tasks that require reasoning, synthesis, or language generation.
+
+All workflow orchestration, validation, and state management is implemented as deterministic runtime logic.
+
+Agents do not control workflow execution, system state, or runtime governance.
+
+### Artifact Production Rule
+
+- All artifacts produced during a run are produced by agents or automated tools.
+- Humans never create or modify workflow artifacts directly.
+- Humans interact with DevOS only through governance mechanisms: decisions and approvals recorded in `decision_log.yaml`.
+
+Artifacts represent the outputs of agent work. The runtime validates them; it does not produce them.
+
+### Human Decision Authority
+
+`human_decision_authority` is a named governance actor, not a workflow worker.
+
+**Responsibilities:**
+- Provide approval when a workflow gate requires a governance decision
+- Review run results when desired
+- Intervene when governance input is required
+
+**Non-responsibilities:**
+- Writing workflow artifacts
+- Producing implementation outputs
+- Executing agent roles
+- Driving workflow execution
+
+Humans act as **governance participants**, not workflow workers. Human interaction is optional. When all gate conditions can be satisfied without a human decision — for example, when gates are configured without an approval requirement — DevOS can operate fully autonomously.
+
+### Mental Model
+
+```
+Agents perform cognitive work and produce artifacts.
+DevOS runtime deterministically governs workflow execution and system state.
+Humans optionally provide decisions or reviews when governance input is required.
+```
 
 ---
 

@@ -143,7 +143,7 @@ Example implementations of agent contracts:
 
 - **gstack agents** — receive run context via adapter, produce artifacts, return to DevOS gate
 - **local LLM agents** — adapter loads contract, prompts local model, parses structured output as artifact
-- **human agents** — human reads contract and input artifacts, manually produces the output artifact
+- **human operator (development mode)** — reads contract and input artifacts, manually produces the output artifact; this is a bootstrap mode only, not intended for production operation
 - **scripts** — deterministic transformation scripts that consume inputs and write output artifacts
 
 DevOS governs the workflow. External systems perform the work.

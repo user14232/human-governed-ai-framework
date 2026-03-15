@@ -28,9 +28,19 @@ Future Features / Roadmap (parked ideas)
 ## DevOS System Layers
 
 - **Planning layer**: External planning tools (Linear, gstack, GitHub Issues) produce `change_intent.yaml`. DevOS does not own this layer.
-- **Governance kernel**: The DevOS runtime — run lifecycle, workflow transitions, gate evaluation, artifact validation, decision logging, event tracking.
-- **Agent execution layer**: External agents implement DevOS contracts and produce artifacts. DevOS invokes them through the `AgentAdapter` protocol.
+- **Governance kernel**: The DevOS runtime — run lifecycle, workflow transitions, gate evaluation, artifact validation, decision logging, event tracking. All orchestration and system control is deterministic runtime logic.
+- **Agent execution layer**: External agents implement DevOS contracts and produce all workflow artifacts. Agents are used only for cognitive tasks (reasoning, synthesis, generation). DevOS invokes them through the `AgentAdapter` protocol.
 - **Tooling layer**: External tools (Git, Pytest, Ruff, Semgrep) perform concrete tasks and produce artifacts consumed by DevOS gates.
+
+## Execution Responsibility Model
+
+| Actor | Role |
+| --- | --- |
+| **Agents** | Perform cognitive work. Produce all workflow artifacts. |
+| **DevOS runtime** | Deterministically govern workflow execution, gate validation, state transitions, and event recording. |
+| **Human Decision Authority** | Optionally provide governance decisions (approvals/rejections) via `decision_log.yaml`. Never produce artifacts. |
+
+Humans are governance participants, not workflow workers. Human interaction is optional — DevOS can operate fully autonomously when no gate requires a human decision.
 
 ## Documentation Directories
 

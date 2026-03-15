@@ -8,7 +8,7 @@ sequenceDiagram
     participant Workflow as Workflow Engine
     participant Gate as Gate Evaluator
     participant Adapter as AgentAdapter
-    participant Agent as Agent (AI/Human)
+    participant Agent as Agent (AI or Automated)
     participant Workspace as Run Directory
 
     Human->>CLI: devos run --intent change_intent.yaml
@@ -98,6 +98,40 @@ The runtime does **not** do anything else. All other capabilities are future ext
 
 ---
 
+## Execution Responsibility Model
+
+DevOS enforces a strict three-way division of execution responsibility:
+
+| Actor | Responsibility |
+| --- | --- |
+| **Agents** | Perform cognitive work (reasoning, synthesis, code generation). Produce all workflow artifacts. |
+| **DevOS runtime** | Deterministically govern workflow execution: gate validation, state transitions, artifact validation, event recording. |
+| **Human Decision Authority** | Optionally provide approvals or reviews at governance gates. Never produce artifacts. |
+
+### Key rules
+
+**Agents produce all artifacts.**  
+Every workflow artifact — plans, reviews, implementation summaries, test reports — is produced by an agent or automated tool. No artifact is produced by a human directly.
+
+**Agents do not control workflow execution.**  
+Agents produce artifacts. The DevOS runtime reads those artifacts, validates them, and determines whether a state transition is permitted. Agents have no mechanism to advance workflow state.
+
+**Human interaction is optional.**  
+Humans interact with DevOS only by writing entries to `decision_log.yaml`. This is a governance action, not a workflow execution action. If no gate in a run requires an approval decision, the run can complete without any human input.
+
+**DevOS can operate fully autonomously when no human decisions are required.**  
+A controlled wrapper script calling `advance` iteratively is sufficient to drive a complete run when all gate conditions are satisfied by artifact outcomes alone.
+
+### Correct mental model
+
+```
+Agents perform cognitive work and produce artifacts.
+DevOS runtime deterministically governs workflow execution and system state.
+Humans optionally provide decisions or reviews when governance input is required.
+```
+
+---
+
 ## What the Runtime Does NOT Implement
 
 The following are explicitly outside the MVP runtime boundary. They are not missing features — they are deliberate exclusions.
@@ -127,7 +161,7 @@ run start → workflow load → gate evaluation → artifact validation → even
 
 This sequence repeats state-by-state until the run reaches a terminal state (ACCEPTED, ACCEPTED_WITH_DEBT, or FAILED).
 
-Each `advance` invocation executes **exactly one** transition attempt. The runtime does not loop autonomously. A human or controlled wrapper script calls `advance` iteratively.
+Each `advance` invocation executes **exactly one** transition attempt. The runtime does not loop autonomously. A human operator or a controlled wrapper script calls `advance` iteratively. Human intervention is not required at every gate — when gates are satisfied by artifact conditions alone, autonomous iteration is possible.
 
 ---
 
@@ -189,4 +223,4 @@ The `AgentAdapter` protocol (`runtime/agents/invocation_layer.py`) is defined an
 
 The CLI does not provide a run-until-done command. Each `advance` invocation performs one transition. This is a permanent design constraint, not a missing feature.
 
-**What is excluded**: any command that drives the workflow to completion without human intervention at each gate.
+**What is excluded**: any command that autonomously loops through transitions without an explicit external caller. This does not imply that a human must be present at each gate. A controlled wrapper script can call `advance` iteratively, and when no gate requires a human approval, the run progresses without human input.

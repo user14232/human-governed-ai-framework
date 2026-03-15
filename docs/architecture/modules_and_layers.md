@@ -95,7 +95,7 @@ Core execution logic. Three modules.
 
 Five commands: `run`, `resume`, `status`, `check`, `advance`.
 
-The `advance` command performs exactly one workflow transition per invocation. There is no run-until-done loop command. A human or wrapper script calls `advance` iteratively. This is the structural enforcement of the human-in-the-loop model — the CLI cannot become an autonomous executor.
+The `advance` command performs exactly one workflow transition per invocation. There is no run-until-done loop command. A human operator or wrapper script calls `advance` iteratively. This structural constraint prevents unbounded autonomous execution — the CLI cannot drive itself to completion. It does not require human presence at every gate; when gate conditions are satisfiable from artifact outcomes alone, a wrapper script can iterate without human input.
 
 ---
 
