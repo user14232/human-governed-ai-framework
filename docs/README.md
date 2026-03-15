@@ -53,7 +53,10 @@ Humans are governance participants, not workflow workers. Human interaction is o
 - `docs/framework`: Core framework concepts — event model, workflow model, and knowledge/query contracts.
 - `docs/runtime`: Runtime engine behavior, MVP execution scope, and module architecture.
 - `docs/governance`: Boundaries, non-goals, anti-patterns, and project guardrails.
-- `docs/roadmap`: Future-facing design ideas and parked capabilities not part of the MVP runtime.
+- `docs/roadmap`: Future-facing design ideas and parked capabilities not part of the MVP runtime. Includes:
+  - `intent_system.md` — deterministic intent generation from planning artifacts
+  - `context_system.md` — context assembly for agent invocations
+  - `knowledge_system.md` — persistent engineering memory extracted from completed runs
 - `docs/archive`: Historical plans, readiness notes, and implementation records retained for traceability.
 
 ## Recommended Reading Order for New Contributors
@@ -75,9 +78,11 @@ After these, consult `docs/governance` for constraints, `docs/architecture/llm_s
 
 Documentation mirrors repository structure so that conceptual and implementation views stay aligned:
 
-- `framework/` → specification and contract definitions
-- `runtime/` → MVP workflow execution engine (see `runtime/README.md`)
-- `integrations/` → external system adapters (future feature)
+- `framework/` → specification and contract definitions (see `framework/README.md`)
+- `kernel/` → MVP workflow execution engine (see `kernel/README.md`)
+- `agent_runtime/` → agent invocation and LLM adapter layer (see `agent_runtime/README.md`)
+- `capabilities/` → external tool integrations (see `capabilities/README.md`)
 - `examples/` → example workspaces, sample inputs, and reproducible references
+- `workspace_examples/` → example DevOS workspaces for manual exploration and simulation
 
 When searching for details, start with the corresponding `docs/*` section, then open the matching repository directory for implementation context.

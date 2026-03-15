@@ -26,9 +26,9 @@ That means:
 ## Module Map
 
 ```
-runtime/
+kernel/
 ├── cli.py                  Entry point — five commands: run, resume, status, check, advance
-├── types/                  Shared value objects; no dependencies on other runtime modules
+├── types/                  Shared value objects; no dependencies on other kernel modules
 ├── framework/              Read-only loaders for workflow, schema, and agent contracts
 ├── store/                  Filesystem abstraction — atomic writes, SHA-256 hashing, run layout
 ├── engine/
