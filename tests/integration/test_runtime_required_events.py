@@ -1,19 +1,19 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import tempfile
 import unittest
 from pathlib import Path
 
-from runtime.agents.invocation_layer import AgentInvocationLayer, InvocationMode
-from runtime.cli import RuntimeCLI
-from runtime.engine.gate_evaluator import GateEvaluator
-from runtime.framework.agent_loader import AgentContract
-from runtime.framework.schema_loader import load_all_schemas, load_schema
-from runtime.engine.run_engine import RunEngine
-from runtime.engine.workflow_engine import WorkflowEngine
-from runtime.store.run_store import run_metrics_path
-from runtime.types.run import RunContext
+from agent_runtime.invocation_layer import AgentInvocationLayer, InvocationMode
+from kernel.cli import RuntimeCLI
+from kernel.engine.gate_evaluator import GateEvaluator
+from kernel.framework.agent_loader import AgentContract
+from kernel.framework.schema_loader import load_all_schemas, load_schema
+from kernel.engine.run_engine import RunEngine
+from kernel.engine.workflow_engine import WorkflowEngine
+from kernel.store.run_store import run_metrics_path
+from kernel.types.run import RunContext
 
 
 class RuntimeRequiredEventsIntegrationTest(unittest.TestCase):
@@ -25,7 +25,7 @@ class RuntimeRequiredEventsIntegrationTest(unittest.TestCase):
             root = Path(td)
             self._prepare_project(root, include_required_inputs=True)
             run_engine = RunEngine()
-            ctx = run_engine.initialize_run(root, root / "change_intent.yaml", "default_workflow")
+            ctx = run_engine.initialize_run(root, root / "change_intent.yaml", "delivery_workflow")
             wf_engine = WorkflowEngine(ctx.workflow_def)
             schemas = load_all_schemas(root / "artifacts" / "schemas")
 
@@ -47,7 +47,7 @@ class RuntimeRequiredEventsIntegrationTest(unittest.TestCase):
             root = Path(td)
             self._prepare_project(root, include_required_inputs=True)
             run_engine = RunEngine()
-            ctx = run_engine.initialize_run(root, root / "change_intent.yaml", "default_workflow")
+            ctx = run_engine.initialize_run(root, root / "change_intent.yaml", "delivery_workflow")
             wf_engine = WorkflowEngine(ctx.workflow_def)
             schemas = load_all_schemas(root / "artifacts" / "schemas")
 
@@ -90,7 +90,7 @@ class RuntimeRequiredEventsIntegrationTest(unittest.TestCase):
             root = Path(td)
             self._prepare_project(root, include_required_inputs=True)
             cli = RuntimeCLI()
-            base_ctx = cli.run(root, root / "change_intent.yaml", "default_workflow")
+            base_ctx = cli.run(root, root / "change_intent.yaml", "delivery_workflow")
             ctx = RunContext(
                 run_id=base_ctx.run_id,
                 project_root=base_ctx.project_root,
@@ -146,8 +146,8 @@ class RuntimeRequiredEventsIntegrationTest(unittest.TestCase):
     def _prepare_project(self, root: Path, include_required_inputs: bool) -> None:
         (root / "workflow").mkdir(parents=True, exist_ok=True)
         (root / "artifacts" / "schemas").mkdir(parents=True, exist_ok=True)
-        (root / "workflow" / "default_workflow.yaml").write_text(
-            (self.repo_root / "framework" / "workflows" / "default_workflow.yaml").read_text(encoding="utf-8"),
+        (root / "workflow" / "delivery_workflow.yaml").write_text(
+            (self.repo_root / "framework" / "workflows" / "delivery_workflow.yaml").read_text(encoding="utf-8"),
             encoding="utf-8",
         )
         (root / "artifacts" / "schemas" / "implementation_plan.schema.yaml").write_text(

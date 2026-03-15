@@ -1,19 +1,19 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import tempfile
 import unittest
 from pathlib import Path
 
-from runtime.decisions.decision_system import (
+from kernel.decisions.decision_system import (
     DecisionLogParseError,
     DecisionSystem,
     SignalType,
 )
-from runtime.events.event_system import EventSystem
-from runtime.store.run_store import run_metrics_path
-from runtime.types.run import RunContext
-from runtime.types.workflow import WorkflowDefinition
+from kernel.events.event_system import EventSystem
+from kernel.store.run_store import run_metrics_path
+from kernel.types.run import RunContext
+from kernel.types.workflow import WorkflowDefinition
 
 
 class DecisionSystemTest(unittest.TestCase):

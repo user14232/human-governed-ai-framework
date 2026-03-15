@@ -129,17 +129,17 @@ DevOS is a **deterministic workflow governance kernel for AI-assisted engineerin
 Planning Layer
     (gstack / Linear / GitHub Issues / any task system)
          ↓
-DevOS Governance Kernel
+DevOS Kernel
     (run lifecycle / workflow transitions / artifact validation / decision logging)
          ↓
-Agent Execution Layer
+Agent Runtime
     (gstack agents / local LLM agents / scripted tools / automated adapters)
          ↓
-Engineering Tool Layer
-    (Git / pytest / Ruff / CI pipelines / IDE assistants)
+Capability System
+    (Git / pytest / Ruff / CI pipelines / MCP tools / IDE assistants)
 ```
 
-This is the defining architectural separation. DevOS sits in the middle and governs the process. It does not belong to the planning layer, the agent layer, or the tooling layer.
+This is the defining architectural separation. DevOS sits in the middle and governs the process. It does not belong to the planning layer, the Agent Runtime, or the Capability System. See `docs/vision/devos_kernel_architecture.md` for the canonical four-system architecture description.
 
 ---
 

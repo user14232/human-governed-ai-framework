@@ -16,14 +16,14 @@ This independence is not a preference — it is an architectural constraint with
 
 **What independence means in practice:**
 
-1. The DevOS kernel (`runtime/`) contains no LLM SDK imports.
+1. The DevOS Kernel (`runtime/`) contains no LLM SDK imports.
 2. The DevOS framework (`framework/`) contains no model-specific prompts or configurations.
 3. Agent contracts specify behavior in terms of inputs and outputs, not in terms of how a model should be prompted.
 4. Any model — local or cloud — that can produce schema-conformant artifacts is a valid implementation.
 
-The governance kernel governs workflow execution. LLM interaction belongs in the agent layer, behind the `AgentAdapter` protocol.
+The DevOS Kernel governs workflow execution. LLM interaction belongs in the **Agent Runtime**, behind the `AgentAdapter` protocol. LLM adapters are Agent Runtime implementations — they are not part of the Kernel.
 
-DevOS interacts with LLMs exclusively through adapters. The kernel has no knowledge of which model was used, what provider was called, or how many tokens were consumed.
+DevOS interacts with LLMs exclusively through adapters. The Kernel has no knowledge of which model was used, what provider was called, or how many tokens were consumed.
 
 ### Possible LLM runtimes
 
@@ -41,33 +41,33 @@ No runtime is mandatory. The adapter isolates the kernel from all of them.
 
 ## 2. Where LLM Interaction Belongs
 
-LLM interaction must occur in the adapter layer, not in the kernel.
+LLM interaction must occur in the **Agent Runtime**, not in the Kernel.
 
 ```
-DevOS kernel (runtime/)
+DevOS Kernel (runtime/)
          ↓
 AgentAdapter.invoke(agent_role, run_context)
          ↓
-[adapter layer]
+[Agent Runtime — adapter + LLM client]
          ↓
 LLM provider (local or cloud)
          ↓
 structured artifact produced
          ↓
-artifact returned to kernel
+artifact returned to Kernel
 ```
 
-The kernel sees only the resulting artifact. It does not know what model was used, what prompts were sent, or how many tokens were consumed.
+The Kernel sees only the resulting artifact. It does not know what model was used, what prompts were sent, or how many tokens were consumed.
 
-This separation is the foundation of provider independence.
+This separation is the foundation of provider independence. LLM adapters are Agent Runtime components. They live outside the Kernel boundary.
 
 ---
 
 ## 3. Provider Abstraction Model
 
-A provider abstraction layer should sit between agent adapters and LLM backends.
+A provider abstraction layer should sit inside the Agent Runtime, between agent adapters and LLM backends.
 
-Conceptual structure:
+Conceptual structure (Agent Runtime internal):
 
 ```
 AgentAdapter
@@ -87,7 +87,7 @@ The `LLMProviderClient` interface abstracts:
 - response parsing
 - error handling
 
-**This layer is a future feature.** It is not part of the MVP runtime. The design must be implemented as a project-level adapter, not inside the DevOS kernel.
+**This layer is a future feature.** It is not part of the MVP. The design must be implemented as a project-level Agent Runtime adapter, not inside the DevOS Kernel.
 
 ---
 
@@ -199,8 +199,9 @@ In the MVP, no concrete automated adapters are built. Agent roles are fulfilled 
 
 ## Further Reading
 
-- `runtime/agents/invocation_layer.py` — AgentAdapter protocol
-- `docs/architecture/agent_contracts.md` — Agent contract model
-- `docs/architecture/integration_model.md` — Adapter architecture
-- `docs/roadmap/hybrid_ai_runtime.md` — Hybrid local/cloud AI runtime design (future feature)
-- `docs/roadmap/future_features.md` — Automated agent invocation (future feature)
+- `docs/vision/devos_kernel_architecture.md` — Canonical four-system architecture; Agent Runtime responsibilities
+- `runtime/agents/invocation_layer.py` — AgentAdapter protocol (Kernel ↔ Agent Runtime boundary)
+- `docs/architecture/agent_contracts.md` — Agent contract model and invocation model
+- `docs/architecture/integration_model.md` — Adapter architecture and integration rules
+- `docs/roadmap/hybrid_ai_runtime.md` — Hybrid local/cloud AI runtime design (post-MVP)
+- `docs/roadmap/future_features.md` — Automated agent invocation (post-MVP)

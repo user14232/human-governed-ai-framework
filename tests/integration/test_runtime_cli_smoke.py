@@ -7,7 +7,7 @@ from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
 
-from runtime.cli import main
+from kernel.cli import main
 
 
 class RuntimeCliIntegrationSmokeTest(unittest.TestCase):
@@ -30,7 +30,7 @@ class RuntimeCliIntegrationSmokeTest(unittest.TestCase):
                         "--change-intent",
                         str(root / "change_intent.yaml"),
                         "--workflow",
-                        "default_workflow",
+                        "delivery_workflow",
                     ]
                 )
             self.assertEqual(run_exit, 0)
@@ -49,7 +49,7 @@ class RuntimeCliIntegrationSmokeTest(unittest.TestCase):
                         "--run-id",
                         run_id,
                         "--workflow",
-                        "default_workflow",
+                        "delivery_workflow",
                     ]
                 )
             self.assertEqual(status_exit, 0)
@@ -67,7 +67,7 @@ class RuntimeCliIntegrationSmokeTest(unittest.TestCase):
                         "--run-id",
                         run_id,
                         "--workflow",
-                        "default_workflow",
+                        "delivery_workflow",
                     ]
                 )
             self.assertEqual(check_exit, 0)
@@ -85,7 +85,7 @@ class RuntimeCliIntegrationSmokeTest(unittest.TestCase):
                         "--run-id",
                         run_id,
                         "--workflow",
-                        "default_workflow",
+                        "delivery_workflow",
                     ]
                 )
             self.assertEqual(advance_exit, 0)
@@ -96,8 +96,8 @@ class RuntimeCliIntegrationSmokeTest(unittest.TestCase):
     def _prepare_project(self, root: Path) -> None:
         (root / "workflow").mkdir(parents=True, exist_ok=True)
         (root / "artifacts" / "schemas").mkdir(parents=True, exist_ok=True)
-        (root / "workflow" / "default_workflow.yaml").write_text(
-            (self.repo_root / "framework" / "workflows" / "default_workflow.yaml").read_text(encoding="utf-8"),
+        (root / "workflow" / "delivery_workflow.yaml").write_text(
+            (self.repo_root / "framework" / "workflows" / "delivery_workflow.yaml").read_text(encoding="utf-8"),
             encoding="utf-8",
         )
         (root / "artifacts" / "schemas" / "implementation_plan.schema.yaml").write_text(

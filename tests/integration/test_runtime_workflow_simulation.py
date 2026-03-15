@@ -15,7 +15,7 @@ class RuntimeWorkflowSimulationIntegrationTest(unittest.TestCase):
             config = SimulationConfig(
                 template_project_root=repo_root,
                 workspace_root=workspace,
-                workflow_name="default_workflow",
+                workflow_name="delivery_workflow",
                 target_terminal_state="ACCEPTED",
                 induce_planning_block=True,
             )

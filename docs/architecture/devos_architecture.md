@@ -1,37 +1,37 @@
-# DevOS — Runtime Architecture Reference
+# DevOS — Kernel Module Architecture Reference
 
 **Status:** Non-normative reference document
 **Normative source:** `contracts/`
 
-> For the system-level architecture overview covering all four layers (planning, governance kernel, agent execution, tooling), see `docs/vision/system_architecture.md`. This document focuses on the runtime module architecture of the DevOS governance kernel.
+> For the four-system architecture overview (DevOS Kernel, Agent Runtime, Capability System, Knowledge System), see `docs/vision/devos_kernel_architecture.md`. For the system interaction diagram, see `docs/vision/system_architecture.md`. This document focuses on the internal module architecture of the DevOS Kernel.
 
-DevOS is a **workflow governance kernel for AI-assisted engineering**. This document describes the internal module architecture of that kernel. It consolidates the architecture narrative from `docs/archive/phase3_runtime_realization_plan.md` and `docs/runtime/runtime_module_architecture.md` into a single reference document.
+DevOS is a **workflow governance kernel for AI-assisted engineering**. This document describes the internal module architecture of the DevOS Kernel implementation. It consolidates the architecture narrative from `docs/archive/phase3_runtime_realization_plan.md` and `docs/runtime/runtime_module_architecture.md` into a single reference document.
 
 This document is **non-normative**. The normative runtime rules remain in `contracts/`.
 
 ---
 
-## 1. System Layers
+## 1. Kernel Internal Layers
 
-DevOS operates through three conceptual layers:
+The DevOS Kernel implementation is organized through three internal conceptual layers:
 
 ```
-Framework
+Framework contracts (rules)
     ↓
-Workflows
+Workflow definitions (state machines)
     ↓
-Runs
+Run executions (concrete instances)
 ```
 
 | Layer | Role | Location |
 | --- | --- | --- |
-| **Framework** | Kernel rules: invariants, artifact contracts, agent role definitions, governance rules | `contracts/`, `agents/`, `artifacts/schemas/` |
-| **Workflows** | State machines that define how development work progresses | `workflow/` |
-| **Runs** | Concrete executions of workflows, producing artifacts and decisions | `runs/<run_id>/` (project-level) |
+| **Framework contracts** | Kernel rules: invariants, artifact contracts, agent role definitions, governance rules | `contracts/`, `agents/`, `artifacts/schemas/` |
+| **Workflow definitions** | State machines that define how development work progresses | `workflow/` |
+| **Run executions** | Concrete executions of workflows, producing artifacts and decisions | `runs/<run_id>/` (project-level) |
 
-The **framework layer** acts as the DevOS kernel. It cannot be modified during execution.
-Workflow definitions and agent contracts are loaded once at runtime initialization and
-treated as read-only.
+These are the kernel's internal layers. They are distinct from the four-system architecture (DevOS Kernel, Agent Runtime, Capability System, Knowledge System) described in `docs/vision/devos_kernel_architecture.md`.
+
+Framework contracts cannot be modified during execution. Workflow definitions and agent contracts are loaded once at kernel initialization and treated as read-only.
 
 ---
 
@@ -288,16 +288,18 @@ Derived from `docs/runtime_module_architecture.md`:
 
 ## Further Reading
 
+- `docs/vision/devos_kernel_architecture.md` — **Canonical four-system architecture reference**
+- `docs/architecture/system_map.md` — Concrete module map of all four systems
 - `docs/vision/product_vision.md` — MVP scope, principles, and explicit non-goals
-- `docs/vision/system_architecture.md` — Four-layer system architecture overview
+- `docs/vision/system_architecture.md` — System interaction diagram (four-layer view)
 - `docs/architecture/development_pipeline.md` — Full planning-to-execution pipeline
-- `docs/architecture/agent_contracts.md` — Agent contract model and external implementations
+- `docs/architecture/agent_contracts.md` — Agent contract model and Agent Runtime integration
 - `docs/architecture/integration_model.md` — Artifact-first integration philosophy
 - `docs/architecture/llm_strategy.md` — LLM independence and provider abstraction
-- `docs/archive/phase3_runtime_realization_plan.md` — normative engineering specification for the runtime implementation
+- `docs/archive/phase3_runtime_realization_plan.md` — normative engineering specification for the kernel implementation
 - `docs/runtime/runtime_module_architecture.md` — full Python-style interface signatures for all 8 major modules
 - `docs/runtime/runtime_execution_model.md` — MVP runtime scope and future extension points
 - `docs/framework/workflow_state_machine.md` — Mermaid visualization of all three workflow state machines
 - `docs/framework/event_model.md` — canonical typed event model with full payload schemas
-- `docs/framework/knowledge_query_contract.md` — knowledge layer extraction and query contract (future capability)
-- `docs/roadmap/future_features.md` — capabilities parked outside the MVP runtime
+- `docs/framework/knowledge_query_contract.md` — Knowledge System extraction and query contract (post-MVP)
+- `docs/roadmap/future_features.md` — capabilities parked outside the MVP

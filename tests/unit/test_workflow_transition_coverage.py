@@ -1,13 +1,13 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import tempfile
 import unittest
 from pathlib import Path
 
-from runtime.engine.gate_evaluator import GateEvaluator
-from runtime.framework.schema_loader import load_schema
-from runtime.framework.workflow_loader import load_workflow
-from runtime.types.gate import CheckResult
+from kernel.engine.gate_evaluator import GateEvaluator
+from kernel.framework.schema_loader import load_schema
+from kernel.framework.workflow_loader import load_workflow
+from kernel.types.gate import CheckResult
 
 
 class WorkflowTransitionCoverageTest(unittest.TestCase):
@@ -15,7 +15,7 @@ class WorkflowTransitionCoverageTest(unittest.TestCase):
         self.repo_root = Path(__file__).resolve().parents[2]
 
     def test_default_workflow_transition_order_is_deterministic(self) -> None:
-        workflow = load_workflow(self.repo_root / "framework" / "workflows" / "default_workflow.yaml")
+        workflow = load_workflow(self.repo_root / "framework" / "workflows" / "delivery_workflow.yaml")
         sequence = [(t.from_state, t.to_state) for t in workflow.transitions]
         self.assertEqual(
             sequence,
@@ -23,9 +23,7 @@ class WorkflowTransitionCoverageTest(unittest.TestCase):
                 ("INIT", "PLANNING"),
                 ("INIT", "FAILED"),
                 ("PLANNING", "ARCH_CHECK"),
-                ("ARCH_CHECK", "TEST_DESIGN"),
-                ("TEST_DESIGN", "BRANCH_READY"),
-                ("BRANCH_READY", "IMPLEMENTING"),
+                ("ARCH_CHECK", "IMPLEMENTING"),
                 ("IMPLEMENTING", "TESTING"),
                 ("TESTING", "REVIEWING"),
                 ("REVIEWING", "ACCEPTED"),
@@ -46,22 +44,12 @@ class WorkflowTransitionCoverageTest(unittest.TestCase):
             ],
         )
 
+    @unittest.skip("release_workflow removed from framework in v1 simplification")
     def test_release_workflow_transition_order_is_deterministic(self) -> None:
-        workflow = load_workflow(self.repo_root / "framework" / "workflows" / "release_workflow.yaml")
-        sequence = [(t.from_state, t.to_state) for t in workflow.transitions]
-        self.assertEqual(
-            sequence,
-            [
-                ("RELEASE_INIT", "RELEASE_PREPARING"),
-                ("RELEASE_INIT", "RELEASE_FAILED"),
-                ("RELEASE_PREPARING", "RELEASE_REVIEW"),
-                ("RELEASE_REVIEW", "RELEASED"),
-                ("RELEASE_REVIEW", "RELEASE_FAILED"),
-            ],
-        )
+        pass
 
     def test_default_init_to_planning_transition_is_executable(self) -> None:
-        workflow = load_workflow(self.repo_root / "framework" / "workflows" / "default_workflow.yaml")
+        workflow = load_workflow(self.repo_root / "framework" / "workflows" / "delivery_workflow.yaml")
         transition = next(t for t in workflow.transitions if (t.from_state, t.to_state) == ("INIT", "PLANNING"))
         evaluator = GateEvaluator()
         with tempfile.TemporaryDirectory() as td:
@@ -112,92 +100,13 @@ class WorkflowTransitionCoverageTest(unittest.TestCase):
             )
             self.assertEqual(result.result, CheckResult.PASS)
 
+    @unittest.skip("release_workflow removed from framework in v1 simplification")
     def test_release_init_to_preparing_transition_is_executable(self) -> None:
-        workflow = load_workflow(self.repo_root / "framework" / "workflows" / "release_workflow.yaml")
-        transition = next(
-            t for t in workflow.transitions if (t.from_state, t.to_state) == ("RELEASE_INIT", "RELEASE_PREPARING")
-        )
-        evaluator = GateEvaluator()
-        with tempfile.TemporaryDirectory() as td:
-            root = Path(td)
-            artifacts = root / "runs" / "RUN-20260314-0003" / "artifacts"
-            artifacts.mkdir(parents=True, exist_ok=True)
-            (artifacts / "review_result.md").write_text(
-                "id: RR-R\nsupersedes_id: null\noutcome: ACCEPTED\n\n## Summary\nok\n",
-                encoding="utf-8",
-            )
-            (artifacts / "test_report.json").write_text("{}", encoding="utf-8")
-            (artifacts / "decision_log.yaml").write_text(
-                "schema_version: v1\ndecisions: []\n", encoding="utf-8"
-            )
-            result = evaluator.evaluate(
-                transition=transition,
-                project_inputs_root=root,
-                artifacts_dir=artifacts,
-                decision_log_path=artifacts.parent / "decision_log.yaml",
-                schemas={
-                    "review_result": load_schema(
-                        self.repo_root / "framework" / "artifacts" / "schemas" / "review_result.schema.md"
-                    )
-                },
-            )
-            self.assertEqual(result.result, CheckResult.PASS)
+        pass
 
+    @unittest.skip("release_workflow removed from framework in v1 simplification")
     def test_release_review_to_failed_reject_condition_is_executable(self) -> None:
-        workflow = load_workflow(self.repo_root / "framework" / "workflows" / "release_workflow.yaml")
-        transition = next(
-            t for t in workflow.transitions if (t.from_state, t.to_state) == ("RELEASE_REVIEW", "RELEASE_FAILED")
-        )
-        evaluator = GateEvaluator()
-        with tempfile.TemporaryDirectory() as td:
-            root = Path(td)
-            artifacts = root / "runs" / "RUN-20260314-0004" / "artifacts"
-            artifacts.mkdir(parents=True, exist_ok=True)
-            (artifacts / "decision_log.yaml").write_text(
-                "schema_version: v1\n"
-                "decisions:\n"
-                "  - decision_id: D-R\n"
-                "    timestamp: '2026-03-14T11:00:00Z'\n"
-                "    human_identity: bob\n"
-                "    decision: reject\n"
-                "    scope: release\n"
-                "    references:\n"
-                "      - artifact: release_metadata.json\n"
-                "        artifact_id: RM-R\n"
-                "        artifact_hash: deadbeef\n"
-                "    rationale: blocked\n"
-                "    supersedes_decision_id: null\n",
-                encoding="utf-8",
-            )
-            (artifacts / "release_metadata.json").write_text(
-                "{\n"
-                '  "id": "RM-R",\n'
-                '  "supersedes_id": null,\n'
-                '  "created_at": "2026-03-14T10:00:00Z",\n'
-                '  "run_id": "RUN-20260314-0004",\n'
-                '  "inputs": {\n'
-                '    "review_result_ref": "RR-R",\n'
-                '    "review_result_hash": null,\n'
-                '    "test_report_run_id": "RUN-20260314-0004",\n'
-                '    "implementation_plan_id": "IP-R"\n'
-                "  },\n"
-                '  "artifacts": [{"name": "review_result.md", "ref": "RR-R", "hash": null}],\n'
-                '  "environment": {"os": "win32", "tool_versions": {"python": "3.14"}}\n'
-                "}\n",
-                encoding="utf-8",
-            )
-            result = evaluator.evaluate(
-                transition=transition,
-                project_inputs_root=root,
-                artifacts_dir=artifacts,
-                decision_log_path=artifacts / "decision_log.yaml",
-                schemas={
-                    "release_metadata": load_schema(
-                        self.repo_root / "framework" / "artifacts" / "schemas" / "release_metadata.schema.json"
-                    )
-                },
-            )
-            self.assertEqual(result.result, CheckResult.PASS)
+        pass
 
 
 if __name__ == "__main__":

@@ -1,19 +1,19 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import tempfile
 import unittest
 from pathlib import Path
 
-from runtime.framework.workflow_loader import ParseError, load_workflow
+from kernel.framework.workflow_loader import ParseError, load_workflow
 
 
 class WorkflowLoaderTest(unittest.TestCase):
     def setUp(self) -> None:
         self.repo_root = Path(__file__).resolve().parents[2]
 
-    def test_load_default_workflow(self) -> None:
-        workflow = load_workflow(self.repo_root / "framework" / "workflows" / "default_workflow.yaml")
-        self.assertEqual(workflow.workflow_id, "default_workflow")
+    def test_load_delivery_workflow(self) -> None:
+        workflow = load_workflow(self.repo_root / "framework" / "workflows" / "delivery_workflow.yaml")
+        self.assertEqual(workflow.workflow_id, "delivery_workflow")
         self.assertGreater(len(workflow.states), 0)
         self.assertGreater(len(workflow.transitions), 0)
 

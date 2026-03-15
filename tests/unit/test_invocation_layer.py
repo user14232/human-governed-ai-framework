@@ -5,20 +5,20 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from runtime.artifacts.artifact_system import ArtifactStructureError, ArtifactSystem
-from runtime.agents.invocation_layer import (
+from kernel.artifacts.artifact_system import ArtifactStructureError, ArtifactSystem
+from agent_runtime.invocation_layer import (
     AgentInvocationLayer,
     InvocationMode,
     MissingAdapterError,
     SingleShotViolationError,
     UnexpectedAdapterOutputError,
 )
-from runtime.framework.schema_loader import load_schema
-from runtime.store.run_store import run_metrics_path
-from runtime.framework.agent_loader import AgentContract
-from runtime.types.artifact import ArtifactRef
-from runtime.types.run import RunContext
-from runtime.types.workflow import WorkflowDefinition
+from kernel.framework.schema_loader import load_schema
+from kernel.store.run_store import run_metrics_path
+from kernel.framework.agent_loader import AgentContract
+from kernel.types.artifact import ArtifactRef
+from kernel.types.run import RunContext
+from kernel.types.workflow import WorkflowDefinition
 
 
 class _FakeArtifactSystem:

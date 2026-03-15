@@ -1,13 +1,13 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import dataclasses
 import unittest
 from pathlib import Path
 
-from runtime.types.artifact import ArtifactRef, ArtifactSchema
-from runtime.types.gate import CheckResult, CheckType, GateCheckDetail
-from runtime.types.run import RunState
-from runtime.types.workflow import RequiresBlock, Transition, WorkflowDefinition
+from kernel.types.artifact import ArtifactRef, ArtifactSchema
+from kernel.types.gate import CheckResult, CheckType, GateCheckDetail
+from kernel.types.run import RunState
+from kernel.types.workflow import RequiresBlock, Transition, WorkflowDefinition
 
 
 class RuntimeTypesTest(unittest.TestCase):

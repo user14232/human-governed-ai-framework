@@ -6,16 +6,16 @@ import unittest
 from dataclasses import dataclass
 from pathlib import Path
 
-from runtime.framework.schema_loader import load_schema
-from runtime.engine.workflow_engine import (
+from kernel.framework.schema_loader import load_schema
+from kernel.engine.workflow_engine import (
     NoEligibleTransitionsError,
     WorkflowEngine,
 )
-from runtime.store.run_store import run_metrics_path
-from runtime.types.artifact import ArtifactSchema
-from runtime.types.gate import CheckResult, GateResult
-from runtime.types.run import RunContext
-from runtime.types.workflow import RequiresBlock, Transition, WorkflowDefinition
+from kernel.store.run_store import run_metrics_path
+from kernel.types.artifact import ArtifactSchema
+from kernel.types.gate import CheckResult, GateResult
+from kernel.types.run import RunContext
+from kernel.types.workflow import RequiresBlock, Transition, WorkflowDefinition
 
 
 @dataclass

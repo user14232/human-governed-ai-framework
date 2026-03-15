@@ -6,12 +6,12 @@ import unittest
 from pathlib import Path
 from shutil import copyfile
 
-from runtime.engine.gate_evaluator import GateEvaluator
-from runtime.engine.run_engine import RunEngine
-from runtime.engine.workflow_engine import WorkflowEngine
-from runtime.framework.schema_loader import load_all_schemas
-from runtime.store.run_store import run_metrics_path
-from runtime.types.run import RunContext
+from kernel.engine.gate_evaluator import GateEvaluator
+from kernel.engine.run_engine import RunEngine
+from kernel.engine.workflow_engine import WorkflowEngine
+from kernel.framework.schema_loader import load_all_schemas
+from kernel.store.run_store import run_metrics_path
+from kernel.types.run import RunContext
 
 
 class SecondaryWorkflowsEndToEndIntegrationTest(unittest.TestCase):
@@ -150,6 +150,7 @@ class SecondaryWorkflowsEndToEndIntegrationTest(unittest.TestCase):
             to_states = self._completed_to_states(metrics)
             self.assertEqual(to_states, ["REFLECT", "PROPOSE", "HUMAN_DECISION"])
 
+    @unittest.skip("release_workflow removed from framework in v1 simplification")
     def test_release_workflow_advances_to_released(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             project_root = Path(td)

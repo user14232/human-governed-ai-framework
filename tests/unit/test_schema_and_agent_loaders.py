@@ -4,10 +4,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from runtime.framework.agent_loader import ParseError as AgentParseError
-from runtime.framework.agent_loader import load_agent_contract, load_all_agent_contracts
-from runtime.framework.schema_loader import ParseError as SchemaParseError
-from runtime.framework.schema_loader import load_all_schemas, load_schema
+from kernel.framework.agent_loader import ParseError as AgentParseError
+from kernel.framework.agent_loader import load_agent_contract, load_all_agent_contracts
+from kernel.framework.schema_loader import ParseError as SchemaParseError
+from kernel.framework.schema_loader import load_all_schemas, load_schema
 
 
 class SchemaAndAgentLoaderTest(unittest.TestCase):
@@ -41,15 +41,15 @@ class SchemaAndAgentLoaderTest(unittest.TestCase):
                 load_schema(bad)
 
     def test_load_single_agent_contract(self) -> None:
-        contract = load_agent_contract(self.repo_root / "framework" / "agents" / "agent_implementer.md")
-        self.assertEqual(contract.role_id, "agent_implementer")
+        contract = load_agent_contract(self.repo_root / "framework" / "agents" / "implementer.md")
+        self.assertEqual(contract.role_id, "implementer")
         self.assertIn("implementation_plan.yaml", contract.input_artifacts)
         self.assertIn("implementation_summary.md", contract.output_artifacts)
 
     def test_load_all_agent_contracts(self) -> None:
         contracts = load_all_agent_contracts(self.repo_root / "framework" / "agents")
-        self.assertIn("agent_implementer", contracts)
-        self.assertIn("human_decision_authority", contracts)
+        self.assertIn("implementer", contracts)
+        self.assertIn("reviewer", contracts)
 
     def test_invalid_agent_contract_raises_parse_error(self) -> None:
         with tempfile.TemporaryDirectory() as td:

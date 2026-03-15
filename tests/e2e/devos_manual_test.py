@@ -1,4 +1,4 @@
-"""
+﻿"""
 DevOS manual full-workflow e2e test using planning as implemented.
 
 Responsibilities:
@@ -33,14 +33,14 @@ import yaml
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from integrations.planning.planning_engine import DEFAULT_PROJECT_PLAN_PATH, PlanValidationError, PlanningEngine
-from integrations.planning.planning_models import ProjectModel, StoryModel, TaskModel
-from runtime.engine.gate_evaluator import GateEvaluator
-from runtime.engine.run_engine import RunEngine
-from runtime.engine.workflow_engine import WorkflowEngine
-from runtime.framework.schema_loader import load_all_schemas
-from runtime.store.file_store import sha256_from_disk
-from runtime.types.run import RunContext, TERMINAL_STATES
+from capabilities.planning.planning_engine import DEFAULT_PROJECT_PLAN_PATH, PlanValidationError, PlanningEngine
+from capabilities.planning.planning_models import ProjectModel, StoryModel, TaskModel
+from kernel.engine.gate_evaluator import GateEvaluator
+from kernel.engine.run_engine import RunEngine
+from kernel.engine.workflow_engine import WorkflowEngine
+from kernel.framework.schema_loader import load_all_schemas
+from kernel.store.file_store import sha256_from_disk
+from kernel.types.run import RunContext, TERMINAL_STATES
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]

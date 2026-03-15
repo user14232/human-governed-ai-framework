@@ -7,10 +7,10 @@ from io import StringIO
 from pathlib import Path
 from contextlib import redirect_stdout
 
-from runtime.cli import RuntimeCLI, main
-from runtime.types.artifact import ArtifactSchema
-from runtime.types.gate import CheckResult, GateResult
-from runtime.types.workflow import Transition
+from kernel.cli import RuntimeCLI, main
+from kernel.types.artifact import ArtifactSchema
+from kernel.types.gate import CheckResult, GateResult
+from kernel.types.workflow import Transition
 
 
 @dataclass
@@ -38,8 +38,8 @@ class RuntimeCliTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             (root / "workflow").mkdir(parents=True, exist_ok=True)
-            (root / "workflow" / "default_workflow.yaml").write_text(
-                (self.repo_root / "framework" / "workflows" / "default_workflow.yaml").read_text(encoding="utf-8"),
+            (root / "workflow" / "delivery_workflow.yaml").write_text(
+                (self.repo_root / "framework" / "workflows" / "delivery_workflow.yaml").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
             (root / "artifacts" / "schemas").mkdir(parents=True, exist_ok=True)
@@ -63,16 +63,16 @@ class RuntimeCliTest(unittest.TestCase):
             evaluator = PassEvaluator()
             cli = RuntimeCLI(evaluator=evaluator)
 
-            run_ctx = cli.run(root, change_intent, "default_workflow")
+            run_ctx = cli.run(root, change_intent, "delivery_workflow")
             self.assertEqual(run_ctx.current_state, "INIT")
 
-            status = cli.status(root, run_ctx.run_id, "default_workflow")
+            status = cli.status(root, run_ctx.run_id, "delivery_workflow")
             self.assertEqual(status["current_state"], "PLANNING")
 
-            check = cli.check(root, run_ctx.run_id, "default_workflow")
+            check = cli.check(root, run_ctx.run_id, "delivery_workflow")
             self.assertEqual(check["gate_result"], "pass")
 
-            advance = cli.advance(root, run_ctx.run_id, "default_workflow")
+            advance = cli.advance(root, run_ctx.run_id, "delivery_workflow")
             self.assertEqual(advance["result"], "transitioned")
             self.assertEqual(advance["state"], "ARCH_CHECK")
             self.assertGreaterEqual(evaluator.calls, 2)
@@ -81,8 +81,8 @@ class RuntimeCliTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             (root / "workflow").mkdir(parents=True, exist_ok=True)
-            (root / "workflow" / "default_workflow.yaml").write_text(
-                (self.repo_root / "framework" / "workflows" / "default_workflow.yaml").read_text(encoding="utf-8"),
+            (root / "workflow" / "delivery_workflow.yaml").write_text(
+                (self.repo_root / "framework" / "workflows" / "delivery_workflow.yaml").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
             (root / "artifacts" / "schemas").mkdir(parents=True, exist_ok=True)
@@ -106,7 +106,7 @@ class RuntimeCliTest(unittest.TestCase):
                 (root / name).write_text("ok", encoding="utf-8")
 
             cli = RuntimeCLI()
-            ctx = cli.run(root, change_intent, "default_workflow")
+            ctx = cli.run(root, change_intent, "delivery_workflow")
             with redirect_stdout(StringIO()):
                 exit_code = main(
                     [
@@ -116,7 +116,7 @@ class RuntimeCliTest(unittest.TestCase):
                         "--run-id",
                         ctx.run_id,
                         "--workflow",
-                        "default_workflow",
+                        "delivery_workflow",
                     ]
                 )
             self.assertEqual(exit_code, 0)
@@ -126,8 +126,8 @@ class RuntimeCliTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             (root / "workflow").mkdir(parents=True, exist_ok=True)
-            (root / "workflow" / "default_workflow.yaml").write_text(
-                (self.repo_root / "framework" / "workflows" / "default_workflow.yaml").read_text(encoding="utf-8"),
+            (root / "workflow" / "delivery_workflow.yaml").write_text(
+                (self.repo_root / "framework" / "workflows" / "delivery_workflow.yaml").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
             change_intent = root / "change_intent.yaml"
@@ -145,7 +145,7 @@ class RuntimeCliTest(unittest.TestCase):
                         "--change-intent",
                         str(change_intent),
                         "--workflow",
-                        "default_workflow",
+                        "delivery_workflow",
                         "--project-inputs-root",
                         str(inputs_dir),
                     ]

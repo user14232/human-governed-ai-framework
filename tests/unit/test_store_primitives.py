@@ -1,11 +1,11 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import tempfile
 import unittest
 from pathlib import Path
 
-from runtime.store.file_store import (
+from kernel.store.file_store import (
     ParseError,
     append_json_array_element,
     atomic_rename,
@@ -14,7 +14,7 @@ from runtime.store.file_store import (
     read_yaml,
     sha256_from_disk,
 )
-from runtime.store.run_store import create_run_directory, list_run_ids, run_directory
+from kernel.store.run_store import create_run_directory, list_run_ids, run_directory
 
 
 class StorePrimitivesTest(unittest.TestCase):

@@ -4,10 +4,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from runtime.engine.gate_evaluator import GateEvaluator
-from runtime.framework.schema_loader import load_schema
-from runtime.types.gate import CheckResult, CheckType
-from runtime.types.workflow import RequiresBlock, Transition
+from kernel.engine.gate_evaluator import GateEvaluator
+from kernel.framework.schema_loader import load_schema
+from kernel.types.gate import CheckResult, CheckType
+from kernel.types.workflow import RequiresBlock, Transition
 
 
 class GateEvaluatorTest(unittest.TestCase):

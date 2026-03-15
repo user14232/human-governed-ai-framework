@@ -4,14 +4,14 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from runtime.artifacts.artifact_system import (
+from kernel.artifacts.artifact_system import (
     ArtifactSystem,
     ArtifactStructureError,
     ImmutableArtifactError,
 )
-from runtime.framework.schema_loader import load_schema
-from runtime.types.run import RunContext
-from runtime.types.workflow import WorkflowDefinition
+from kernel.framework.schema_loader import load_schema
+from kernel.types.run import RunContext
+from kernel.types.workflow import WorkflowDefinition
 
 
 class ArtifactSystemTest(unittest.TestCase):

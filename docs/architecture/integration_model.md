@@ -4,6 +4,8 @@
 **Status**: Normative for integration philosophy
 **Date**: 2026-03-15
 
+> For the four-system architecture (DevOS Kernel, Agent Runtime, Capability System, Knowledge System), see `docs/vision/devos_kernel_architecture.md`. This document describes the integration philosophy that governs how all four systems interact with each other and with external tools.
+
 ---
 
 ## 1. Core Principle: Artifact-First Integration
@@ -64,13 +66,14 @@ Adapters translate between DevOS contracts and tool-specific execution interface
 
 ### Adapter categories
 
-| Adapter type | Purpose | Status |
-| --- | --- | --- |
-| AgentAdapter | Translates DevOS agent contracts into agent invocation | Protocol defined in `runtime/agents/invocation_layer.py`; implementations are project-level |
-| LLM provider adapter | Routes LLM invocations to local or cloud models | Future feature; see `docs/architecture/llm_strategy.md` |
-| Planning system adapter | Converts planning tool output into `change_intent.yaml` | Future feature; manual conversion is the MVP approach |
-| External state adapter | Projects DevOS run state into external tools (e.g., Linear, GitHub Issues) | Future feature; see `docs/roadmap/integration_ecosystem_vision.md` |
-| CLI tool adapter | Wraps tool execution and captures output as artifacts | Future feature |
+| Adapter type | System | Purpose | Status |
+| --- | --- | --- | --- |
+| AgentAdapter | Agent Runtime | Translates DevOS agent contracts into agent invocation | Protocol defined in `runtime/agents/invocation_layer.py`; implementations are project-level |
+| LLM provider adapter | Agent Runtime | Routes LLM invocations to local or cloud models | Post-MVP; see `docs/architecture/llm_strategy.md` |
+| Capability adapter | Capability System | Wraps tool execution and exposes tools to agents | Post-MVP |
+| Planning system adapter | Capability System | Converts planning tool output into `change_intent.yaml` | Post-MVP; manual conversion is the MVP approach |
+| External state adapter | Capability System | Projects DevOS run state into external tools (e.g., Linear, GitHub Issues) | Post-MVP; see `docs/roadmap/integration_ecosystem_vision.md` |
+| Knowledge extraction adapter | Knowledge System | Extracts knowledge records from terminal-state artifacts | Post-MVP; see `docs/framework/knowledge_query_contract.md` |
 
 ### Adapter rules
 
@@ -196,8 +199,11 @@ The following integration points are present in the MVP runtime and are ready fo
 
 ## Further Reading
 
-- `docs/architecture/agent_contracts.md` — Agent contract model and external implementations
-- `docs/architecture/llm_strategy.md` — LLM provider abstraction
+- `docs/vision/devos_kernel_architecture.md` — Canonical four-system architecture reference
+- `docs/architecture/system_map.md` — Concrete module map of all four systems
+- `docs/architecture/agent_contracts.md` — Agent contract model and Agent Runtime integration
+- `docs/architecture/llm_strategy.md` — LLM independence and provider abstraction
 - `docs/architecture/development_pipeline.md` — Full planning-to-execution pipeline
+- `docs/framework/knowledge_query_contract.md` — Knowledge System contract (post-MVP)
 - `docs/roadmap/future_features.md` — Parked integration features
 - `docs/roadmap/integration_ecosystem_vision.md` — Future integration ecosystem vision

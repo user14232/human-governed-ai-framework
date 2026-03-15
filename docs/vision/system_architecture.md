@@ -60,10 +60,10 @@ end
 
 
 %% -------------------------------------------------
-%% Agent Execution Layer
+%% Agent Runtime
 %% -------------------------------------------------
 
-subgraph AGENTS["Agent Execution Layer (External)"]
+subgraph AGENTS["Agent Runtime"]
 
     A2["AI Agents<br>(Cursor / gstack / LLMs)"]
     A3["Human Agents"]
@@ -73,10 +73,10 @@ end
 
 
 %% -------------------------------------------------
-%% Engineering Tool Layer
+%% Capability System
 %% -------------------------------------------------
 
-subgraph TOOLS["Engineering Tool Layer"]
+subgraph TOOLS["Capability System"]
 
     T1["Git"]
     T2["Test Frameworks"]
@@ -190,10 +190,10 @@ Planning Layer
          ↓
   change_intent.yaml
          ↓
-DevOS Governance Kernel
+DevOS Kernel
     (run lifecycle / workflow transitions / artifact validation / decision logging)
          ↓
-Agent Execution Layer
+Agent Runtime
     (gstack agents / local LLM agents / scripted tools / automated adapters)
          ↓
 Artifact output
@@ -202,11 +202,11 @@ Gate evaluation
          ↓
 State transition
          ↓
-Engineering Tool Layer
-    (Git / pytest / Ruff / CI pipelines / IDE assistants)
+Capability System
+    (Git / pytest / Ruff / CI pipelines / MCP tools)
 ```
 
-This four-layer separation is the defining architectural principle of DevOS. Each layer has a clearly bounded responsibility. DevOS governs the second layer entirely and coordinates with all others through artifacts.
+This separation is the defining architectural principle of DevOS. Each system has a clearly bounded responsibility. DevOS governs the Kernel layer entirely and coordinates with all others through artifacts. See `docs/vision/devos_kernel_architecture.md` for the canonical four-system architecture reference.
 
 ---
 
@@ -257,7 +257,7 @@ The kernel's job is deterministic workflow execution.
 
 ---
 
-### Layer 3 — Agent Execution Layer
+### Layer 3 — Agent Runtime
 
 AI reasoning occurs outside the DevOS kernel.
 
@@ -276,30 +276,31 @@ External systems implement these contracts. Examples of possible implementations
 
 DevOS invokes agents through an `AgentAdapter` protocol. This protocol isolates the invocation mechanism from the engine. The kernel does not know how an agent is implemented.
 
-**All artifacts are produced by agents or automated tools.** Agents perform the cognitive work; the DevOS runtime governs the process. The human governance actor (`human_decision_authority`) interacts only through the decision log and does not produce workflow artifacts.
+**All artifacts are produced by agents or automated tools.** Agents perform the cognitive work; the DevOS kernel governs the process. The human governance actor (`human_decision_authority`) interacts only through the decision log and does not produce workflow artifacts.
 
 **Contract location**: `framework/agents/`
 
 ---
 
-### Layer 4 — Engineering Tool Layer
+### Layer 4 — Capability System
 
-External engineering tools perform concrete technical tasks and produce artifacts consumed by DevOS gates.
+The Capability System provides tool access for agents. Agents invoke capabilities while performing cognitive work. The DevOS kernel has no knowledge of which capabilities an agent uses.
 
 Examples:
 
-| Tool category | Examples |
+| Capability category | Examples |
 | --- | --- |
 | Version control | Git |
 | Code quality | Ruff, Pylint |
 | Testing | Pytest |
 | Security scanning | Semgrep, Bandit |
-| Code generation | Any LLM-backed tool, IDE assistant |
+| Issue tracking | Linear, GitHub Issues |
+| MCP tools | Any tool exposed via Model Context Protocol |
 | CI pipelines | GitHub Actions, GitLab CI |
 
-Tools produce artifacts. DevOS evaluates those artifacts through gate checks. DevOS has no direct dependency on any specific tool. Any tool that writes a valid, schema-conformant artifact is compatible with DevOS.
+Capabilities produce artifacts. DevOS evaluates those artifacts through gate checks. DevOS has no direct dependency on any specific capability implementation. Any tool that writes a valid, schema-conformant artifact is compatible with DevOS.
 
-DevOS does not implement, manage, or replace tools at this layer. Engineering tools remain owned by the engineering team.
+Capability implementations are owned by the engineering team or project. The DevOS kernel has no knowledge of which capabilities agents use.
 
 ---
 
@@ -366,7 +367,9 @@ The three concerns that DevOS explicitly separates:
 | Concern | Owner | DevOS role |
 | --- | --- | --- |
 | Planning | External planning tools | Consumes output as `change_intent.yaml` |
-| Reasoning / execution | External agents and automated tools | Invokes through contracts and adapters |
+| Reasoning / execution | Agent Runtime (external agents and automated tools) | Invokes through contracts and adapters |
+| Tool access | Capability System (external tool integrations) | Kernel-agnostic; capabilities are invoked by agents |
+| Engineering memory | Knowledge System | Kernel emits trigger events; extraction is post-MVP |
 | Governance | DevOS kernel + human decision authority | Kernel owns execution governance; humans provide decisions when required |
 
 This separation allows DevOS to remain independent from any planning tool, any AI provider, and any specific agent implementation.
@@ -414,7 +417,7 @@ Humans act as **governance participants**, not workflow workers. Human interacti
 
 ```
 Agents perform cognitive work and produce artifacts.
-DevOS runtime deterministically governs workflow execution and system state.
+DevOS Kernel deterministically governs workflow execution and system state.
 Humans optionally provide decisions or reviews when governance input is required.
 ```
 
@@ -466,9 +469,11 @@ These properties of the DevOS kernel are permanent and not subject to extension:
 ## Further Reading
 
 - `docs/vision/product_vision.md` — MVP scope, principles, and non-goals
+- `docs/vision/devos_kernel_architecture.md` — **Canonical four-system architecture reference**
+- `docs/architecture/system_map.md` — Concrete module map of all four systems
 - `docs/architecture/development_pipeline.md` — Full planning-to-execution pipeline
-- `docs/architecture/agent_contracts.md` — Agent contract model and external implementations
+- `docs/architecture/agent_contracts.md` — Agent contract model and Agent Runtime integration
 - `docs/architecture/integration_model.md` — Artifact-first integration philosophy
 - `docs/architecture/llm_strategy.md` — LLM independence and provider abstraction
-- `docs/architecture/devos_architecture.md` — Runtime module architecture reference
-- `docs/roadmap/future_features.md` — Capabilities parked outside the MVP runtime
+- `docs/architecture/devos_architecture.md` — Kernel module architecture reference
+- `docs/roadmap/future_features.md` — Capabilities parked outside the MVP

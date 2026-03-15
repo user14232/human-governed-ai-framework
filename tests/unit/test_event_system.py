@@ -1,23 +1,23 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import tempfile
 import unittest
 from pathlib import Path
 
-from runtime.events.event_system import EventSystem
-from runtime.events.event_system import MalformedEventError
-from runtime.events.metrics_writer import (
+from kernel.events.event_system import EventSystem
+from kernel.events.event_system import MalformedEventError
+from kernel.events.metrics_writer import (
     AppendOnlyViolationError,
     EventCounterViolationError,
     append_event,
     file_hash,
     verify_append_only,
 )
-from runtime.knowledge.extraction_hooks import check_triggers, log_trigger
-from runtime.types.event import EventType
-from runtime.types.run import RunContext
-from runtime.types.workflow import WorkflowDefinition
+from kernel.knowledge.extraction_hooks import check_triggers, log_trigger
+from kernel.types.event import EventType
+from kernel.types.run import RunContext
+from kernel.types.workflow import WorkflowDefinition
 
 
 class EventSystemTest(unittest.TestCase):

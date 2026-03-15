@@ -63,14 +63,14 @@ Planning Layer
 DevOS Governance Kernel
     → reads inputs/ and planning/ → writes to runs/<run_id>/
          ↓
-Agent Execution Layer
+Agent Runtime
     → reads from runs/<run_id>/artifacts/ → writes artifacts back to same location
          ↓
-Engineering Tool Layer
+Capability System
     → called by agent adapters → output artifacts placed in runs/<run_id>/artifacts/
 ```
 
-The workspace is the shared filesystem that all four layers interact with, but only the governance kernel manages workspace state transitions.
+The workspace is the shared filesystem that all four systems interact with, but only the DevOS Kernel manages workspace state transitions.
 
 ## Relationship to Examples
 

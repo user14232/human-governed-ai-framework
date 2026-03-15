@@ -1,11 +1,11 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 import tempfile
 import unittest
 from pathlib import Path
 
-from runtime.engine.run_engine import (
+from kernel.engine.run_engine import (
     InvalidTerminalStateError,
     MissingInputError,
     RunEngine,
@@ -22,14 +22,14 @@ class RunEngineLifecycleTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             project_root = Path(td)
             (project_root / "workflow").mkdir(parents=True, exist_ok=True)
-            (project_root / "workflow" / "default_workflow.yaml").write_text(
-                (self.repo_root / "framework" / "workflows" / "default_workflow.yaml").read_text(encoding="utf-8"),
+            (project_root / "workflow" / "delivery_workflow.yaml").write_text(
+                (self.repo_root / "framework" / "workflows" / "delivery_workflow.yaml").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
             change_intent = project_root / "change_intent.yaml"
             change_intent.write_text("id: CI-1\n", encoding="utf-8")
 
-            ctx = self.engine.initialize_run(project_root, change_intent)
+            ctx = self.engine.initialize_run(project_root, change_intent, workflow_name="delivery_workflow")
             self.assertTrue(ctx.run_dir.is_dir())
             self.assertTrue((ctx.artifacts_dir / "change_intent.yaml").is_file())
             self.assertEqual(ctx.current_state, "INIT")
@@ -57,12 +57,12 @@ class RunEngineLifecycleTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             (root / "workflow").mkdir(parents=True, exist_ok=True)
-            (root / "workflow" / "default_workflow.yaml").write_text(
-                (self.repo_root / "framework" / "workflows" / "default_workflow.yaml").read_text(encoding="utf-8"),
+            (root / "workflow" / "delivery_workflow.yaml").write_text(
+                (self.repo_root / "framework" / "workflows" / "delivery_workflow.yaml").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
             with self.assertRaises(MissingInputError):
-                self.engine.initialize_run(root, root / "missing_change_intent.yaml")
+                self.engine.initialize_run(root, root / "missing_change_intent.yaml", workflow_name="delivery_workflow")
 
     def test_resume_run_reconstructs_state_from_metrics(self) -> None:
         with tempfile.TemporaryDirectory() as td:
@@ -71,8 +71,8 @@ class RunEngineLifecycleTest(unittest.TestCase):
             run_artifacts = root / "runs" / run_id / "artifacts"
             run_artifacts.mkdir(parents=True, exist_ok=True)
             (root / "workflow").mkdir(parents=True, exist_ok=True)
-            (root / "workflow" / "default_workflow.yaml").write_text(
-                (self.repo_root / "framework" / "workflows" / "default_workflow.yaml").read_text(encoding="utf-8"),
+            (root / "workflow" / "delivery_workflow.yaml").write_text(
+                (self.repo_root / "framework" / "workflows" / "delivery_workflow.yaml").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
             (run_artifacts / "run_metrics.json").write_text(
@@ -89,7 +89,7 @@ class RunEngineLifecycleTest(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            ctx = self.engine.resume_run(root, run_id)
+            ctx = self.engine.resume_run(root, run_id, workflow_name="delivery_workflow")
             self.assertEqual(ctx.current_state, "PLANNING")
             self.assertEqual(ctx.run_id, run_id)
 
@@ -100,20 +100,20 @@ class RunEngineLifecycleTest(unittest.TestCase):
             run_artifacts = root / "runs" / run_id / "artifacts"
             run_artifacts.mkdir(parents=True, exist_ok=True)
             (root / "workflow").mkdir(parents=True, exist_ok=True)
-            (root / "workflow" / "default_workflow.yaml").write_text(
-                (self.repo_root / "framework" / "workflows" / "default_workflow.yaml").read_text(encoding="utf-8"),
+            (root / "workflow" / "delivery_workflow.yaml").write_text(
+                (self.repo_root / "framework" / "workflows" / "delivery_workflow.yaml").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
             (run_artifacts / "run_metrics.json").write_text("{bad json", encoding="utf-8")
             with self.assertRaises(StateReconstructionError):
-                self.engine.resume_run(root, run_id)
+                self.engine.resume_run(root, run_id, workflow_name="delivery_workflow")
 
     def test_initialize_run_uses_canonical_inputs_root_when_dir_exists(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             project_root = Path(td)
             (project_root / "workflow").mkdir(parents=True, exist_ok=True)
-            (project_root / "workflow" / "default_workflow.yaml").write_text(
-                (self.repo_root / "framework" / "workflows" / "default_workflow.yaml").read_text(encoding="utf-8"),
+            (project_root / "workflow" / "delivery_workflow.yaml").write_text(
+                (self.repo_root / "framework" / "workflows" / "delivery_workflow.yaml").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
             change_intent = project_root / "change_intent.yaml"
@@ -121,29 +121,29 @@ class RunEngineLifecycleTest(unittest.TestCase):
             canonical = project_root / ".devOS" / "project_inputs"
             canonical.mkdir(parents=True, exist_ok=True)
 
-            ctx = self.engine.initialize_run(project_root, change_intent)
+            ctx = self.engine.initialize_run(project_root, change_intent, workflow_name="delivery_workflow")
             self.assertEqual(ctx.project_inputs_root, canonical.resolve())
 
     def test_initialize_run_falls_back_to_project_root_without_canonical_dir(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             project_root = Path(td)
             (project_root / "workflow").mkdir(parents=True, exist_ok=True)
-            (project_root / "workflow" / "default_workflow.yaml").write_text(
-                (self.repo_root / "framework" / "workflows" / "default_workflow.yaml").read_text(encoding="utf-8"),
+            (project_root / "workflow" / "delivery_workflow.yaml").write_text(
+                (self.repo_root / "framework" / "workflows" / "delivery_workflow.yaml").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
             change_intent = project_root / "change_intent.yaml"
             change_intent.write_text("id: CI-1\n", encoding="utf-8")
 
-            ctx = self.engine.initialize_run(project_root, change_intent)
+            ctx = self.engine.initialize_run(project_root, change_intent, workflow_name="delivery_workflow")
             self.assertEqual(ctx.project_inputs_root, project_root.resolve())
 
     def test_initialize_run_explicit_project_inputs_root_overrides_resolution(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             project_root = Path(td)
             (project_root / "workflow").mkdir(parents=True, exist_ok=True)
-            (project_root / "workflow" / "default_workflow.yaml").write_text(
-                (self.repo_root / "framework" / "workflows" / "default_workflow.yaml").read_text(encoding="utf-8"),
+            (project_root / "workflow" / "delivery_workflow.yaml").write_text(
+                (self.repo_root / "framework" / "workflows" / "delivery_workflow.yaml").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
             change_intent = project_root / "change_intent.yaml"
@@ -156,6 +156,7 @@ class RunEngineLifecycleTest(unittest.TestCase):
             ctx = self.engine.initialize_run(
                 project_root,
                 change_intent,
+                workflow_name="delivery_workflow",
                 project_inputs_root=explicit_root,
             )
             self.assertEqual(ctx.project_inputs_root, explicit_root.resolve())
@@ -164,13 +165,13 @@ class RunEngineLifecycleTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
             (root / "workflow").mkdir(parents=True, exist_ok=True)
-            (root / "workflow" / "default_workflow.yaml").write_text(
-                (self.repo_root / "framework" / "workflows" / "default_workflow.yaml").read_text(encoding="utf-8"),
+            (root / "workflow" / "delivery_workflow.yaml").write_text(
+                (self.repo_root / "framework" / "workflows" / "delivery_workflow.yaml").read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
             change_intent = root / "change_intent.yaml"
             change_intent.write_text("id: CI-1\n", encoding="utf-8")
-            ctx = self.engine.initialize_run(root, change_intent)
+            ctx = self.engine.initialize_run(root, change_intent, workflow_name="delivery_workflow")
 
             self.engine.declare_terminal(ctx, "ACCEPTED")
             metrics = ctx.run_dir / "artifacts" / "run_metrics.json"

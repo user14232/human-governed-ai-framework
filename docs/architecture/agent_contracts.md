@@ -105,6 +105,8 @@ All human interaction with DevOS must flow through this channel. `human_decision
 
 Agents are invoked through the `AgentAdapter` protocol defined in `runtime/agents/invocation_layer.py`.
 
+The `AgentAdapter` protocol is the boundary between the **DevOS Kernel** and the **Agent Runtime**. The Kernel invokes the adapter; the adapter dispatches to the actual Agent Runtime implementation (AI agent, LLM, script, or human operator in development mode).
+
 The protocol specifies:
 
 ```
@@ -114,7 +116,7 @@ AgentAdapter.invoke(
 ) -> InvocationResult
 ```
 
-The kernel calls this protocol. The adapter is responsible for translating the invocation into the actual execution method.
+The Kernel calls this protocol. The adapter is responsible for translating the invocation into the actual execution method.
 
 ### Invocation modes
 
@@ -245,8 +247,10 @@ Version changes follow the rules at `framework/contracts/framework_versioning_po
 
 ## Further Reading
 
+- `docs/vision/devos_kernel_architecture.md` — Canonical four-system architecture; Agent Runtime responsibilities
+- `docs/architecture/system_map.md` — Agent Runtime module map and contract locations
 - `framework/agents/` — All agent contract definitions
 - `runtime/agents/invocation_layer.py` — AgentAdapter protocol implementation
 - `docs/architecture/integration_model.md` — Adapter architecture and integration rules
-- `docs/architecture/llm_strategy.md` — LLM provider abstraction for agent implementations
-- `docs/roadmap/future_features.md` — Automated adapter implementations (future feature)
+- `docs/architecture/llm_strategy.md` — LLM independence and provider abstraction
+- `docs/roadmap/future_features.md` — Automated Agent Runtime adapter implementations (post-MVP)

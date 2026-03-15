@@ -55,7 +55,7 @@ optional_activities_at_observe:
   knowledge_extraction:
     note: >
       The OBSERVE state is the normative trigger point for knowledge extraction from prior
-      delivery run artifacts. When entering OBSERVE, the responsible role (agent_reflector or
+      delivery run artifacts. When entering OBSERVE, the responsible role (reviewer or
       human) should extract knowledge records from:
         - review findings in `review_result.md`
         - decisions in `decision_log.yaml`

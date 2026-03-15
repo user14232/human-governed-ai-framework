@@ -1,0 +1,173 @@
+version: v1
+id: delivery_workflow
+
+responsibility: >
+  Deterministic, auditable primary delivery workflow as an explicit state machine.
+  Defines sequencing and required artifacts only. Contains no domain logic.
+
+inputs:
+  # project_mandatory lists filenames only. The runtime resolves their location via
+  # project_inputs_root (see contracts/runtime_contract.md Section 2.2).
+  # Canonical path: <project_root>/.devOS/project_inputs/<filename>
+  project_mandatory:
+    - domain_scope.md
+    - domain_rules.md
+    - source_policy.md
+    - glossary.md
+    - architecture_contract.md
+  project_optional:
+    - data_model.md
+    - evaluation_criteria.md
+    - goldstandard_knowledge.md
+
+invariants_reference:
+  - contracts/system_invariants.md
+approval_record:
+  artifact: decision_log.yaml
+  schema: ../artifacts/schemas/decision_log.schema.yaml
+  notes: >
+    Any transition that lists `human_approval` requires corresponding explicit entries
+    in `decision_log.yaml` referencing the approved artifacts (no implicit approvals).
+
+# Roles operating in each state:
+#   PLANNING     → planner
+#   ARCH_CHECK   → reviewer (invoked explicitly; produces arch_review_record.md)
+#   IMPLEMENTING → implementer
+#   TESTING      → tester
+#   REVIEWING    → reviewer
+
+states:
+  - INIT
+  - PLANNING
+  - ARCH_CHECK
+  - IMPLEMENTING
+  - TESTING
+  - REVIEWING
+  - ACCEPTED
+  - ACCEPTED_WITH_DEBT
+  - FAILED
+
+transitions:
+  - from: INIT
+    to: PLANNING
+    requires:
+      inputs_present: true
+
+  - from: INIT
+    to: FAILED
+    requires:
+      inputs_present: false
+
+  - from: PLANNING
+    to: ARCH_CHECK
+    requires:
+      artifacts:
+        - change_intent.yaml
+        - implementation_plan.yaml
+        - design_tradeoffs.md
+        - decision_log.yaml
+      human_approval:
+        - implementation_plan.yaml
+        - design_tradeoffs.md
+
+  - from: ARCH_CHECK
+    to: IMPLEMENTING
+    requires:
+      artifacts:
+        - arch_review_record.md
+      conditions:
+        arch_review_outcome: PASS
+    notes: >
+      ARCH_CHECK is a governance gate. `arch_review_record.md` is required evidence that the
+      architecture review occurred. If outcome is CHANGE_REQUIRED, the workflow is blocked until:
+      (1) `architecture_change_proposal.md` is produced and approved via `decision_log.yaml`, and
+      (2) a new `arch_review_record.md` with outcome PASS is produced.
+      Role responsible: reviewer. See `contracts/runtime_contract.md` Section 8.4.
+
+  - from: IMPLEMENTING
+    to: TESTING
+    notes: >
+      Implementation occurs in the codebase. Branch preparation is part of implementation.
+      `implementation_summary.md` is optional trace; not a gate requirement but strongly
+      recommended for reviewer input.
+
+  - from: TESTING
+    to: REVIEWING
+    requires:
+      artifacts:
+        - test_design.yaml
+        - test_report.json
+
+  - from: REVIEWING
+    to: ACCEPTED
+    requires:
+      artifacts:
+        - review_result.md
+      conditions:
+        review_outcome: ACCEPTED
+
+  - from: REVIEWING
+    to: ACCEPTED_WITH_DEBT
+    requires:
+      artifacts:
+        - review_result.md
+        - decision_log.yaml
+      conditions:
+        review_outcome: ACCEPTED_WITH_DEBT
+      human_approval:
+        - review_result.md
+
+  - from: REVIEWING
+    to: FAILED
+    requires:
+      artifacts:
+        - review_result.md
+      conditions:
+        review_outcome: FAILED
+
+artifacts_used:
+  - change_intent.yaml
+  - implementation_plan.yaml
+  - design_tradeoffs.md
+  - arch_review_record.md
+  - test_design.yaml
+  - test_report.json
+  - review_result.md
+  - run_metrics.json                      # optional trace
+  - decision_log.yaml
+  - architecture_change_proposal.md       # only if ARCH_CHECK outcome is CHANGE_REQUIRED
+  - implementation_summary.md             # optional trace
+
+post_workflow_activities:
+  knowledge_extraction:
+    note: >
+      Knowledge extraction from completed delivery run artifacts is an optional but recommended
+      post-run activity. Occurs after the run reaches a terminal state
+      (ACCEPTED, ACCEPTED_WITH_DEBT, or FAILED). Extraction produces `knowledge_record` artifacts
+      from run evidence (review findings, decisions, tradeoffs, architecture changes).
+      Not a gate requirement; governed by `docs/knowledge_query_contract.md` Section 7.
+    triggering_states:
+      - ACCEPTED
+      - ACCEPTED_WITH_DEBT
+      - FAILED
+    responsible_roles:
+      - reviewer
+      - planner
+      - human
+
+assumptions_and_tradeoffs:
+  - Determinism is achieved by explicit artifacts and approvals, not by autonomous loops.
+  - This file describes ordering and gate conditions only; execution is performed by humans/agents externally.
+  - implementation_summary.md is optional trace; omitting it does not block any gate but reduces reviewer input quality.
+  - run_metrics.json is optional in delivery runs; it is required as input to the improvement cycle.
+  - TEST_DESIGN and BRANCH_READY states from v1.0 have been folded into IMPLEMENTING and TESTING
+    to reduce state machine complexity while preserving all governance gates and artifact requirements.
+
+change_log:
+  - version: v1
+    date: "2026-03-15"
+    change: >
+      Simplified from default_workflow.yaml v1. Removed TEST_DESIGN and BRANCH_READY states.
+      Folded test_design.yaml gate into TESTING → REVIEWING. Branch preparation folded into
+      IMPLEMENTING. Updated role references to four-role model (planner, implementer, tester, reviewer).
+      Removed release post-activity (release governed by separate workflow if needed).

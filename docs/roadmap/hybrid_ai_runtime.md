@@ -20,22 +20,22 @@ The hybrid approach enables:
 - Reduced latency for high-frequency agent invocations
 - Elimination of hard dependency on any specific AI provider
 
-This aligns with the DevOS architecture: DevOS is the governance kernel. The AI runtime is one possible implementation of the agent execution layer beneath it.
+This aligns with the DevOS architecture: DevOS is the governance Kernel. The hybrid AI runtime is one possible implementation of the Agent Runtime beneath it.
 
 ---
 
 ## 2. Architecture Position
 
-The hybrid AI runtime lives in the **Agent Execution Layer**, not in the DevOS governance kernel.
+The hybrid AI runtime lives in the **Agent Runtime**, not in the DevOS Kernel.
 
 ```
 Planning Layer
     (external planning tools)
          ↓
-DevOS Governance Kernel
+DevOS Kernel
     (run lifecycle / workflow / gate evaluation / artifact validation)
          ↓
-Agent Execution Layer
+Agent Runtime
     ┌────────────────────────────────────────────┐
     │           AgentAdapter                     │
     │                ↓                           │
@@ -194,6 +194,7 @@ Building the hybrid runtime before the MVP is stable creates complexity without 
 
 ## Further Reading
 
+- `docs/vision/devos_kernel_architecture.md` — Canonical four-system architecture; Agent Runtime responsibilities
 - `docs/architecture/llm_strategy.md` — LLM independence principle and provider abstraction
 - `docs/architecture/agent_contracts.md` — Agent contract model and adapter concept
 - `docs/architecture/integration_model.md` — Adapter architecture and integration rules

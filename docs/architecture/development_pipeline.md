@@ -314,9 +314,11 @@ DevOS provides discipline and traceability across these tools without requiring 
 
 ## Further Reading
 
-- `docs/vision/system_architecture.md` — System layer overview
-- `docs/architecture/agent_contracts.md` — Agent role definitions and invocation model
-- `docs/architecture/integration_model.md` — How external tools integrate with DevOS
+- `docs/vision/devos_kernel_architecture.md` — Canonical four-system architecture reference
+- `docs/architecture/system_map.md` — Concrete module map of all four systems
+- `docs/vision/system_architecture.md` — System interaction diagram
+- `docs/architecture/agent_contracts.md` — Agent contract model and Agent Runtime integration
+- `docs/architecture/integration_model.md` — Artifact-first integration philosophy
 - `framework/workflows/` — Workflow state machine definitions
 - `framework/agents/` — Agent contract specifications
 - `docs/roadmap/future_features.md` — Future pipeline automation capabilities

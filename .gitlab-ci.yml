@@ -30,7 +30,7 @@ runtime_verify:
   rules:
     - if: $CI_PIPELINE_SOURCE
   script:
-    - python -m compileall runtime tests > ci_artifacts/compileall.log 2>&1
+    - python -m compileall kernel agent_runtime tests > ci_artifacts/compileall.log 2>&1
     - python -m unittest discover -s tests/unit -p "test_*.py" -v > ci_artifacts/unit.log 2>&1
     - python -m unittest discover -s tests/integration -p "test_*.py" -v > ci_artifacts/integration.log 2>&1
     - python -m unittest tests.unit.test_phase3_evidence_traceability -v > ci_artifacts/traceability.log 2>&1

@@ -121,11 +121,11 @@ DevOS operates across four layers. The governance kernel is the second.
 ```text
 Planning Layer   (external: epics / stories / tasks → change_intent.yaml)
     ↓
-DevOS Governance Kernel  (run lifecycle / workflow / gates / artifacts / decisions)
+DevOS Kernel             (run lifecycle / workflow / gates / artifacts / decisions)
     ↓
-Agent Execution Layer    (external: AI reasoning / code generation)
+Agent Runtime            (external: AI reasoning / code generation)
     ↓
-Tooling Layer            (external: Git / testing / linting / scanning)
+Capability System        (external: Git / testing / linting / scanning / MCP tools)
 ```
 
 Within the governance kernel, the internal layer structure is:
@@ -141,7 +141,7 @@ Runs             (execution)
 ### Framework Layer
 
 The framework layer defines the normative structure of the system.
-It acts as the DevOS kernel — the set of rules that all workflows and runs must comply with.
+It contains the contracts and rules that all workflows and runs must comply with. This is the specification component of the DevOS Kernel — the rules layer loaded once at initialization and treated as read-only during execution.
 
 It includes:
 

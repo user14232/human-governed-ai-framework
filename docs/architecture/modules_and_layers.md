@@ -1,16 +1,16 @@
-# DevOS – Runtime Module Layers
+# DevOS – Kernel Module Layers
 
 **Document type**: Architecture reference
 **Status**: Non-normative reference; derived from `docs/runtime/runtime_module_architecture.md`
 **Date**: 2026-03-15
 
-> This document summarizes the DevOS runtime module decomposition. The authoritative Python-style interface signatures are in `docs/runtime/runtime_module_architecture.md`. The normative runtime rules are in `contracts/`.
+> This document summarizes the DevOS Kernel module decomposition. The authoritative Python-style interface signatures are in `docs/runtime/runtime_module_architecture.md`. The normative kernel rules are in `contracts/`. For the four-system architecture (DevOS Kernel, Agent Runtime, Capability System, Knowledge System), see `docs/vision/devos_kernel_architecture.md`.
 
 ---
 
 ## Overview
 
-The DevOS runtime is decomposed into **12 modules across 6 layers**. This structure enforces strict dependency rules that prevent circular imports and maintain clear separation of concerns within the governance kernel.
+The DevOS Kernel implementation is decomposed into **12 modules across 6 layers**. This structure enforces strict dependency rules that prevent circular imports and maintain clear separation of concerns within the governance kernel.
 
 ```
 Layer 1 — Types           (runtime/types/)          ← stable foundation, no runtime imports
@@ -115,7 +115,9 @@ Seven explicit rules govern the dependency graph:
 
 ## Further Reading
 
+- `docs/vision/devos_kernel_architecture.md` — Canonical four-system architecture reference
+- `docs/architecture/system_map.md` — Concrete module map of all four systems
 - `docs/runtime/runtime_module_architecture.md` — Full Python-style interface signatures for all modules
 - `docs/runtime/runtime_execution_model.md` — MVP runtime scope and explicit exclusions
-- `docs/architecture/devos_architecture.md` — Runtime architecture narrative and OS mental model
+- `docs/architecture/devos_architecture.md` — Kernel architecture narrative and OS mental model
 - `contracts/runtime_contract.md` — Normative runtime specification

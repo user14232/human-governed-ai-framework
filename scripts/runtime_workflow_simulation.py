@@ -14,16 +14,16 @@ import yaml
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from runtime.agents.invocation_layer import AgentInvocationLayer, InvocationMode
-from runtime.decisions.decision_system import DecisionSystem
-from runtime.engine.gate_evaluator import GateEvaluator
-from runtime.engine.run_engine import RunEngine
-from runtime.engine.workflow_engine import AdvanceResult, WorkflowEngine
-from runtime.events.event_system import EventSystem
-from runtime.framework.agent_loader import AgentContract
-from runtime.framework.schema_loader import load_all_schemas
-from runtime.types.artifact import ArtifactRef, ArtifactSchema
-from runtime.types.run import RunContext, TERMINAL_STATES
+from agent_runtime.invocation_layer import AgentInvocationLayer, InvocationMode
+from kernel.decisions.decision_system import DecisionSystem
+from kernel.engine.gate_evaluator import GateEvaluator
+from kernel.engine.run_engine import RunEngine
+from kernel.engine.workflow_engine import AdvanceResult, WorkflowEngine
+from kernel.events.event_system import EventSystem
+from kernel.framework.agent_loader import AgentContract
+from kernel.framework.schema_loader import load_all_schemas
+from kernel.types.artifact import ArtifactRef, ArtifactSchema
+from kernel.types.run import RunContext, TERMINAL_STATES
 
 
 FIXED_ARTIFACT_CREATED_AT = "2026-01-01T00:00:00+00:00"
@@ -197,7 +197,7 @@ def _materialize_state_artifacts(
             ctx=ctx,
             schemas=schemas,
             invocation_layer=invocation_layer,
-            role="agent_planner",
+            role="planner",
             inputs=("change_intent.yaml",),
             outputs=("implementation_plan.yaml", "design_tradeoffs.md"),
         )
@@ -217,41 +217,9 @@ def _materialize_state_artifacts(
             ctx=ctx,
             schemas=schemas,
             invocation_layer=invocation_layer,
-            role="agent_architecture_guardian",
+            role="reviewer",
             inputs=("implementation_plan.yaml", "design_tradeoffs.md"),
             outputs=("arch_review_record.md",),
-        )
-        return known_decision_count
-
-    if ctx.current_state == "TEST_DESIGN":
-        _write_test_design(ctx.artifacts_dir / "test_design.yaml")
-        output_refs = _invoke_human(
-            ctx=ctx,
-            schemas=schemas,
-            invocation_layer=invocation_layer,
-            role="agent_test_designer",
-            inputs=("implementation_plan.yaml", "design_tradeoffs.md"),
-            outputs=("test_design.yaml",),
-        )
-        known_decision_count = _approve_refs(
-            ctx=ctx,
-            schemas=schemas,
-            decision_system=decision_system,
-            decisions=decisions,
-            known_decision_count=known_decision_count,
-            refs=output_refs,
-        )
-        return known_decision_count
-
-    if ctx.current_state == "BRANCH_READY":
-        _write_branch_status(ctx.artifacts_dir / "branch_status.md")
-        _invoke_human(
-            ctx=ctx,
-            schemas=schemas,
-            invocation_layer=invocation_layer,
-            role="agent_branch_manager",
-            inputs=("implementation_plan.yaml",),
-            outputs=("branch_status.md",),
         )
         return known_decision_count
 
@@ -261,21 +229,22 @@ def _materialize_state_artifacts(
             ctx=ctx,
             schemas=schemas,
             invocation_layer=invocation_layer,
-            role="agent_implementer",
+            role="implementer",
             inputs=("implementation_plan.yaml", "design_tradeoffs.md"),
             outputs=("implementation_summary.md",),
         )
         return known_decision_count
 
     if ctx.current_state == "TESTING":
+        _write_test_design(ctx.artifacts_dir / "test_design.yaml")
         _write_test_report(ctx.artifacts_dir / "test_report.json", run_id=ctx.run_id)
         _invoke_human(
             ctx=ctx,
             schemas=schemas,
             invocation_layer=invocation_layer,
-            role="agent_test_runner",
-            inputs=("test_design.yaml",),
-            outputs=("test_report.json",),
+            role="tester",
+            inputs=("implementation_plan.yaml",),
+            outputs=("test_design.yaml", "test_report.json"),
         )
         return known_decision_count
 
@@ -285,7 +254,7 @@ def _materialize_state_artifacts(
             ctx=ctx,
             schemas=schemas,
             invocation_layer=invocation_layer,
-            role="agent_reviewer",
+            role="reviewer",
             inputs=("implementation_plan.yaml", "test_report.json"),
             outputs=("review_result.md",),
         )
