@@ -8,17 +8,20 @@
 
 # Purpose
 
-The DevOS Context System enables agents to retrieve the **correct contextual information for a task** without embedding large amounts of information directly into prompts.
+The DevOS Context System enables agents to retrieve **precise contextual information** required to perform tasks within a DevOS workflow.
 
-The system ensures that agents operate with:
+Rather than constructing context dynamically during every run, DevOS maintains a **persistent, machine-readable representation of the repository and its architecture**.
 
-* relevant architectural constraints
-* domain rules
-* repository context
-* run artifacts
-* accumulated engineering knowledge
+Agents retrieve context from this maintained model using capabilities.
 
-The Context System acts as a **structured retrieval layer** between agents and the information sources available in a DevOS workspace.
+This ensures that agents operate with:
+
+* precise architectural context
+* correct dependency relationships
+* bounded repository scope
+* historical knowledge from previous runs
+
+The Context System acts as a **structured retrieval layer** between agents and the repository knowledge maintained by DevOS.
 
 ---
 
@@ -26,74 +29,102 @@ The Context System acts as a **structured retrieval layer** between agents and t
 
 LLM-based agents perform poorly when:
 
-* prompts contain excessive information
-* context is incomplete
-* context is unrelated to the task
+* context must be reconstructed repeatedly
+* prompts include excessive unrelated code
+* architectural relationships are unclear
+* dependency boundaries are unknown
 
-Providing the entire repository or documentation as context often results in:
+Most AI development tools reconstruct context ad-hoc through search and embeddings.
 
-* hallucinations
-* architecture violations
-* scope expansion
-* unstable outputs
+DevOS instead treats context as **maintained infrastructure**.
 
-The Context System solves this by allowing agents to load **bounded, role-specific context**.
+Context is not assembled dynamically for each prompt.
+
+Instead it is retrieved from a **persistent repository context model**.
 
 ---
 
-# Design Principle
+# Core Design Principle
 
-Context retrieval must be:
+Context in DevOS is **not generated on demand**.
 
-* role-specific
+It is **maintained as structured infrastructure**.
+
+Agents do not search the repository blindly.
+
+They query a structured context model maintained by the system.
+
+Context retrieval must therefore be:
+
 * deterministic
+* role-specific
 * artifact-driven
 * capability-based
-
-Agents should never receive the entire system context.
-
-Instead they request context through dedicated **context capabilities**.
+* repository-aware
 
 ---
 
-# Context Sources
+# Repository Context Model
 
-The Context System retrieves information from multiple sources inside the DevOS environment.
+The Context System maintains a persistent representation of the repository structure.
 
-## Repository Context
+This model enables agents to reason about the repository without scanning the entire codebase.
+
+The repository context model includes:
+
+* file structure
+* dependency relationships
+* symbol index
+* architectural components
+* impact graph
+
+The repository model is stored in a DevOS context index.
+
+Example location:
 
 ```text
-source code
-repository structure
-module boundaries
-dependency relationships
+workspace/.devos/context/
 ```
 
 ---
 
-## Domain Context
+# Context Layers
+
+The Context System organizes contextual information into multiple layers.
+
+## Repository Layer
+
+Represents the structural model of the repository.
+
+Includes:
 
 ```text
-workspace/inputs/domain_scope.md
-workspace/inputs/domain_rules.md
-workspace/inputs/glossary.md
+file structure
+module hierarchy
+dependency graph
+symbol index
 ```
 
 ---
 
-## Architecture Context
+## Architecture Layer
+
+Represents the architectural organization of the system.
+
+Includes:
 
 ```text
-workspace/inputs/architecture_contract.md
+component model
+architecture contracts
 architecture documentation
 architecture decision records
 ```
 
 ---
 
-## Run Context
+## Run Artifact Layer
 
-Artifacts produced during previous workflow runs.
+Represents artifacts generated during DevOS runs.
 
 Examples:
 
@@ -104,15 +135,17 @@ design_tradeoffs.md
 review_result.md
 ```
 
+These artifacts provide contextual information about recent changes.
+
 ---
 
-## Knowledge Context
+## Knowledge Layer
 
 The Context System integrates with the DevOS Knowledge System.
 
-The Knowledge System stores structured engineering knowledge extracted from completed runs.
+Knowledge records extracted from previous runs provide contextual engineering experience.
 
-Examples:
+Examples include:
 
 ```text
 implementation patterns
@@ -121,117 +154,114 @@ testing strategies
 architecture constraints
 ```
 
-The Context System retrieves relevant knowledge records and exposes them to agents when appropriate.
+---
+
+# Code Graph
+
+The Context System maintains a **Code Graph** describing relationships between files, symbols, and components.
+
+The Code Graph enables:
+
+* dependency analysis
+* symbol resolution
+* architectural navigation
+* impact analysis
+
+Example relationships represented in the graph:
+
+```text
+file imports
+function calls
+class references
+component membership
+```
+
+Agents use the Code Graph to retrieve relevant repository segments.
 
 ---
 
-# Context Surfaces
+# Component Model
 
-A **Context Surface** is a defined category of retrievable context.
+The Context System may maintain a component mapping that groups files into architectural units.
 
-Typical surfaces include:
+Example:
 
 ```text
-repository context
-domain context
-architecture context
-run artifact context
-knowledge context
-planning context
+component: authentication
+
+files:
+  api/auth/middleware.py
+  api/auth/jwt.py
+  api/controllers/login.py
 ```
 
-Agents retrieve context selectively from these surfaces.
+Component mapping enables agents to reason at the **architecture level rather than file level**.
 
 ---
 
-# Role-Specific Context Sets
+# Impact Analysis
 
-Each agent role has a predefined context profile.
+The Context System supports impact analysis for change intents.
 
-## Planner Context
-
-Typical inputs:
+When a change targets a file or component, the system can determine:
 
 ```text
-change_intent.yaml
-domain_scope.md
-architecture_contract.md
-planning rules
-knowledge records related to the change
+dependent modules
+affected components
+related tests
+architectural boundaries
 ```
 
-The planner may also retrieve:
-
-```text
-previous implementation patterns
-testing strategies for similar features
-```
+Impact analysis enables agents to retrieve **the minimal relevant context** required to implement a change safely.
 
 ---
 
-## Implementer Context
+# Context Indexing
 
-Typical inputs:
+The repository context model is generated and maintained by an indexing process.
 
-```text
-implementation_plan.yaml
-design_tradeoffs.md
-relevant code modules
-architecture constraints
-knowledge about similar implementations
-```
-
----
-
-## Tester Context
-
-Typical inputs:
+Indexing may extract:
 
 ```text
-test_design.yaml
-implementation_summary.md
-codebase
-knowledge about testing strategies
+file structure
+symbol definitions
+dependency relationships
+component mappings
 ```
 
----
-
-## Reviewer Context
-
-Typical inputs:
+Possible indexing mechanisms include:
 
 ```text
-implementation_summary.md
-test_report.json
-architecture_contract.md
-design_tradeoffs.md
-knowledge about failure patterns
+AST parsers
+Tree-sitter
+language servers
+static analysis tools
 ```
+
+The indexing process updates the repository context model when the codebase changes.
 
 ---
 
 # Capability-Based Context Retrieval
 
-Agents retrieve context via capabilities.
+Agents retrieve context through dedicated capabilities.
 
 Example capability interface:
 
 ```text
-context.load_architecture_context
-context.load_domain_context
 context.load_repository_context
-context.load_related_knowledge
 context.load_component_context
+context.load_architecture_context
+context.load_related_knowledge
+context.compute_impact_scope
 ```
 
-Agents request context as needed.
-
-Example:
+Example planner workflow:
 
 ```text
 planner
-  → context.load_domain_context
   → context.load_architecture_context
+  → context.compute_impact_scope
   → context.load_related_knowledge
 ```
 
@@ -246,39 +276,11 @@ Given identical:
 * repository state
 * workspace inputs
 * run artifacts
-* knowledge index
+* knowledge records
 
-the retrieved context must be identical.
+the context returned must be identical.
 
-Randomized retrieval or uncontrolled semantic search must not influence DevOS workflow gates.
-
----
-
-# Relationship to the Knowledge System
-
-The Knowledge System acts as a persistent store of engineering knowledge.
-
-The Context System queries the knowledge index and retrieves relevant records.
-
-Example pipeline:
-
-```text
-DevOS run
-  ↓
-artifacts generated
-  ↓
-knowledge extraction
-  ↓
-knowledge records stored
-  ↓
-context retrieval
-  ↓
-agent reasoning
-```
-
-The Context System does not modify knowledge records.
-
-It only retrieves them.
+Randomized retrieval must not influence workflow governance.
 
 ---
 
@@ -302,9 +304,9 @@ Knowledge System
     persistent engineering memory
 ```
 
-The kernel is unaware of context retrieval.
+The kernel remains unaware of context retrieval.
 
-Agents interact with the Context System through capabilities.
+Agents access context only through capabilities.
 
 ---
 
@@ -314,30 +316,30 @@ The Context System does not:
 
 * control workflow execution
 * influence governance gates
-* modify artifacts
-* store persistent knowledge
+* modify workflow artifacts
+* store engineering knowledge
 
-Those responsibilities belong to the DevOS Kernel and Knowledge System.
+These responsibilities belong to the DevOS Kernel and Knowledge System.
 
 ---
 
 # Future Extensions
 
-Possible future improvements include:
+Potential future improvements include:
 
 * semantic repository indexing
-* architecture-aware context loading
-* dependency graph context retrieval
-* component-level context surfaces
-* run-similarity detection
-* knowledge-assisted planning
+* architecture-aware retrieval
+* dependency-aware test discovery
+* automated component detection
+* context compression for smaller models
+* advanced impact analysis
 
 ---
 
 # Summary
 
-The DevOS Context System provides structured, role-specific context retrieval for agents.
+The DevOS Context System maintains a **persistent, machine-readable model of the repository and its architecture**.
 
-It integrates repository information, workspace inputs, run artifacts, and knowledge records to ensure that agents operate with the **correct information for their task**.
+Agents retrieve context from this model rather than reconstructing it dynamically.
 
-By separating context retrieval from prompt construction, the system enables more stable and scalable agent behavior.
+By separating context infrastructure from prompt generation, DevOS enables stable, scalable, and deterministic agent behavior.
