@@ -1,4 +1,0 @@
-"""
-DevOS package root.
-"""
-
